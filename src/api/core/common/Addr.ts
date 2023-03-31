@@ -44,6 +44,7 @@ class Addr {
     }
 
     isRoot(): boolean {
+        // 故意多加的if，方便后续加逻辑
         if (this.tokens.length === 0) {
             return true
         } else {

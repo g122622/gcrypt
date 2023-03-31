@@ -1,47 +1,42 @@
 import { createStore } from 'vuex'
-import initSettings from '../utils/initSettings'
-import fs from 'fs-extra'
+import ElectronStore from 'electron-store'
+import defaultSettings from "@/assets/json/defaultSettings";
+
+// 初始化electron-store
+const settingStore = new ElectronStore({
+    name: "settings", // 文件名称,默认 config
+    fileExtension: "json", // 文件后缀,默认json
+    clearInvalidConfig: true, // 发生 SyntaxError  则清空配置
+})
 
 export default createStore({
     state() {
-        if (!fs.existsSync('./settings.json')) {
-            initSettings()
+        if (!settingStore.has('timestamp')) {
+            settingStore.store = { settings: defaultSettings, timestamp: Date.now() }
         }
         return {
-            webwiewSrc: 'null',
-            currentContentName: 'ControllerMain',
-            settings: JSON.parse(fs.readFileSync('./settings.json', "utf-8")),
+            settings: settingStore.get("settings"),
             COMPILE_DATE: COMPILE_DATE,
             COMPILE_NUMBER: COMPILE_NUMBER,
             notifications: []
         }
     },
     mutations: {
-        webwiewSrc(state: any, payload: any) {
-            state.webwiewSrc = payload
-        },
-        currentContentName(state, payload) {
-            state.currentContentName = payload
-        },
         // 只有窗口改json场景下才需带payload
         settings(state, payload) {
             if (payload) {
                 state.settings = payload
             }
-
-            fs.writeFileSync('./settings.json', JSON.stringify(state.settings))
+            settingStore.set("settings", state.settings)
+            settingStore.set("timestamp", Date.now())
         },
-        COMPILE_DATE(state, payload) {
-            state.COMPILE_DATE = payload
+        resetSettings(state){
+            state.settings= defaultSettings
+            settingStore.set("settings", state.settings)
+            settingStore.set("timestamp", Date.now())
         }
     },
     getters: {
-        currentContentName(state) {
-            return state.currentContentName
-        },
-        webwiewSrc(state) {
-            return state.webwiewSrc
-        },
         settings(state) {
             return state.settings
         },
@@ -52,14 +47,4 @@ export default createStore({
             return state.COMPILE_NUMBER
         }
     }
-    //   state: {
-    //   },
-    //   getters: {
-    //   },
-    //   mutations: {
-    //   },
-    //   actions: {
-    //   },
-    //   modules: {
-    //   }
 })

@@ -1,6 +1,6 @@
 const log = function (arg: string) {
     console.log(
-        `%cLOG | at ${new Date().toLocaleTimeString()}`,
+        `%cLOG | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
         `
           background-color: #3f51b5;
           color: #eee;

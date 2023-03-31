@@ -1,19 +1,18 @@
 <template>
-    <div class="file-item" v-ripple>
+    <div class="file-item" v-ripple ref="fileItemElement">
         <!-- 前置内容 -->
-        <div style="display: flex;
-                    justify-content: flex-start;
-                    align-items: center;">
-            <img v-if="singleFileItem.type === `folder`" :src="`./assets/fileTypes/folder.png`"
+        <div style="display: flex;justify-content: flex-start;align-items: center;">
+            <img v-if="singleFileItem.type === `folder`" :src="`./assets/fileTypes/folder.png`" class="file-types-image" />
+            <img v-if="singleFileItem.type === `file`" :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`"
                 class="file-types-image" />
-            <img v-if="singleFileItem.type === `file`"
-                :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`" class="file-types-image" />
             <div class="file-name">
                 {{ singleFileItem.name }}
             </div>
         </div>
+        <slot></slot>
         <!-- 尾置内容 -->
         <div>
+            <IconBtn tooltip="更多" icon="mdi-dots-vertical" :onClick="handleClickMore"/>
             <div class="file-meta">
                 created: {{ new Date(singleFileItem.meta.createdTime).toLocaleString() }}
                 <br />
@@ -25,9 +24,9 @@
 </template>
 
 <script lang="ts">
-import getFileType from "../../utils/getFileType";
+import getFileType from "@/utils/getFileType";
 import { defineComponent } from "vue"
-import emitter from "../../eventBus"
+import emitter from "@/eventBus"
 
 export default defineComponent({
     name: 'FileItem',
@@ -47,6 +46,12 @@ export default defineComponent({
     methods: {
         getFileType(filename) {
             return getFileType(filename)
+        },
+        handleClickMore(event){
+            // TODO 停止事件冒泡
+            event.stop
+            // TODO 按照x和y进行右键点击
+            this.$refs.fileItemElement.click()
         }
     }
 })
@@ -70,6 +75,8 @@ export default defineComponent({
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+
+    position: relative !important; // 为了contextmenu的右键点击激发区域能够顺利溢出隐藏
 }
 
 .file-item:hover {
@@ -89,5 +96,11 @@ export default defineComponent({
     font-size: 16px;
     margin-left: 10px;
     margin-right: 10px;
+}
+
+@container (width < 300px) {
+    .file-meta {
+        display: none;
+    }
 }
 </style>

@@ -35,7 +35,7 @@ export default {
             switch (payload.level) {
                 case "error":
                     colorStatus = "red"
-                    icon = "mdi-close"
+                    icon = "mdi-close-circle"
                     break;
                 case "warning":
                     colorStatus = "yellow"
@@ -57,7 +57,8 @@ export default {
                 type: "html",
                 title: payload.level,
                 colorStatus,
-                icon
+                icon,
+                actionButtons: payload.actionButtons
             }
             this.initNotification(foo)
         })
@@ -95,11 +96,11 @@ export default {
                 hashID: this.$utils.getHash(),
                 id: this.notifications.length + 1,
                 action: 'add',
-                type: '',
-                title: '',
-                message: '',
+                type: 'html',
+                title: '消息',
+                message: '未指定内容',
                 icon: 'mdi-information',
-                colorStatus: '',
+                colorStatus: 'blue',
                 timeout: 5000,
                 closeButton: true,
                 isHidden: false,

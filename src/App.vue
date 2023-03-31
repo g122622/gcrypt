@@ -1,40 +1,64 @@
 <template>
-    <!-- <img id="background_img" style="position: absolute;width: 100%;height: 100%;overflow: hidden;" /> -->
-    <BackgroundImg :finishLoading="finishLoading" ref="BackgroundImg"></BackgroundImg>
-    <div style="position: fixed;width: 100%;height: 100%;z-index: 999999999999;pointer-events: none;">
+    <BackgroundImg :finishLoading="finishLoading" />
+    <div style="position: fixed;width: 100%;height: 100%;z-index: 1000000;pointer-events: none;">
         <!-- 弹出消息顶层容器 -->
-        <MsgContainer></MsgContainer>
+        <MsgContainer />
         <NotificationManager />
     </div>
+    <ContextMenuGlobalRenderArea />
+    
     <div :style="{ opacity: imgOpacity }">
         <v-app>
             <!-- 顶部系统状态栏 -->
             <v-system-bar window style="-webkit-app-region: drag;" height="33">
                 <span class="ml-2">隐域-Gcrypt</span>
-                <v-spacer></v-spacer>
+                <v-spacer />
             </v-system-bar>
 
             <!-- 左侧导航栏 -->
-            <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false" width="150">
-                <v-list-item prepend-avatar="./assets/avatar-s.jpg" title="Aimerez" nav>
-                    <template v-slot:append>
-                        <v-btn variant="text" icon="mdi-chevron-left" @click.stop="rail = !rail"></v-btn>
-                    </template>
+            <v-navigation-drawer v-model="isSideDrawerOpen" :rail="isSideDrawerRail" permanent
+                @click="isSideDrawerRail = false" width="200">
+                <v-list-item prepend-avatar="./assets/avatar-ss.jpg" title="g122622" nav
+                    @click.stop="isSideDrawerRail = !isSideDrawerRail">
                 </v-list-item>
-
                 <v-divider></v-divider>
-
-                <v-list density="compact" nav :items="items" @click:select="(value) => {
-                    this.handleNavClick(value.id);
+                <!-- 静态标签页 -->
+                <v-list density="compact" nav :items="sidebarMainItems" @click:select="(value) => {
+                    handleNavClick(value.id);
                 }">
                 </v-list>
+                <v-divider></v-divider>
+                <!-- 动态标签页 -->
+                TODO vuetify折叠组件
+                <v-list density="compact" nav>
+                    <v-list-item v-for="item in dynamicTabs" title="item.name"
+                        @click:select="item.handleClick()">
+                        <template #prepend>
+                            <v-icon>
+                                {{item.icon}}
+                            </v-icon>
+                        </template>
+                        <template #append>
+                            <IconBtn
+                                size="small"
+                                icon="mdi-close"
+                                tooltip:"关闭标签页"
+                                onClick="item.handleClose()"
+                                />
+                        </template>
+                    </v-list-item>
+                </v-list>
+
+                <v-spacer/>
+                <!-- 性能监视器 -->
+                <PerformanceMonitor />
+
             </v-navigation-drawer>
 
             <!-- 顶部工具栏 -->
-            <div id="ActionToolBar">
-            </div>
+            <div id="ActionToolBar" />
             <!-- router主内容区 -->
-            <v-main :scrollable="this.$store.mainContentScrollable">
+            <v-main :scrollable="store.state.mainContentScrollable">
                 <router-view v-slot="{ Component }">
                     <keep-alive>
                         <component :is="Component" />
@@ -46,137 +70,116 @@
     </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
 import emitter from './eventBus'
 import MsgContainer from "./components/Msg/MsgContainer.vue"
 import BackgroundImg from "./components/BackgroundImg.vue"
 import NotificationManager from "./components/AdvancedNotification/NotificationManager.vue";
+import PerformanceMonitor from "./components/PerformanceMonitor/PerformanceMonitor.vue";
+import ContextMenuGlobalRenderArea from "./components/ContextMenuGlobalRenderArea.vue"
+import { ref, computed, onMounted, nextTick } from "vue"
+import router from "./router"
+import store from "./store"
 
-export default defineComponent({
-    name: 'App',
-    components: {
-        MsgContainer,
-        BackgroundImg,
-        NotificationManager
-    },
-    data() {
-        return {
-            drawer: true,
-            items: [
-                {
-                    title: '主页',
-                    props: {
-                        prependIcon: 'mdi-home',
-                    },
-                    value: "home"
-                },
-                {
-                    title: '加密库',
-                    props: {
-                        prependIcon: 'mdi-lock',
-                    },
-                    value: "store"
-                },
-                {
-                    title: '文件',
-                    props: {
-                        prependIcon: 'mdi-folder',
-                    },
-                    value: "files"
-                },
-                {
-                    title: '设置',
-                    props: {
-                        prependIcon: 'mdi-cog',
-                    },
-                    value: "settings"
-                },
-                {
-                    title: '关于',
-                    props: {
-                        prependIcon: 'mdi-information',
-                    },
-                    value: "about"
-                },
-            ],
-            rail: true,
-            finishLoading: false
-        }
-    },
+/*
+一.事件命名规范:
+    1.UI事件 只传达某个UI状态改变的信息
+        UI::contextMenu::clickOutside
+    2.Action 强调动作
+        Action::showMsg
+    3.LifeCycle 生命周期事件
+        LifeCycle::finishedLoadingApp
+        LifeCycle::outOfMem
+        LifeCycle::clearMem
+*/
 
-    setup() {
-        // const theme = useTheme()
-        // theme.global.name.value = F'dark'
-        // return theme
-    },
-    methods: {
-        handleNavClick(value: string): void {
-            this.$router.push(`/${value}`)
-        }
-    },
-    mounted() {
-        this.$store.mainContentScrollable = true
-        window.addEventListener('error', function (event) {
-            // onerror_statements
-            const str = `主窗口渲染进程发生代码执行错误，错误栈消息如下：${event.error.stack}`
-            emitter.emit('showMsg', { level: "error", msg: str });
-        })
+const isSideDrawerOpen = ref<boolean>(true)
+const isSideDrawerRail = ref<boolean>(true)
+const finishLoading = ref<boolean>(false)
+const sidebarMainItems =
+    [
+        {
+            title: '主页',
+            props: {
+                prependIcon: 'mdi-home',
+            },
+            value: "home"
+        },
+        {
+            title: '加密库',
+            props: {
+                prependIcon: 'mdi-lock',
+            },
+            value: "store"
+        },
+        {
+            title: '文件',
+            props: {
+                prependIcon: 'mdi-folder',
+            },
+            value: "files"
+        },
+        {
+            title: '设置',
+            props: {
+                prependIcon: 'mdi-cog',
+            },
+            value: "settings"
+        },
+        {
+            title: '关于',
+            props: {
+                prependIcon: 'mdi-information',
+            },
+            value: "about"
+        },
+    ]
+const dynamicTabs=ref<Array>([])
 
-        this.finishLoading = true
-        window.onresize = () => {
-            this.$refs.BackgroundImg.$forceUpdate()
-        }
-        document.querySelectorAll("#app")[0].setAttribute("data-theme-type", "dark")
-    },
-    computed: {
-        imgOpacity() {
-            let foo = this.$store.getters.settings.filter((item) => { return item.name === "background_img_transp" })[0].value / 100
-            if (foo >= 1) {
-                foo = 0.99999
-            }
-            return foo
-        }
+const handleNavClick = (value: string) => {
+    router.push(`/${value}`)
+}
+
+const imgOpacity = computed(() => {
+    let foo = store.getters.settings.find((item) => { return item.name === "background_img_transp" }).value / 100
+    if (foo >= 1) {
+        foo = 0.99999
     }
+    return foo
 })
+
+onMounted(async () => {
+    // 是否显示主内容区滚动条
+    store.state.mainContentScrollable = true
+    // 初始化事件
+    emitter.on("UI::addTabItem",({name,icon,onClick,onClose})=>{
+        dynamicTabs.value.push({name,icon,
+        handleClick:()=>{
+            router.push(`/${name}`)
+            onClick()
+        },
+        // 用户可以在onClose函数里面reject掉promise，这样会阻止标签页继续关闭
+        handleClose:async()=>{
+            if(onClose){
+                await Promise.resolve(onClose)()
+            }
+            emitter.emit("Action::removeTab",{name})
+        }
+        })
+    })
+    
+    await nextTick()
+    finishLoading.value = true
+    emitter.emit("LifeCycle::finishedLoadingApp")
+})
+
 </script>
 
 <style lang="less">
 @import url('./styles/globalVariables.less');
+@import url('./styles/globalVuetifyOverrides.less');
 
-::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
-    position: absolute;
-}
-
-/* 正常情况下滑块的样式 */
-::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-
-}
-
-/* 鼠标悬浮在该类指向的控件上时滑块的样式 */
-:hover::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-}
-
-/* 鼠标悬浮在滑块上时滑块的样式 */
-::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.4);
-}
-
-/* 正常时候的主干部分 */
-::-webkit-scrollbar-track {
-    background-color: rgba(0, 0, 0, 0);
-}
-
-/* 鼠标悬浮在滚动条上的主干部分 */
-::-webkit-scrollbar-track:hover {
-    background-color: rgba(0, 0, 0, 0);
-}
+@import url('./styles/scrollbars.less');
 
 html {
     width: 100%;

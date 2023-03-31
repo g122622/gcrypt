@@ -1,18 +1,23 @@
 <template>
-    <ActionToolBarBase ToolbarTitle="加密库"></ActionToolBarBase>
+    <ActionToolBarBase ToolbarTitle="加密库">
+        <v-btn icon @click="this.$parent.handleAddStoreClick();">
+            <v-icon>mdi-plus</v-icon>
+            <v-tooltip activator="parent" location="bottom">新建加密库</v-tooltip>
+        </v-btn>
+        <v-btn icon @click="this.$parent.handleImportStoreClick();">
+            <v-icon>mdi-import</v-icon>
+            <v-tooltip activator="parent" location="bottom">导入加密库</v-tooltip>
+        </v-btn>
+    </ActionToolBarBase>
 </template>
 
 <script lang="ts">
 import { defineComponent } from "vue"
-import ActionToolBarBase from "../../components/ActionToolBarBase.vue";
 
 export default defineComponent({
     name: 'ActionToolBar',
     props: {
 
-    },
-    components: {
-        ActionToolBarBase
     },
     data() {
         return {

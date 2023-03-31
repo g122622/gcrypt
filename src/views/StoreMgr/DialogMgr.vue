@@ -20,7 +20,8 @@
                 <v-btn color="blue-darken-1" variant="text" @click="passwordDialogIsOpen = false">
                     取消
                 </v-btn>
-                <v-btn color="blue-darken-1" variant="text" @click="handlePassword(); passwordDialogIsOpen = false">
+                <v-btn color="blue-darken-1" variant="text"
+                    @click="handleDialogPassword(); passwordDialogIsOpen = false">
                     确定
                 </v-btn>
             </v-card-actions>
@@ -61,7 +62,8 @@
                 <v-btn color="blue-darken-1" variant="text" @click="addStoreDialogIsOpen = false">
                     取消
                 </v-btn>
-                <v-btn color="blue-darken-1" variant="text" @click="handleAddStore(); addStoreDialogIsOpen = false">
+                <v-btn color="blue-darken-1" variant="text"
+                    @click="handleDialogAddStore(); addStoreDialogIsOpen = false">
                     确定
                 </v-btn>
             </v-card-actions>
@@ -92,11 +94,11 @@ export default defineComponent({
         showAddStoreDialog() {
             this.addStoreDialogIsOpen = true
         },
-        handlePassword() {
-            this.$parent.handlePassword(this.password)
+        handleDialogPassword() {
+            this.$parent.handleDialogPassword(this.password)
         },
-        handleAddStore() {
-            this.$parent.handleAddStore(this.storeSrc, this.storeName, this.password)
+        handleDialogAddStore() {
+            this.$parent.handleDialogAddStore(this.storeSrc, this.storeName, this.password)
         }
     }
     // mounted() {

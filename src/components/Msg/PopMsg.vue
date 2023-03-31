@@ -8,7 +8,6 @@
         </div>
 
     </transition>
-
 </template>
 
 <script lang="ts">
@@ -43,10 +42,6 @@ export default {
     margin: 7px;
     text-align: left;
     z-index: 99999999999;
-}
-
-.el-alert:first-child {
-    margin: 0;
 }
 
 /* 可以为进入和离开动画设置不同的持续时间和动画函数 */

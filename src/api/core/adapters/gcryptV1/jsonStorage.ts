@@ -4,6 +4,7 @@ import storageLibMetaData from "../../types/storageLibMetaData"
 import fileTable from "../../types/fileTable";
 import getFileName from "../../../../utils/getFileName";
 import fs from "fs-extra";
+import lodash from "lodash";
 /* eslint-disable @typescript-eslint/no-var-requires */
 const crypto = require("crypto")
 
@@ -16,6 +17,10 @@ let currentJson = null
 let currentSrc: string = null
 let currentPwd: string = null
 
+/**
+ * 加密数据
+ * @param rawData
+ */
 const encrypt = function (rawData: Buffer): string {
     if (!currentPwd) {
         console.error("currentPwd无效", currentPwd)
@@ -27,6 +32,10 @@ const encrypt = function (rawData: Buffer): string {
     return res;
 }
 
+/**
+ * 解密数据
+ * @param rawStringData 被加密的原始数据
+ */
 const decrypt = function (rawStringData: string): Buffer {
     if (!currentPwd) {
         console.error("currentPwd无效", currentPwd)
@@ -34,10 +43,15 @@ const decrypt = function (rawStringData: string): Buffer {
     }
     let deciper = crypto.createDecipher(EncryptConfig.algorithm, currentPwd);
     let res = deciper.update(rawStringData, EncryptConfig.outputStringEncoding, "buffer");
-    res += deciper.final("buffer");
+    res = Buffer.concat([res, deciper.final("buffer")])
     return res;
 }
 
+/**
+ * 在内存中创建一个空的存储库
+ * @param storageName
+ * @param comment
+ */
 const getEmptyJson = (storageName: string, comment: string = null) => {
     const dateNum: number = new Date().getTime()
     const hash = sharedUtils.getHash(32)
@@ -61,6 +75,11 @@ const getEmptyJson = (storageName: string, comment: string = null) => {
     return res
 }
 
+/**
+ * 初始化jsonStorage
+ * @param src 若不存在，就建一个新的
+ * @param pwd 密码
+ */
 const init = (src: string, pwd: string) => {
     currentSrc = src
     currentPwd = pwd
@@ -88,10 +107,19 @@ const init = (src: string, pwd: string) => {
     })
 }
 
+/**
+ * 将内存和本地数据同步
+ */
 const sync = () => {
     fs.writeFileSync(currentSrc, JSON.stringify(currentJson))
 }
 
+/**
+ * 在本地创建一个新的库
+ * @param src
+ * @param storageName
+ * @param comment
+ */
 const _createNewStore = (src: string, storageName: string, comment: string = null) => {
     currentJson = getEmptyJson(storageName, comment)
     currentSrc = src
@@ -101,6 +129,10 @@ const _createNewStore = (src: string, storageName: string, comment: string = nul
     })
 }
 
+/**
+ * 写入新数据
+ * @param buf
+ */
 const createNewData = (buf: Buffer) => {
     return new Promise<string>((resolve) => {
         const hash = <string>sharedUtils.getHash(32)
@@ -110,6 +142,10 @@ const createNewData = (buf: Buffer) => {
     })
 }
 
+/**
+ * 获取数据
+ * @param hash
+ */
 const getData = (hash: string): Buffer => {
     const data: string = currentJson.data[hash]
     if (!data) {
@@ -119,6 +155,11 @@ const getData = (hash: string): Buffer => {
     }
 }
 
+/**
+ *
+ * @param hash 根据已有键去set数据
+ * @param buf
+ */
 const setData = (hash: string, buf: Buffer) => {
     // if (buf.length === 0) { // 空字符串会被json解析的时候忽略
     //     return new Promise<void>((resolve) => {

@@ -8,7 +8,7 @@
 const PATH = require('path')
 const MIME = require('mime-types')
 
-const foo = {
+export {
     env: process.env.NODE_ENV,
     platform: process.platform,
     winFSstatusAttributes: {
@@ -134,5 +134,3 @@ const foo = {
         return data
     },
 }
-
-export default foo

@@ -30,7 +30,25 @@ module.exports = defineConfig({
         electronBuilder: {
             disableMainProcessTypescript: true,
             mainProcessTypeChecking: false,
-            nodeIntegration: true
+            nodeIntegration: true,
+            // Use this to change the entry point of your app's render process. default src/[main|index].[js|ts]
+            builderOptions: {
+                productName: "gcrypt-隐域",
+                appId: "",
+                compression: "maximum",
+                // directories: {
+                //     output: "build",
+                // },
+                // files: ["dist_electron/**/*"],
+                win: {
+                    icon: "public/icons/icon.ico",
+                    target: "nsis",
+                },
+                nsis: {
+                    oneClick: false,
+                    allowToChangeInstallationDirectory: true,
+                }
+            },
         },
         vuetify: {
             // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vuetify-loader
@@ -40,7 +58,6 @@ module.exports = defineConfig({
         // renderer使用node
         config.externals = {
             'electron': 'require("electron")',
-            'fs-extra': 'require("fs-extra")',
             'https': 'require("https")',
             'http': 'require("http")',
             'path': 'require("path")',
@@ -50,7 +67,7 @@ module.exports = defineConfig({
             extensions: ['.js', '.vue', '.json', '.ts'],
             alias: {
                 // 在 webpack 中设置代码中 @ 符号表示 src 这一层目录
-                // '@': require("path").join(__dirname, './src/')
+                '@': require("path").join(__dirname, './src/')
 
             }
         }

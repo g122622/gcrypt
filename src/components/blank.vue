@@ -3,22 +3,14 @@
     </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue"
+<script setup lang="ts">
+import { ref } from "vue"
 
-export default defineComponent({
-    name: '',
-    props: {
+interface Props {
+    
+}
+const props = defineProps<Props>()
 
-    },
-    data() {
-        return {
-        }
-    },
-    // mounted() {
-
-    // }
-})
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

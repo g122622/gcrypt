@@ -153,7 +153,10 @@ export default {
         }
     },
     mounted() {
-        setInterval(() => {
+        let foo = setInterval(() => {
+            if (this.percentsCounter >= 100) {
+                clearInterval(foo)
+            }
             this.percentsCounter = this.notification.timeoutData.percentsCounter
         }, 100)
     },
@@ -253,6 +256,11 @@ export default {
 .notification__item__color-indicator[color="red"] {
     background-color: #e53935;
     box-shadow: 0 0 8px #e53935;
+}
+
+.notification__item__color-indicator[color="yellow"] {
+    background-color: #e5bf35;
+    box-shadow: 0 0 8px #e5bf35;
 }
 
 .notification__item__loader {
