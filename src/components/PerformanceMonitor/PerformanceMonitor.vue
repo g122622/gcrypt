@@ -2,7 +2,7 @@
     <div class="text-center">
         <v-menu v-model="isMenuOpen" :close-on-content-click="false" location="end">
             <template v-slot:activator="{ props }">
-                <v-btn type="text" v-bind="props" size="small" style="margin-top:10px">
+                <v-btn type="icon" v-bind="props" size="small" style="margin-top:10px">
                     <v-icon>
                         mdi-chart-bell-curve
                     </v-icon>
@@ -102,7 +102,7 @@ const downLoadImage = (canvas: HTMLCanvasElement = document.querySelector("#perf
     // download 属性定义了下载链接的地址
     a.download = filename;
     a.click();
-    // TODO 销毁元素a
+    a.remove();
 }
 
 /**
@@ -115,6 +115,4 @@ function clearMem() {
 
 </script>
 
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>

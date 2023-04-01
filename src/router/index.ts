@@ -21,7 +21,7 @@ const routes: Array<RouteRecordRaw> = [
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "about" */ '../views/Settings/SettingsView.vue')
+        component: () => import(/* webpackChunkName: "settings" */ '../views/Settings/SettingsView.vue')
     },
     {
         path: '/files',
@@ -29,7 +29,7 @@ const routes: Array<RouteRecordRaw> = [
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "about" */ '../components/FileMgr/FileMgr.vue')
+        component: () => import(/* webpackChunkName: "files" */ '../components/FileMgr/FileMgr.vue')
     },
     {
         path: '/store',
@@ -37,7 +37,7 @@ const routes: Array<RouteRecordRaw> = [
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "about" */ '../views/StoreMgr/StoreMgr.vue')
+        component: () => import(/* webpackChunkName: "store" */ '../views/StoreMgr/StoreMgr.vue')
     }
 ]
 

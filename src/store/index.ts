@@ -1,6 +1,7 @@
 import { createStore } from 'vuex'
 import ElectronStore from 'electron-store'
 import defaultSettings from "@/assets/json/defaultSettings";
+import settingItem from '@/types/settingItem';
 
 // 初始化electron-store
 const settingStore = new ElectronStore({
@@ -15,58 +16,33 @@ export default createStore({
             settingStore.store = { settings: defaultSettings, timestamp: Date.now() }
         }
         return {
-            webwiewSrc: 'null',
-            currentContentName: 'ControllerMain',
-            settings: settingStore.get("settings"),
+            settings: <Array<settingItem>>settingStore.get("settings"),
             COMPILE_DATE: COMPILE_DATE,
             COMPILE_NUMBER: COMPILE_NUMBER,
-            notifications: []
+            notifications: [],
+            mainContentScrollable: true
         }
     },
     mutations: {
-        webwiewSrc(state: any, payload: any) {
-            state.webwiewSrc = payload
-        },
-        currentContentName(state, payload) {
-            state.currentContentName = payload
-        },
-        // 只有窗口改json场景下才需带payload
-        settings(state, payload) {
-            if (payload) {
-                state.settings = payload
-            }
+        settings(state: any) {
             settingStore.set("settings", state.settings)
             settingStore.set("timestamp", Date.now())
         },
-        COMPILE_DATE(state, payload) {
-            state.COMPILE_DATE = payload
+        resetSettings(state: any) {
+            state.settings = defaultSettings
+            settingStore.set("settings", state.settings)
+            settingStore.set("timestamp", Date.now())
         }
     },
     getters: {
-        currentContentName(state) {
-            return state.currentContentName
-        },
-        webwiewSrc(state) {
-            return state.webwiewSrc
-        },
-        settings(state) {
+        settings(state: any) {
             return state.settings
         },
-        'COMPILE_DATE'(state) {
+        'COMPILE_DATE'(state: any) {
             return state.COMPILE_DATE
         },
-        'COMPILE_NUMBER'(state) {
+        'COMPILE_NUMBER'(state: any) {
             return state.COMPILE_NUMBER
         }
     }
-    //   state: {
-    //   },
-    //   getters: {
-    //   },
-    //   mutations: {
-    //   },
-    //   actions: {
-    //   },
-    //   modules: {
-    //   }
 })

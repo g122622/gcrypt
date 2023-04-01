@@ -5,8 +5,8 @@
         <MsgContainer />
         <NotificationManager />
     </div>
-
     <ContextMenuGlobalRenderArea />
+
     <div :style="{ opacity: imgOpacity }">
         <v-app>
             <!-- 顶部系统状态栏 -->
@@ -22,12 +22,31 @@
                     @click.stop="isSideDrawerRail = !isSideDrawerRail">
                 </v-list-item>
                 <v-divider></v-divider>
+                <!-- 静态标签页 -->
                 <v-list density="compact" nav :items="sidebarMainItems" @click:select="(value) => {
-                    handleNavClick(value.id);
+                    handleNavClick(value.id as string);
                 }">
                 </v-list>
-
                 <v-divider></v-divider>
+                <!-- 动态标签页 -->
+                <v-list density="compact" nav>
+                    <v-list-item v-for="item in dynamicTabs" :title="item.name" @click="item.handleClick()"
+                        :key="item.name">
+                        <template #prepend>
+                            <v-icon>
+                                {{ item.icon }}
+                            </v-icon>
+                        </template>
+                        <template #append>
+                            <IconBtn size="small" icon="mdi-close" tooltip="关闭标签页" onClick="item.handleClose()" />
+                        </template>
+                        <v-tooltip activator="parent" location="right">
+                            {{ item.name }}
+                        </v-tooltip>
+                    </v-list-item>
+                </v-list>
+
+                <v-spacer />
                 <!-- 性能监视器 -->
                 <PerformanceMonitor />
 
@@ -66,9 +85,9 @@ import store from "./store"
     2.Action 强调动作
         Action::showMsg
     3.LifeCycle 生命周期事件
-        LifeCycle::FinishedLoadingApp
-        LifeCycle::OutOfMem
-        LifeCycle::ClearMem
+        LifeCycle::finishedLoadingApp
+        LifeCycle::outOfMem
+        LifeCycle::clearMem
 */
 
 const isSideDrawerOpen = ref<boolean>(true)
@@ -91,13 +110,6 @@ const sidebarMainItems =
             value: "store"
         },
         {
-            title: '文件',
-            props: {
-                prependIcon: 'mdi-folder',
-            },
-            value: "files"
-        },
-        {
             title: '设置',
             props: {
                 prependIcon: 'mdi-cog',
@@ -112,6 +124,7 @@ const sidebarMainItems =
             value: "about"
         },
     ]
+const dynamicTabs = ref<Array<any>>([])
 
 const handleNavClick = (value: string) => {
     router.push(`/${value}`)
@@ -126,18 +139,37 @@ const imgOpacity = computed(() => {
 })
 
 onMounted(async () => {
-    // TODO 1.下面这是啥 2.是不是漏了store.state
+    // 是否显示主内容区滚动条
     store.state.mainContentScrollable = true
-    window.addEventListener('error', function (event) {
-        // onerror_statements
-        const str = `主窗口渲染进程发生代码执行错误，错误栈消息如下：${event.error.stack}`
-        emitter.emit('showMsg', { level: "error", msg: str });
+    // 初始化事件
+    emitter.on("UI::addTabItem", ({ name, legalPath, icon, onClick, onClose }) => {
+        dynamicTabs.value.push({
+            name,
+            icon,
+            handleClick: () => {
+                debugger
+                router.push(`/${legalPath}`)
+                onClick()
+            },
+
+            handleClose: async () => {
+                // 执行onClose钩子
+                if (onClose) {
+                    // NOTE: onClose可以返回promise，也可以是普通的void函数
+                    // 使用时可以在onClose函数里面reject掉promise，这样会阻止标签页继续关闭
+                    await Promise.resolve(onClose)
+                }
+                // 移除标签页
+                dynamicTabs.value = dynamicTabs.value.filter(item => item.name !== name)
+
+                emitter.emit("Action::removeTab", { name })
+            }
+        })
     })
-    document.querySelectorAll("#app")[0].setAttribute("data-theme-type", "dark")
 
     await nextTick()
     finishLoading.value = true
-    emitter.emit("LifeCycle::FinishedLoadingApp")
+    emitter.emit("LifeCycle::finishedLoadingApp")
 })
 
 </script>

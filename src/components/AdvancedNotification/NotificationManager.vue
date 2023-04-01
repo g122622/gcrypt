@@ -80,7 +80,6 @@ export default {
     },
     computed: {
         notifications() {
-            // todo
             return this.$store.state.notifications
         },
         nonHiddenNotifications() {
@@ -96,11 +95,11 @@ export default {
                 hashID: this.$utils.getHash(),
                 id: this.notifications.length + 1,
                 action: 'add',
-                type: '',
-                title: '',
-                message: '',
+                type: 'html',
+                title: '消息',
+                message: '未指定内容',
                 icon: 'mdi-information',
-                colorStatus: '',
+                colorStatus: 'blue',
                 timeout: 5000,
                 closeButton: true,
                 isHidden: false,

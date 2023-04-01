@@ -20,11 +20,11 @@
                 </template>
 
                 <template v-slot:append>
-                    <v-btn color="grey-lighten-1" variant="text" @click.stop="_removeStore(item.storeSrc)">
+                    <v-btn icon @click.stop="_removeStore(item.storeSrc)">
                         <v-icon>mdi-delete</v-icon>
                         <v-tooltip activator="parent" location="left">移除</v-tooltip>
                     </v-btn>
-                    <v-btn color="grey-lighten-1" variant="text">
+                    <v-btn icon>
                         <v-icon>mdi-information</v-icon>
                         <v-tooltip activator="parent" location="left">{{ JSON.stringify(item) }}</v-tooltip>
                     </v-btn>
@@ -39,7 +39,13 @@
 import { defineComponent } from "vue"
 import ActionToolBar from "./ActionToolBar.vue";
 import DialogMgr from "./DialogMgr.vue";
-import adapter from "../../api/core/adapters/gcryptV1/adapter";
+import Adapter from "../../api/core/adapters/gcryptV1/adapter"
+import FileMgr from "@/components/FileMgr/FileMgr.vue"
+
+import KvpClass from "@/api/core/adapters/gcryptV1/KVPEngineJson"
+import EeClass from "@/api/core/adapters/gcryptV1/encryptionEngineAES192"
+import sharedUtils from "@/utils/sharedUtils";
+import sleep from "@/utils/sleep";
 
 export default defineComponent({
     name: 'StoreMgr',
@@ -81,8 +87,19 @@ export default defineComponent({
                     return
                 }
                 let filePath = foo.files[0].path
+                // 格式化文件路径
+                filePath.replaceAll("\\", '/')
+                if (filePath[filePath.length - 1] === "/") {
+                    filePath.length = filePath.length - 1
+                }
+
                 vueThis._inspectStoreSrc(filePath)
-                vueThis.$emitter.emit("showMsg", { level: "success", msg: "导入加密库成功<br>请注意，元数据只有在输入密码成功进入后才会有效" })
+                vueThis.$emitter.emit("showMsg",
+                    {
+                        level: "success",
+                        msg: "导入加密库成功<br>请注意，元数据只有在输入密码成功进入后才会有效"
+                    }
+                )
             }
         },
 
@@ -115,17 +132,20 @@ export default defineComponent({
                 this.$emitter.emit("showMsg", { level: "error", msg: "密码无效，请重新输入" })
                 return
             }
-            this.$router.push("./files")
-            this.$nextTick().then(() => {
-                let initedAdapterPromise = adapter.initAdapter(storeSrc, pwd)
-                initedAdapterPromise.then((meta) => {
-                    this._inspectStoreSrc(storeSrc, meta)
-                    setTimeout(() => {
-                        /* 初始化fileMgr */
-                        const foo = { adapter, initedAdapterPromise }
-                        this.$emitter.emit("FileMgr::setAdapter", foo)
-                    }, 1000)
-                })
+
+            const adapter = new Adapter()
+            const adapterGuid = sharedUtils.getHash(16)
+            await adapter.initAdapter(storeSrc, pwd, new KvpClass(), new EeClass(), adapterGuid)
+            this._inspectStoreSrc(storeSrc, adapter.getMeta())
+            // eslint-disable-next-line dot-notation
+            window['adapters'].push(adapter)
+
+            this.$emitter.emit("Action::addTab", {
+                name: storeSrc,
+                component: FileMgr,
+                icon: "mdi-folder",
+                onClick: () => null,
+                props: { adapterGuid }
             })
         },
 
@@ -192,6 +212,4 @@ export default defineComponent({
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>

@@ -1,16 +1,19 @@
 <template>
     <!-- 顶部工具栏 -->
     <Teleport to="#ActionToolBar">
-        <ActionToolBarBase ToolbarTitle="设置"></ActionToolBarBase>
+        <ActionToolBarBase ToolbarTitle="设置">
+            <IconBtn icon="mdi-cog-refresh" @click="resetSettings" tooltip="重置所有设置" />
+        </ActionToolBarBase>
     </Teleport>
 
     <v-col id="container">
         <div v-for="cat in cats" :key="cat">
             <v-card class="rounded-lg">
-                <v-list lines="one">
+                <v-list lines="two">
                     <v-list-subheader v-if="cat">{{ cat }}</v-list-subheader>
                     <v-list-subheader v-else>未分组</v-list-subheader>
-                    <v-list-item v-for="item in this.extractByCat(cat)" :key="item.name" :title="item.des">
+                    <v-list-item v-for="item in this.extractByCat(cat)" :key="item.name" :title="item.title"
+                        :subtitle="item.des || '暂无描述'">
                         <template v-slot:append>
                             <!-- 开关 -->
                             <div v-if="item.type === 'switcher'" @click="updateSettings">
@@ -21,10 +24,10 @@
                                 <v-btn type="primary" size="small" color="primary">触发</v-btn>
                             </div>
                             <!-- 图片 -->
-                            <div v-else-if="item.type === 'img'" @click="updateSettings" style="width:155px;">
+                            <div v-else-if="item.type === 'img'" style="width:155px;">
                                 <v-file-input show-size accept="image/png, image/jpeg, image/bmp" label="选择图片"
-                                    @update:modelValue="(file) => {
-                                        handleFile(file[0], 'background_img')
+                                    @update:modelValue="(files) => {
+                                        handleFile(files[0], 'background_img')
                                     }" density="compact"></v-file-input>
                             </div>
                             <!-- 滑动条 -->
@@ -64,6 +67,9 @@ export default {
             this.$nextTick(function () {
                 emitter.emit('updateSettings')
             })
+        },
+        resetSettings() {
+            emitter.emit("resetSettings")
         },
         extractByCat(cat) {
             const settings = this.$store.getters.settings
@@ -122,7 +128,7 @@ export default {
     flex-wrap: wrap;
 
     >div {
-        min-width: 400px;
+        min-width: 300px;
         margin: 5px;
         flex-grow: 1;
     }

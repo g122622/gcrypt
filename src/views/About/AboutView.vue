@@ -28,8 +28,11 @@
                 <v-list-subheader>运行环境/版本</v-list-subheader>
                 <v-list-item v-ripple v-for="item in runtimeTableData" :key="item.key" :subtitle="item.key"
                     :title="item.value">
-                    <template v-slot:prepend>
+                    <template #prepend>
                         <img :src="`./assets/about/${item.img}`" class="image" />
+                    </template>
+                    <template #append>
+                        <IconBtn icon="mdi-open-in-new" tooltip="item.link" :onClick="() => { }" />
                     </template>
                 </v-list-item>
             </v-list>

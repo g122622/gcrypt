@@ -70,7 +70,7 @@ import { defineComponent } from "vue"
 export default defineComponent({
     name: 'DialogMgr',
     props: {
-        adapter: Object
+        adapterGuid: String
     },
     data() {
         return {
@@ -79,6 +79,12 @@ export default defineComponent({
             fileName: "new file",
             folderName: "new folder"
         }
+    },
+    computed: {
+        adapter() {
+            // eslint-disable-next-line dot-notation
+            return window['adapters'].find(item => item.adapterGuid === this.adapterGuid)
+        },
     },
     methods: {
         showAddFolderDialog() {

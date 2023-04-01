@@ -12,6 +12,12 @@ Store.initRenderer();
 let hasShade = false;
 let shadeWindow = null;
 let scrSize = null
+let windowConfigStore = new Store({
+    name: "windowConfig", // 文件名称,默认 config
+    fileExtension: "json", // 文件后缀,默认json
+    //  cwd: Electron.app.getPath('userData'), // 文件位置,尽量不要动，默认情况下，它将通过遵循系统约定来选择最佳位置。C:\Users\xxx\AppData\Roaming\test\config.json
+    clearInvalidConfig: true, // 发生 SyntaxError  则清空配置
+})
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -21,8 +27,8 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow() {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        width: 500,
-        height: 800,
+        width: windowConfigStore.get("width", 900),
+        height: windowConfigStore.get("height", 500),
         backgroundColor: "#000000",
         title: "隐域-Gcrypt",
         titleBarStyle: 'hidden',
@@ -127,6 +133,12 @@ async function createWindow() {
         // Load the index.html when not in development
         mainWindow.loadURL('app://./index.html')
     }
+
+    // 退出后保存窗口大小
+    app.on("quit", () => {
+        windowConfigStore.set("width", mainWindow.getSize()[0])
+        windowConfigStore.set("height", mainWindow.getSize()[1])
+    })
 }
 
 // Quit when all windows are closed.
@@ -175,5 +187,3 @@ if (isDevelopment) {
         })
     }
 }
-
-console.log("     ")

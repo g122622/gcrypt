@@ -1,5 +1,5 @@
 <template>
-    <div class="file-item" v-ripple>
+    <div class="file-item" v-ripple ref="fileItemElement">
         <!-- 前置内容 -->
         <div style="display: flex;justify-content: flex-start;align-items: center;">
             <img v-if="singleFileItem.type === `folder`" :src="`./assets/fileTypes/folder.png`" class="file-types-image" />
@@ -12,6 +12,7 @@
         <slot></slot>
         <!-- 尾置内容 -->
         <div>
+            <!-- <IconBtn tooltip="更多" icon="mdi-dots-vertical" :onClick="handleClickMore" /> -->
             <div class="file-meta">
                 created: {{ new Date(singleFileItem.meta.createdTime).toLocaleString() }}
                 <br />
@@ -23,9 +24,9 @@
 </template>
 
 <script lang="ts">
-import getFileType from "../../utils/getFileType";
+import getFileType from "@/utils/getFileType";
 import { defineComponent } from "vue"
-import emitter from "../../eventBus"
+import emitter from "@/eventBus"
 
 export default defineComponent({
     name: 'FileItem',
@@ -45,6 +46,12 @@ export default defineComponent({
     methods: {
         getFileType(filename) {
             return getFileType(filename)
+        },
+        handleClickMore(event) {
+            // // TODO 停止事件冒泡
+            // event.stop
+            // // TODO 按照x和y进行右键点击
+            // this.$refs.fileItemElement.disp
         }
     }
 })
@@ -91,7 +98,7 @@ export default defineComponent({
     margin-right: 10px;
 }
 
-@container (width < 300px) {
+@container (width < 400px) {
     .file-meta {
         display: none;
     }
