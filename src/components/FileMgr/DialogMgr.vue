@@ -70,7 +70,8 @@ import { defineComponent } from "vue"
 export default defineComponent({
     name: 'DialogMgr',
     props: {
-        adapterGuid: String
+        adapter: Object,
+        refresh: Function
     },
     data() {
         return {
@@ -79,12 +80,6 @@ export default defineComponent({
             fileName: "new file",
             folderName: "new folder"
         }
-    },
-    computed: {
-        adapter() {
-            // eslint-disable-next-line dot-notation
-            return window['adapters'].find(item => item.adapterGuid === this.adapterGuid)
-        },
     },
     methods: {
         showAddFolderDialog() {
@@ -95,11 +90,11 @@ export default defineComponent({
         },
         handleSaveFile() {
             this.adapter.writeFile(this.fileName, Buffer.from(''))
-            this.$parent.refresh()
+            this.refresh()
         },
         handleSaveFolder() {
             this.adapter.mkdir(this.folderName)
-            this.$parent.refresh()
+            this.refresh()
         }
     }
     // mounted() {

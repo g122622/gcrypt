@@ -135,7 +135,7 @@ async function createWindow() {
     }
 
     // 退出后保存窗口大小
-    app.on("quit", () => {
+    app.on("will-quit", () => {
         windowConfigStore.set("width", mainWindow.getSize()[0])
         windowConfigStore.set("height", mainWindow.getSize()[1])
     })

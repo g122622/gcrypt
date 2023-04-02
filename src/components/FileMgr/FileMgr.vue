@@ -1,6 +1,6 @@
 <template>
     <!-- 对话框管理器 -->
-    <DialogMgr ref="DialogMgr" :adapterGuid="this.adapterGuid"></DialogMgr>
+    <DialogMgr ref="DialogMgrRef" :adapter="props.adapter" :refresh="refresh"></DialogMgr>
     <!-- 文件属性 -->
     <DialogGenerator title="属性" v-model:isDialogOpen="models.isPropOpening">
         <template #mainContent>
@@ -38,16 +38,18 @@
                             <v-tooltip activator="parent" location="bottom">布局选项</v-tooltip>
                         </v-btn>
                     </template>
-                    <v-list>
-                        <v-list-item v-for="(item, index) in displayModeList" :key="index" :value="index"
-                            @click="item.handler.bind(this)()">
-                            <template v-slot:prepend>
-                                <v-icon :icon="item.icon"></v-icon>
-                            </template>
-                            <v-list-item-title>{{ item.title }}</v-list-item-title>
-                            <v-tooltip activator="parent" location="bottom">{{ item.title }}</v-tooltip>
-                        </v-list-item>
-                    </v-list>
+                    <v-card>
+                        <div v-for="(list, index) in [displayModeList, sortByList, sequenceList]" :key="index">
+                            <span class="viewSelectorText">{{ ["显示模式", "排序依据", "排列顺序"][index] }}</span>
+                            <v-btn-toggle shaped mandatory divided>
+                                <v-btn v-for="item in list" :key="item.title" @click="item.handler">
+                                    <v-icon>{{ item.icon }}</v-icon>
+                                    <v-tooltip activator="parent" location="bottom">{{ item.title }}</v-tooltip>
+                                </v-btn>
+
+                            </v-btn-toggle>
+                        </div>
+                    </v-card>
                 </v-menu>
                 <!-- 新建按钮 -->
                 <v-menu>
@@ -128,13 +130,10 @@
     </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue"
-import FileItem from "./FileItem.vue"
-import ContextMenu from "../ContextMenu.vue";
+<script setup lang="ts">
+import { ref, computed, watch, reactive, onMounted, nextTick } from "vue";
 import Addr from "../../api/core/common/Addr"
 import sharedUtils from "../../utils/sharedUtils"
-import DialogMgr from "./DialogMgr.vue";
 import getFileName from "../../utils/getFileName";
 import fs from "fs-extra";
 import electron from "electron";
@@ -143,205 +142,244 @@ import path from "path";
 import lodash from "lodash";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import sleep from "@/utils/sleep";
+import fileTable from "@/api/core/types/fileTable";
+import emitter from "@/eventBus";
 
-export default defineComponent({
-    name: 'FileMgr',
-    components: {
-        FileItem,
-        DialogMgr,
-        ContextMenu
-    },
-    props: {
-        adapterGuid: String
-    },
-    data() {
-        return {
-            isLoading: true,
-            currentFileTable: null,
-            currentDir: new Addr(""),
-            operationHistory: [],
-            itemCache: null,
-            models: {
-                isPropOpening: false
-            },
-            viewOptions: {
-                itemDisplayMode: "list",
-                itemSize: "medium",
-                sortBy: "name",
-                folderFirst: true,
-                sequence: "ascending", // ascending | decending
-            },
-            addList: [
-                {
-                    title: 'folder',
-                    handler: function () {
-                        this.$refs.DialogMgr.showAddFolderDialog()
-                    },
-                    icon: "mdi-folder"
-                },
-                {
-                    title: 'file',
-                    handler: function () {
-                        this.$refs.DialogMgr.showAddFileDialog()
-                    },
-                    icon: "mdi-file"
-                }
-            ],
-            displayModeList: [
-                // TODO 选图标
-                {
-                    title: '列表',
-                    handler: function () {
-                        this.viewOptions.itemDisplayMode = "list"
-                    },
-                    icon: "mdi-list"
-                },
-                {
-                    title: '平铺',
-                    handler: function () {
-                        this.viewOptions.itemDisplayMode = "item"
-                    },
-                    icon: "mdi-item"
-                },
-            ]
-            // TODO menulist移到这里
-        }
-    },
-    watch: {
-        currentDir: {
-            async handler(newVal) {
-                // the same,bye bye
-                if (this.operationHistory.length !== 0) {
-                    if (this.operationHistory[this.operationHistory.length - 1].compareWith(newVal)) {
-                        return
-                    }
-                }
-                this.operationHistory.push(lodash.cloneDeep(newVal))
-                this.adapter.changeCurrentDirectory(newVal)
-                this.currentFileTable = this.adapter.getCurrentFileTable()
-            },
-            deep: true
-        }
+import ContextMenu from "../ContextMenu.vue";
+import FileItem from "./FileItem.vue"
+import DialogMgr from "./DialogMgr.vue";
+import ImageViewer from "../ImageViewer/ImageViewer.vue";
 
-    },
-    computed: {
-        adapter() {
-            // eslint-disable-next-line dot-notation
-            return window['adapters'].find(item => item.adapterGuid === this.adapterGuid)
-        },
-        currentFileTableForRender() {
-            if (!this.currentFileTable) {
-                return []
-            }
-            // 数组浅拷贝
-            let res = [...this.currentFileTable.items]
-            // 这里的所有排序均为升序
-            switch (this.viewOptions.sortBy) {
-                case "name":
-                    res.sort((a, b) => {
-                        return a.name > b.name ? 1 : -1
-                    })
-                    break
-                case "timeModify":
-                    res.sort((a, b) => {
-                        return a.meta.modifiedTime > b.meta.modifiedTime ? 1 : -1
-                    })
-            }
-            // 降序排序
-            if (this.viewOptions.sequence === "decending") {
-                res.reverse()
-            }
-            if (this.viewOptions.folderFirst) {
-                // NOTE: ES2019已经要求sort为稳定排序，没必要这样先展开再合并
-                res = [...res.filter(item => item.type === "folder"), ...res.filter(item => item.type === "file")]
-            }
-            return res
-        },
-    },
-    methods: {
-        handleItemClick(item) {
-            if (item.type === "folder") {
-                this.currentDir.down(item.name)
-            } else if (item.type === "file") {
-                this.openFile(item.name)
-            }
-        },
-        // TODO 测试复杂目录导入速度
-        handleFileImportClick() {
-            // eslint-disable-next-line @typescript-eslint/no-this-alias
-            let vueThis = this
-            let foo: HTMLInputElement = document.querySelector("#file-import")
-            foo.click()
-            foo.onchange = async () => {
-                if (foo.files.length === 0) {
-                    return
-                }
-                try {
-                    for (const file of foo.files) {
-                        await vueThis.adapter.writeFile(getFileName(file.path, true), fs.readFileSync(file.path))
-                    }
-                } catch (error) {
-                    vueThis.$emitter.emit("showMsg",
-                        {
-                            level: "error",
-                            msg: `导入文件失败 ${error.message}`
-                        })
-                    vueThis.refresh()
-                    return
-                }
-                vueThis.$emitter.emit("showMsg",
-                    {
-                        level: "success",
-                        msg: `导入${foo.files.length}个文件成功`
-                    })
-                vueThis.refresh()
-            }
-        },
-        refresh() {
-            this.$nextTick().then(() => {
-                // 不用cloneDeep就不行
-                this.currentFileTable.items = lodash.cloneDeep(this.adapter.getCurrentFileTable().items)
-                // TODO 去掉这个forceupdate，看效果
-                this.$forceUpdate()
-                this.$emitter.emit("showMsg", { level: 'success', msg: `刷新成功` })
-            })
-        },
-        up() {
-            this.currentDir.up()
-        },
-        back() {
-            if (this.operationHistory.length >= 2) {
-                this.currentDir = this.operationHistory[this.operationHistory.length - 2]
-            }
-        },
-        openFile(filename) {
-            const tmpdir = path.join(os.tmpdir(), sharedUtils.getHash(16))
-            fs.writeFile(tmpdir, this.adapter.readFile(filename)).then(function () {
-                electron.shell.openExternal(tmpdir)
-            })
-        },
-        deleteFile(filename) {
-            this.adapter.deleteFile(filename)
-            this.refresh()
-        },
-        initAll() {
-            this.isLoading = true
-            this.currentDir = new Addr("")
-            this.isLoading = false
-        },
-        handlePropertiesClick(item: dirSingleItem) {
-            // TODO lodash 扁平化对象方法
-            this.itemCache = { ...item, ...item.meta }
-            this.models.isPropOpening = true
-        },
-        copyToClipboard(arg: string) {
-            navigator.clipboard.writeText(arg)
-        }
-    },
-    mounted() {
-        this.initAll()
-    }
+interface Props {
+    adapter
+}
+const props = defineProps<Props>()
+const isLoading = ref<boolean>(true)
+const currentFileTable = ref<fileTable>(null)
+const currentDir = ref(new Addr(""))
+const operationHistory = ref([])
+const itemCache = ref(null)
+const models = reactive({
+    isPropOpening: false
 })
+const addList = [
+    {
+        title: '文件夹',
+        handler: function () {
+            DialogMgrRef.value.showAddFolderDialog()
+        },
+        icon: "mdi-folder"
+    },
+    {
+        title: '文件',
+        handler: function () {
+            DialogMgrRef.value.showAddFileDialog()
+        },
+        icon: "mdi-file"
+    }
+]
+
+// <生命周期&初始化>
+const initAll = () => {
+    isLoading.value = true
+    currentDir.value = new Addr("")
+    isLoading.value = false
+}
+
+onMounted(async () => {
+    initAll()
+    emitter.emit("Action::addTab", {
+        name: '图片查看器',
+        component: ImageViewer,
+        icon: "mdi-image-area",
+        onClick: () => null,
+        props: { images: [{ src: 'https://picsum.photos/id/16/346/216' }] }
+    })
+})
+
+// <主要功能-文件相关>
+watch(currentDir, (newVal, prevVal) => {
+    // the same,bye bye
+    if (operationHistory.value.length !== 0) {
+        if (operationHistory.value[operationHistory.value.length - 1].compareWith(newVal)) {
+            return
+        }
+    }
+    operationHistory.value.push(lodash.cloneDeep(newVal))
+    props.adapter.changeCurrentDirectory(newVal)
+    currentFileTable.value = props.adapter.getCurrentFileTable()
+},
+    { deep: true })
+
+const refresh = async () => {
+    await nextTick()
+    // 不用cloneDeep就不行
+    currentFileTable.value.items = lodash.cloneDeep(props.adapter.getCurrentFileTable().items)
+    emitter.emit("showMsg", { level: 'success', msg: `刷新成功` })
+}
+
+const up = () => {
+    currentDir.value.up()
+}
+
+const back = () => {
+    if (operationHistory.value.length >= 2) {
+        currentDir.value = operationHistory.value[operationHistory.value.length - 2]
+    }
+}
+
+const openFile = (filename) => {
+    const tmpdir = path.join(os.tmpdir(), sharedUtils.getHash(16))
+    fs.writeFile(tmpdir, props.adapter.readFile(filename)).then(function () {
+        electron.shell.openExternal(tmpdir)
+    })
+}
+
+const deleteFile = (filename) => {
+    props.adapter.deleteFile(filename)
+    refresh()
+}
+
+// <UI事件处理>
+const handlePropertiesClick = (item: dirSingleItem) => {
+    itemCache.value = { ...item, ...item.meta }
+    delete itemCache.value.meta
+    models.isPropOpening = true
+}
+
+const handleItemClick = (item) => {
+    if (item.type === "folder") {
+        currentDir.value.down(item.name)
+    } else if (item.type === "file") {
+        openFile(item.name)
+    }
+}
+
+// TODO 测试复杂目录导入速度
+const handleFileImportClick = () => {
+    let foo: HTMLInputElement = document.querySelector("#file-import")
+    foo.click()
+    foo.onchange = async () => {
+        if (foo.files.length === 0) {
+            return
+        }
+        try {
+            for (const file of foo.files) {
+                await props.adapter.writeFile(getFileName(file.path, true), fs.readFileSync(file.path))
+            }
+        } catch (error) {
+            emitter.emit("showMsg",
+                {
+                    level: "error",
+                    msg: `导入文件失败 ${error.message}`
+                })
+            refresh()
+            return
+        }
+        emitter.emit("showMsg",
+            {
+                level: "success",
+                msg: `导入${foo.files.length}个文件成功`
+            })
+        refresh()
+    }
+}
+
+// <外观选择相关>
+const viewOptions = reactive({
+    itemDisplayMode: "list",
+    itemSize: "medium",
+    sortBy: "name",
+    folderFirst: true,
+    sequence: "ascending", // ascending | descending
+})
+
+const displayModeList = [
+    {
+        title: '列表',
+        handler: function () {
+            viewOptions.itemDisplayMode = "list"
+        },
+        icon: "mdi-format-list-bulleted"
+    },
+    {
+        title: '平铺',
+        handler: function () {
+            viewOptions.itemDisplayMode = "item"
+        },
+        icon: "mdi-dots-grid"
+    },
+]
+
+const sequenceList = [
+    {
+        title: '升序',
+        handler: function () {
+            viewOptions.sequence = "ascending"
+        },
+        icon: "mdi-sort-alphabetical-ascending"
+    },
+    {
+        title: '降序',
+        handler: function () {
+            viewOptions.sequence = "descending"
+        },
+        icon: "mdi-sort-alphabetical-descending"
+    },
+]
+
+const sortByList = [
+    {
+        title: '名称',
+        handler: function () {
+            viewOptions.sortBy = "name"
+        },
+        icon: "mdi-tag-multiple"
+    },
+    {
+        title: '修改时间',
+        handler: function () {
+            viewOptions.sortBy = "timeModify"
+        },
+        icon: "mdi-clock-time-nine"
+    },
+]
+
+const currentFileTableForRender = computed(() => {
+    if (!currentFileTable.value) {
+        return []
+    }
+    // 数组浅拷贝
+    let res = [...currentFileTable.value.items]
+    // 这里的所有排序均为升序
+    switch (viewOptions.sortBy) {
+        case "name":
+            res.sort((a, b) => {
+                return a.name > b.name ? 1 : -1
+            })
+            break
+        case "timeModify":
+            res.sort((a, b) => {
+                return a.meta.modifiedTime > b.meta.modifiedTime ? 1 : -1
+            })
+    }
+    // 降序排序
+    if (viewOptions.sequence === "descending") {
+        res.reverse()
+    }
+    if (viewOptions.folderFirst) {
+        // NOTE: ES2019已经要求sort为稳定排序，没必要这样先展开再合并
+        res = [...res.filter(item => item.type === "folder"), ...res.filter(item => item.type === "file")]
+    }
+    return res
+})
+
+// <杂项>
+const copyToClipboard = (arg: string) => {
+    navigator.clipboard.writeText(arg)
+}
+
+const DialogMgrRef = ref(null)
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -353,5 +391,10 @@ export default defineComponent({
 
 #file_mgr_container {
     container-type: inline-size;
+}
+
+.viewSelectorText {
+    font-size: small;
+    margin-left: 15px;
 }
 </style>

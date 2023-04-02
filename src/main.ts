@@ -9,6 +9,7 @@ import utils from "./utils/utils";
 import ElectronStore from 'electron-store'
 import lodash from "lodash"
 import { nextTick } from 'process'
+import VueViewer from 'v-viewer'
 
 // 全局组件
 import VueApp from './App.vue'
@@ -17,6 +18,7 @@ import ActionToolBarBase from "./components/ActionToolBarBase.vue";
 import IconBtn from "./components/IconBtn.vue";
 import DialogGenerator from "./components/DialogGenerator.vue";
 import sharedUtils from './utils/sharedUtils'
+import toLegalRouterPath from './utils/toLegalRouterPath'
 
 class App {
     private AppInstance
@@ -59,10 +61,11 @@ class App {
         })
 
         emitter.on("Action::addTab", ({ name, component, icon, onClick, props }) => {
-            const legalPath = name.replaceAll("/", '').replaceAll('\\', "") + sharedUtils.getHash(16)
+            const legalPath = toLegalRouterPath(name)
             router.addRoute({ path: `/${legalPath}`, name, component, props })
             emitter.emit("UI::addTabItem", { name, legalPath, icon, onClick })
-            router.push(`/${legalPath}`)
+            console.log(name)
+            router.replace(`/${legalPath}`)
         })
 
         emitter.on("Action::removeTab", ({ name }) => {
@@ -71,7 +74,7 @@ class App {
             emitter.emit('showMsg',
                 {
                     level: "success",
-                    msg: "移除标签页成功"
+                    msg: "移除标签页成功 "
                 })
         })
 
@@ -141,6 +144,7 @@ class App {
         this.AppInstance.use(router)
         this.AppInstance.use(store)
         this.AppInstance.use(vuetify)
+        this.AppInstance.use(VueViewer)
         this.AppInstance.mount('#app')
     }
 
@@ -188,8 +192,6 @@ class App {
 
     public initAll() {
         const startTime = Date.now()
-        // eslint-disable-next-line dot-notation
-        window['adapters'] = []
         loadFonts()
         this.initEvents()
         this.initVue()
@@ -198,7 +200,7 @@ class App {
         if (utils.env === "development") {
             // this.toggleDevTools()
         }
-        this.toggleDevTools()
+        // this.toggleDevTools()
         emitter.on("LifeCycle::finishedLoadingApp", () => {
             const endTime = Date.now()
             this.showFinishInitMsg(endTime, startTime)

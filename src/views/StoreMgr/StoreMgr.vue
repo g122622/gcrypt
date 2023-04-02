@@ -86,11 +86,11 @@ export default defineComponent({
                 if (foo.files.length === 0) {
                     return
                 }
-                let filePath = foo.files[0].path
+                let filePath: string = foo.files[0].path
                 // 格式化文件路径
-                filePath.replaceAll("\\", '/')
+                filePath = filePath.replaceAll("\\", '/')
                 if (filePath[filePath.length - 1] === "/") {
-                    filePath.length = filePath.length - 1
+                    filePath = filePath.slice(0, filePath.length - 1)
                 }
 
                 vueThis._inspectStoreSrc(filePath)
@@ -111,8 +111,13 @@ export default defineComponent({
          * @param pwd
          */
         async handleDialogAddStore(storeSrc, storeName, pwd) {
+            // 格式化文件路径
+            let formattedDirPath = storeSrc.replaceAll("\\", '/')
+            if (formattedDirPath[formattedDirPath.length - 1] === "/") {
+                formattedDirPath = formattedDirPath.slice(0, formattedDirPath.length - 1)
+            }
             // 用filemgr打开
-            let realSrc = `${storeSrc.replaceAll("\\", "/")}/${storeName}.json`
+            let realSrc = `${formattedDirPath}/${storeName}.json`
             this._openStore(realSrc, pwd)
         },
 
@@ -137,15 +142,13 @@ export default defineComponent({
             const adapterGuid = sharedUtils.getHash(16)
             await adapter.initAdapter(storeSrc, pwd, new KvpClass(), new EeClass(), adapterGuid)
             this._inspectStoreSrc(storeSrc, adapter.getMeta())
-            // eslint-disable-next-line dot-notation
-            window['adapters'].push(adapter)
 
             this.$emitter.emit("Action::addTab", {
                 name: storeSrc,
                 component: FileMgr,
                 icon: "mdi-folder",
                 onClick: () => null,
-                props: { adapterGuid }
+                props: { adapter }
             })
         },
 

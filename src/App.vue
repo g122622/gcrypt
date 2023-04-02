@@ -38,7 +38,7 @@
                             </v-icon>
                         </template>
                         <template #append>
-                            <IconBtn size="small" icon="mdi-close" tooltip="关闭标签页" onClick="item.handleClose()" />
+                            <IconBtn size="small" icon="mdi-close" tooltip="关闭标签页" @click="item.handleClose()" />
                         </template>
                         <v-tooltip activator="parent" location="right">
                             {{ item.name }}
@@ -75,8 +75,8 @@ import NotificationManager from "./components/AdvancedNotification/NotificationM
 import PerformanceMonitor from "./components/PerformanceMonitor/PerformanceMonitor.vue";
 import ContextMenuGlobalRenderArea from "./components/ContextMenuGlobalRenderArea.vue"
 import { ref, computed, onMounted, nextTick } from "vue"
-import router from "./router"
 import store from "./store"
+import { useRouter } from 'vue-router';
 
 /*
 一.事件命名规范:
@@ -90,6 +90,7 @@ import store from "./store"
         LifeCycle::clearMem
 */
 
+const router = useRouter()
 const isSideDrawerOpen = ref<boolean>(true)
 const isSideDrawerRail = ref<boolean>(true)
 const finishLoading = ref<boolean>(false)
@@ -147,7 +148,6 @@ onMounted(async () => {
             name,
             icon,
             handleClick: () => {
-                debugger
                 router.push(`/${legalPath}`)
                 onClick()
             },
