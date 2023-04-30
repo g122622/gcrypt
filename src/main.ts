@@ -9,7 +9,12 @@ import utils from "./utils/utils";
 import ElectronStore from 'electron-store'
 import lodash from "lodash"
 import { nextTick } from 'process'
+import sharedUtils from './utils/sharedUtils'
+import toLegalRouterPath from './utils/toLegalRouterPath'
 import VueViewer from 'v-viewer'
+import 'viewerjs/dist/viewer.css'
+
+import TagsMgr from "./api/TagsMgr";
 
 // 全局组件
 import VueApp from './App.vue'
@@ -17,10 +22,13 @@ import BottomTip from "./components/BottomTip.vue";
 import ActionToolBarBase from "./components/ActionToolBarBase.vue";
 import IconBtn from "./components/IconBtn.vue";
 import DialogGenerator from "./components/DialogGenerator.vue";
-import sharedUtils from './utils/sharedUtils'
-import toLegalRouterPath from './utils/toLegalRouterPath'
 
-class App {
+/**
+ * 常见BUG合集
+ * 1.读取和修改ref没有加.value
+ * 2.函数返回值或参数有时需要深拷贝
+ */
+class Application {
     private AppInstance
 
     private initEvents() {
@@ -60,38 +68,28 @@ class App {
             })
         })
 
-        emitter.on("Action::addTab", ({ name, component, icon, onClick, props }) => {
-            const legalPath = toLegalRouterPath(name)
-            router.addRoute({ path: `/${legalPath}`, name, component, props })
-            emitter.emit("UI::addTabItem", { name, legalPath, icon, onClick })
-            console.log(name)
-            router.replace(`/${legalPath}`)
+        emitter.on("Action::addTab", (payload) => {
+            TagsMgr.addTab(<any>payload)
         })
 
-        emitter.on("Action::removeTab", ({ name }) => {
-            router.back()
-            router.removeRoute(name)
-            emitter.emit('showMsg',
-                {
-                    level: "success",
-                    msg: "移除标签页成功 "
-                })
+        emitter.on("Action::removeTab", (payload) => {
+            TagsMgr.removeTab(<any>payload)
         })
 
         emitter.on("showShade", () => {
-            Electron.ipcRenderer.send('new-message', { code: "showShade" })
+            Electron.ipcRenderer.send('mainService', { code: "showShade" })
         })
 
         emitter.on("closeShade", () => {
-            Electron.ipcRenderer.send('new-message', { code: "closeShade" })
+            Electron.ipcRenderer.send('mainService', { code: "closeShade" })
         })
 
         emitter.on("setOnTop", () => {
-            Electron.ipcRenderer.send('new-message', { code: "setOnTop" })
+            Electron.ipcRenderer.send('mainService', { code: "setOnTop" })
         })
 
         emitter.on("unsetOnTop", () => {
-            Electron.ipcRenderer.send('new-message', { code: "unsetOnTop" })
+            Electron.ipcRenderer.send('mainService', { code: "unsetOnTop" })
         })
     }
 
@@ -180,7 +178,7 @@ class App {
     }
 
     private toggleDevTools() {
-        Electron.ipcRenderer.send('new-message', { code: "toggleDT" })
+        Electron.ipcRenderer.send('mainService', { code: "toggleDT" })
     }
 
     private showFinishInitMsg(e, s) {
@@ -192,6 +190,7 @@ class App {
 
     public initAll() {
         const startTime = Date.now()
+        console.log("init app")
         loadFonts()
         this.initEvents()
         this.initVue()
@@ -213,5 +212,5 @@ class App {
 }
 
 (function () {
-    const GcryptApp = new App()
+    const GcryptApp = new Application()
 })()

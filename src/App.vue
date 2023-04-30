@@ -6,15 +6,12 @@
         <NotificationManager />
     </div>
     <ContextMenuGlobalRenderArea />
+    <OpenMethodSelector />
 
     <div :style="{ opacity: imgOpacity }">
         <v-app>
             <!-- 顶部系统状态栏 -->
-            <v-system-bar window style="-webkit-app-region: drag;" height="33">
-                <span class="ml-2">隐域-Gcrypt</span>
-                <v-spacer />
-            </v-system-bar>
-
+            <SystemBar />
             <!-- 左侧导航栏 -->
             <v-navigation-drawer v-model="isSideDrawerOpen" :rail="isSideDrawerRail" permanent
                 @click="isSideDrawerRail = false" width="200">
@@ -24,8 +21,8 @@
                 <v-divider></v-divider>
                 <!-- 静态标签页 -->
                 <v-list density="compact" nav :items="sidebarMainItems" @click:select="(value) => {
-                    handleNavClick(value.id as string);
-                }">
+                        handleNavClick(value.id as string);
+                    }">
                 </v-list>
                 <v-divider></v-divider>
                 <!-- 动态标签页 -->
@@ -69,14 +66,18 @@
 
 <script setup lang="ts">
 import emitter from './eventBus'
+import { ref, computed, onMounted, nextTick } from "vue"
+import store from "./store"
+import { useRouter } from 'vue-router';
+
+// 组件
 import MsgContainer from "./components/Msg/MsgContainer.vue"
 import BackgroundImg from "./components/BackgroundImg.vue"
 import NotificationManager from "./components/AdvancedNotification/NotificationManager.vue";
 import PerformanceMonitor from "./components/PerformanceMonitor/PerformanceMonitor.vue";
 import ContextMenuGlobalRenderArea from "./components/ContextMenuGlobalRenderArea.vue"
-import { ref, computed, onMounted, nextTick } from "vue"
-import store from "./store"
-import { useRouter } from 'vue-router';
+import SystemBar from "./components/SystemBar.vue"
+import OpenMethodSelector from './components/Dialogs/OpenMethodSelector.vue';
 
 /*
 一.事件命名规范:

@@ -1,8 +1,10 @@
 
 <template>
     <v-app-bar density="compact">
-        <v-app-bar-title>{{ this.ToolbarTitle }}</v-app-bar-title>
+        <v-app-bar-title>{{ props.ToolbarTitle }}</v-app-bar-title>
+        <slot name="prepend"></slot>
         <v-spacer></v-spacer>
+        <!-- 默认插槽，默认append到末尾 -->
         <slot></slot>
         <v-btn icon @click="this.$router.push('./home')">
             <v-icon>mdi-home</v-icon>
@@ -15,22 +17,12 @@
     </v-app-bar>
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue"
+<script setup lang="ts">
+const props = defineProps<{
+    ToolbarTitle: string
+}>()
 
-export default defineComponent({
-    name: 'ActionToolBarBase',
-    props: {
-        ToolbarTitle: String
-    },
-    data() {
-        return {
-        }
-    }
-})
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
-
-</style>
+<style scoped lang="less"></style>

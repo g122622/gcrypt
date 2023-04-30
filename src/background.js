@@ -32,11 +32,11 @@ async function createWindow() {
         backgroundColor: "#000000",
         title: "隐域-Gcrypt",
         titleBarStyle: 'hidden',
-        titleBarOverlay: {
-            color: '#42424200',
-            symbolColor: '#999999',
-            height: 32
-        },
+        // titleBarOverlay: {
+        //    color: '#42424200',
+        //    symbolColor: '#999999',
+        //    height: 32
+        // },
         webPreferences: {
             // Use pluginOptions.nodeIntegration, leave this alone
             // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -45,33 +45,31 @@ async function createWindow() {
             //   contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION
             nodeIntegration: true,
             contextIsolation: false,
-            devTools: true
+            devTools: true,
+            webviewTag: true
         }
     })
 
-    function sendMessage(code, data) {
-        mainWindow.webContents.send('new-message', { code, data });
-    }
-
-    ipcMain.on('new-message', function (event, arg) {
+    ipcMain.on('mainService', function (event, arg) {
         switch (arg.code) {
-            case 'shrink':
+            case 'minimize':
                 // 缩小
                 mainWindow.minimize()
                 break;
-            case 'magnify':
+            case 'maximize':
                 // 放大
                 mainWindow.maximize()
-                sendMessage('show-full-icon')
                 break;
             case 'close':
                 // 关闭
+                // 退出前保存窗口大小
+                windowConfigStore.set("width", mainWindow.getSize()[0])
+                windowConfigStore.set("height", mainWindow.getSize()[1])
                 app.quit();
                 break;
             case 'full':
                 // 退出全屏
                 mainWindow.unmaximize()
-                sendMessage('hide-full-icon')
                 break;
             case 'reload':
                 mainWindow.reload();
@@ -133,12 +131,6 @@ async function createWindow() {
         // Load the index.html when not in development
         mainWindow.loadURL('app://./index.html')
     }
-
-    // 退出后保存窗口大小
-    app.on("will-quit", () => {
-        windowConfigStore.set("width", mainWindow.getSize()[0])
-        windowConfigStore.set("height", mainWindow.getSize()[1])
-    })
 }
 
 // Quit when all windows are closed.

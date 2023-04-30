@@ -22,7 +22,7 @@ const defaultSettings = <Array<settingItem>>[
     {
         name: "dev1",
         type: "button",
-        value: "require('electron').ipcRenderer.send('new-message',{ code: 'toggleDT'})",
+        value: "require('electron').ipcRenderer.send('mainService',{ code: 'toggleDT'})",
         title: "切换开发者工具",
         des: "打开或关闭开发者工具窗口，用于开发和调试",
         cat: "开发者"
@@ -70,7 +70,7 @@ const defaultSettings = <Array<settingItem>>[
     {
         name: "dev2",
         type: "button",
-        value: "require('electron').ipcRenderer.send('new-message',{ code: 'reload'})",
+        value: "require('electron').ipcRenderer.send('mainService',{ code: 'reload'})",
         title: "强制重启渲染进程",
         des: "在主进程中重载browser window",
         cat: "开发者"
@@ -78,7 +78,7 @@ const defaultSettings = <Array<settingItem>>[
     {
         name: "dev3",
         type: "button",
-        value: "require('electron').ipcRenderer.send('new-message',{ code: 'relaunch'})",
+        value: "require('electron').ipcRenderer.send('mainService',{ code: 'relaunch'})",
         title: "强制重载app主进程",
         des: "直接重启整个electron app，开发环境下使用会导致退出cli",
         cat: "开发者"

@@ -21,8 +21,8 @@ class Adapter {
      * @param storageSrc example:C:/gy/store.json
      * @param pwd
      */
-    public initAdapter = function (storageSrc, pwd, KVPEngine, encryptionEngine, adapterGuid) {
-        this.adapterGuid = adapterGuid
+    public initAdapter = function (storageSrc, pwd, KVPEngine, encryptionEngine, adapterGuid = null) {
+        this.adapterGuid = adapterGuid || sharedUtils.getHash(16)
         this.KVPEngine = KVPEngine
         this.encryptionEngine = encryptionEngine
         return new Promise<void>((resolve, reject) => {
@@ -72,7 +72,7 @@ class Adapter {
     }
 
     /**
-     * 根据传入的dir递归遍历文件系统，将找到的filetable传回
+     * 核心函数: 根据传入的dir递归遍历文件系统，将找到的filetable传回
      */
     public _getFileTable = function (dir: Addr): fileTable {
         const foo = lodash.cloneDeep(dir)
@@ -80,7 +80,7 @@ class Adapter {
         // 先查找缓存，看是否命中
         for (let i = 0; i < this.cachedFileTables.length; i++) {
             if (this.cachedFileTables[i].dir.compareWith(foo)) {
-                // console.log("cache hitted!", newDir, this.cachedFileTables[i].fileTable)
+                // console.log("cache matched!", newDir, this.cachedFileTables[i].fileTable)
                 return this.cachedFileTables[i].fileTable
             }
         }
@@ -128,23 +128,33 @@ class Adapter {
     }
 
     /**
-     * 写入数据
+     * 写入文件
      * @param filename 文件名
-     * @param data buffer数据
+     * @param data Buffer数据或字符串数据
+     * @return Promise<文件的唯一标识符key>
      */
-    public writeFile = async function (filename: string, data: Buffer): Promise<void> {
+    public writeFile = async function (filename: string, data: Buffer | string): Promise<string> {
+        if (typeof data === "string") {
+            data = Buffer.from(data)
+        }
+
         if (this.exists(filename)) {
             // [内存]当前文件表修改dirSingleItem，并更新缓存
-            const dateNum: number = new Date().getTime()
-            const foo: dirSingleItem = this.currentFileTable.items.find(item => item.name === filename)
+            const dateNum = Date.now()
+            const idx = this.currentFileTable.items.findIndex(item => item.name === filename)
+            const foo: dirSingleItem = this.currentFileTable.items[idx]
             foo.meta.modifiedTime = dateNum
+
             this.currentFileTable.items.push(foo)
+            this.currentFileTable.items.splice(idx, 1)
             this._updateCache()
+
             // [本地]1.保存更新后的文件列表到本地
             await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
 
             // [本地]2.创建文件数据到本地
             await this.KVPEngine.setData(foo.key, data)
+            return foo.key
         } else {
             // [内存]当前文件表增加一个dirSingleItem，并更新缓存
             const dateNum: number = new Date().getTime()
@@ -157,7 +167,7 @@ class Adapter {
                     createdTime: dateNum,
                     accessedTime: dateNum,
                 },
-                key: hash
+                key: hash,
             }
 
             this.currentFileTable.items.push(foo)
@@ -167,6 +177,8 @@ class Adapter {
 
             // [本地]2.创建文件数据到本地
             await this.KVPEngine.setData(hash, data)
+
+            return hash
         }
     }
 
@@ -236,7 +248,7 @@ class Adapter {
      * 获取当前文件列表
      */
     public getCurrentFileTable = function (): fileTable {
-        return this.currentFileTable
+        return lodash.cloneDeep(this.currentFileTable)
     }
 
     /**

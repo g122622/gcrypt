@@ -39,12 +39,12 @@
                         </v-btn>
                     </template>
                     <v-card>
-                        <div v-for="(list, index) in [displayModeList, sortByList, sequenceList]" :key="index">
-                            <span class="viewSelectorText">{{ ["显示模式", "排序依据", "排列顺序"][index] }}</span>
-                            <v-btn-toggle shaped mandatory divided>
-                                <v-btn v-for="item in list" :key="item.title" @click="item.handler">
-                                    <v-icon>{{ item.icon }}</v-icon>
-                                    <v-tooltip activator="parent" location="bottom">{{ item.title }}</v-tooltip>
+                        <div v-for="item in viewOptionsLists" :key="item.name">
+                            <span class="viewSelectorText">{{ item.name }}</span>
+                            <v-btn-toggle shaped mandatory divided v-model="viewOptions[item.modelName]">
+                                <v-btn v-for="listItem in item.list" :key="listItem.title">
+                                    <v-icon>{{ listItem.icon }}</v-icon>
+                                    <v-tooltip activator="parent" location="bottom">{{ listItem.title }}</v-tooltip>
                                 </v-btn>
 
                             </v-btn-toggle>
@@ -94,16 +94,16 @@
             <!-- 主内容区 -->
             <v-main :scrollable="true">
                 <div v-if="currentFileTableForRender.length > 0">
+                    <!-- <TransitionGroup name="file-item-transition"> -->
                     <div v-for="(item, index) in currentFileTableForRender" :key="item.key">
                         <FileItem :displayMode="viewOptions.itemDisplayMode" :singleFileItem="item" :index="index"
-                            @click="handleItemClick(item)">
-                            <ContextMenu :width="200" :menuList="
-                                [
+                            @click="handleItemClick(item)" :thumbnail="thumbnails[item.key] || ''">
+                            <ContextMenu :width="200" :menuList="[
                                     {
                                         text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemClick(item) } }
                                     },
                                     {
-                                        text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile(item.name) } }
+                                        text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile(item.name, item.key) } }
                                     },
                                     {
                                         text: '重命名', icon: 'mdi-rename-box', actions: { onClick: () => { /* renameFile(item.name)*/ } }
@@ -116,6 +116,7 @@
                                     }]"></ContextMenu>
                         </FileItem>
                     </div>
+                    <!-- </TransitionGroup> -->
                 </div>
                 <div v-else style=" display:flex;justify-content: center;flex-direction: column;align-items: center;">
                     <img src="./assets/fileMgr/noData.png" style="width:270px;" />
@@ -131,17 +132,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, reactive, onMounted, nextTick } from "vue";
-import Addr from "../../api/core/common/Addr"
-import sharedUtils from "../../utils/sharedUtils"
-import getFileName from "../../utils/getFileName";
+import { ref, computed, watch, reactive, onMounted, nextTick, toRaw } from "vue";
+import Addr from "@/api/core/common/Addr"
+import sharedUtils from "@/utils/sharedUtils"
+import getFileName from "@/utils/getFileName";
 import fs from "fs-extra";
-import electron from "electron";
+import Electron from "electron";
 import os from "os";
 import path from "path";
 import lodash from "lodash";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
-import sleep from "@/utils/sleep";
 import fileTable from "@/api/core/types/fileTable";
 import emitter from "@/eventBus";
 
@@ -149,6 +149,8 @@ import ContextMenu from "../ContextMenu.vue";
 import FileItem from "./FileItem.vue"
 import DialogMgr from "./DialogMgr.vue";
 import ImageViewer from "../ImageViewer/ImageViewer.vue";
+import sleep from "@/utils/sleep";
+import { error } from "@/utils/gyConsole";
 
 interface Props {
     adapter
@@ -188,34 +190,35 @@ const initAll = () => {
 
 onMounted(async () => {
     initAll()
-    emitter.emit("Action::addTab", {
-        name: '图片查看器',
-        component: ImageViewer,
-        icon: "mdi-image-area",
-        onClick: () => null,
-        props: { images: [{ src: 'https://picsum.photos/id/16/346/216' }] }
-    })
 })
 
-// <主要功能-文件相关>
-watch(currentDir, (newVal, prevVal) => {
-    // the same,bye bye
-    if (operationHistory.value.length !== 0) {
-        if (operationHistory.value[operationHistory.value.length - 1].compareWith(newVal)) {
-            return
-        }
-    }
-    operationHistory.value.push(lodash.cloneDeep(newVal))
-    props.adapter.changeCurrentDirectory(newVal)
-    currentFileTable.value = props.adapter.getCurrentFileTable()
+// <核心功能-文件相关>
+watch(currentDir, (newVal) => {
+    refresh(newVal)
 },
     { deep: true })
 
-const refresh = async () => {
-    await nextTick()
-    // 不用cloneDeep就不行
-    currentFileTable.value.items = lodash.cloneDeep(props.adapter.getCurrentFileTable().items)
-    emitter.emit("showMsg", { level: 'success', msg: `刷新成功` })
+const refresh = async (arg?: Addr) => {
+    isLoading.value = true
+    if (arg) {
+        // 检查是否为无效操作
+        if (operationHistory.value.length !== 0) {
+            if (operationHistory.value[operationHistory.value.length - 1].compareWith(arg)) {
+                return
+            }
+        }
+        props.adapter.changeCurrentDirectory(arg)
+        operationHistory.value.push(lodash.cloneDeep(arg))
+    }
+    // 更改currentFileTable
+    currentFileTable.value = props.adapter.getCurrentFileTable()
+    // 加载缩略图
+    loadThumbnails()
+    // 如果是纯刷新，则显示提示
+    if (!arg) {
+        emitter.emit("showMsg", { level: 'success', msg: `刷新成功` })
+    }
+    isLoading.value = false
 }
 
 const up = () => {
@@ -229,14 +232,22 @@ const back = () => {
 }
 
 const openFile = (filename) => {
-    const tmpdir = path.join(os.tmpdir(), sharedUtils.getHash(16))
-    fs.writeFile(tmpdir, props.adapter.readFile(filename)).then(function () {
-        electron.shell.openExternal(tmpdir)
-    })
+    emitter.emit('openFile', { dataArg: filename, fileTypeArg: "txt" })
+    // const tmpdir = path.join(os.tmpdir(), sharedUtils.getHash(16))
+    // fs.writeFile(tmpdir, props.adapter.readFile(filename)).then(function () {
+    //     Electron.shell.openExternal(tmpdir)
+    // })
 }
 
-const deleteFile = (filename) => {
+const writeFile = async (filePath) => {
+    const key = await props.adapter.writeFile(getFileName(filePath, true), fs.readFileSync(filePath))
+    const tb = await getThumbnail(filePath)
+    await addThumbnail(key, tb)
+}
+
+const deleteFile = (filename, key) => {
     props.adapter.deleteFile(filename)
+    deleteThumbnail(key)
     refresh()
 }
 
@@ -265,7 +276,7 @@ const handleFileImportClick = () => {
         }
         try {
             for (const file of foo.files) {
-                await props.adapter.writeFile(getFileName(file.path, true), fs.readFileSync(file.path))
+                await writeFile(file.path)
             }
         } catch (error) {
             emitter.emit("showMsg",
@@ -287,62 +298,69 @@ const handleFileImportClick = () => {
 
 // <外观选择相关>
 const viewOptions = reactive({
-    itemDisplayMode: "list",
-    itemSize: "medium",
-    sortBy: "name",
-    folderFirst: true,
-    sequence: "ascending", // ascending | descending
+    itemDisplayMode: 1, // 0 list, 1 item
+    itemSize: 5, // 区间[0,10]的整数, '5' stands for medium size
+    sortBy: 0, // 0 name, 1 timeModify
+    folderFirst: 1,
+    sequence: 0, // 0 ascending | 1 descending
 })
 
-const displayModeList = [
+const viewOptionsLists = [
     {
-        title: '列表',
-        handler: function () {
-            viewOptions.itemDisplayMode = "list"
-        },
-        icon: "mdi-format-list-bulleted"
+        name: '显示模式',
+        modelName: 'itemDisplayMode',
+        list: [
+            {
+                title: '列表',
+                icon: "mdi-format-list-bulleted"
+            },
+            {
+                title: '平铺',
+                icon: "mdi-dots-grid"
+            }]
     },
     {
-        title: '平铺',
-        handler: function () {
-            viewOptions.itemDisplayMode = "item"
-        },
-        icon: "mdi-dots-grid"
+        name: '排序依据',
+        modelName: 'sortBy',
+        list: [
+            {
+                title: '名称',
+                icon: "mdi-tag-multiple"
+            },
+            {
+                title: '修改时间',
+                icon: "mdi-clock-time-nine"
+            }]
     },
-]
+    {
+        name: '排列顺序',
+        modelName: 'sequence',
+        list: [
+            {
+                title: '升序',
+                icon: "mdi-sort-alphabetical-ascending"
+            },
+            {
+                title: '降序',
+                icon: "mdi-sort-alphabetical-descending"
+            }
+        ]
+    },
+    {
+        name: '文件夹前置',
+        modelName: 'folderFirst',
+        list: [
+            {
+                title: '禁用',
+                icon: "mdi-file"
+            },
+            {
+                title: '启用',
+                icon: "mdi-folder"
+            }
+        ]
+    }
 
-const sequenceList = [
-    {
-        title: '升序',
-        handler: function () {
-            viewOptions.sequence = "ascending"
-        },
-        icon: "mdi-sort-alphabetical-ascending"
-    },
-    {
-        title: '降序',
-        handler: function () {
-            viewOptions.sequence = "descending"
-        },
-        icon: "mdi-sort-alphabetical-descending"
-    },
-]
-
-const sortByList = [
-    {
-        title: '名称',
-        handler: function () {
-            viewOptions.sortBy = "name"
-        },
-        icon: "mdi-tag-multiple"
-    },
-    {
-        title: '修改时间',
-        handler: function () {
-            viewOptions.sortBy = "timeModify"
-        },
-        icon: "mdi-clock-time-nine"
-    },
 ]
 
 const currentFileTableForRender = computed(() => {
@@ -353,18 +371,18 @@ const currentFileTableForRender = computed(() => {
     let res = [...currentFileTable.value.items]
     // 这里的所有排序均为升序
     switch (viewOptions.sortBy) {
-        case "name":
+        case 0:
             res.sort((a, b) => {
                 return a.name > b.name ? 1 : -1
             })
             break
-        case "timeModify":
+        case 1:
             res.sort((a, b) => {
                 return a.meta.modifiedTime > b.meta.modifiedTime ? 1 : -1
             })
     }
     // 降序排序
-    if (viewOptions.sequence === "descending") {
+    if (viewOptions.sequence === 1) {
         res.reverse()
     }
     if (viewOptions.folderFirst) {
@@ -377,9 +395,54 @@ const currentFileTableForRender = computed(() => {
 // <杂项>
 const copyToClipboard = (arg: string) => {
     navigator.clipboard.writeText(arg)
+    emitter.emit("showMsg", { level: 'success', msg: '复制成功' })
 }
 
 const DialogMgrRef = ref(null)
+
+// <缩略图>
+const thumbnails = ref({})
+
+const loadThumbnails = () => {
+    if (props.adapter.exists(".thumbnails")) {
+        const foo = props.adapter.readFile(".thumbnails")
+        thumbnails.value = JSON.parse(foo.toString())
+    }
+}
+
+const getThumbnail = async (filePath: string): Promise<Buffer> => {
+    let thumbnail = null
+    const quality = 50
+    try {
+        thumbnail = await (await Electron.nativeImage.createThumbnailFromPath(filePath, { height: 128, width: 128 })).toJPEG(quality)
+        if (thumbnail) {
+            return thumbnail
+        } else {
+            // TODO handle exception
+            error("生成缩略图失败")
+        }
+    } catch (e) {
+        error("生成缩略图失败" + e.message)
+    }
+}
+
+const saveThumbnailFile = async () => {
+    // convert reactive obj to raw obj, removing unneeded properties
+    await props.adapter.writeFile(".thumbnails", JSON.stringify(thumbnails.value))
+}
+
+const addThumbnail = async (key: string, thumbnail: Buffer) => {
+    if (thumbnail) {
+        thumbnails.value[key] = thumbnail.toString('base64')
+        await saveThumbnailFile()
+    }
+}
+
+const deleteThumbnail = async (key: string) => {
+    delete thumbnails.value[key]
+    await saveThumbnailFile()
+}
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -390,11 +453,27 @@ const DialogMgrRef = ref(null)
 }
 
 #file_mgr_container {
+    // css最新的容器查询特性，热乎！
     container-type: inline-size;
 }
 
 .viewSelectorText {
     font-size: small;
     margin-left: 15px;
+}
+
+/* 可以为进入和离开动画设置不同的持续时间和动画函数 */
+.file-item-transition-enter-active {
+    transition: all 0.15s ease-out;
+}
+
+.file-item-transition-leave-active {
+    transition: all 0.15s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.file-item-transition-enter-from,
+.file-item-transition-leave-to {
+    transform: translateY(10px);
+    opacity: 0;
 }
 </style>
