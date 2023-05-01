@@ -11,16 +11,17 @@
 </template>
 
 <script setup lang="ts">
-import store from "@/store";
+import { useMainStore } from "@/store"
 import { log, error } from "@/utils/gyConsole";
 import axios from "axios";
 import { ref, onMounted, onActivated, computed } from "vue";
+const store = useMainStore()
 
 const words = ref<string>("")
 const fromWhere = ref<string>("")
 const showWords = ref<boolean>(false)
 const useBottomTip = computed<boolean>(() => {
-    return store.state.settings.find(item => item.name === "use_bottom_tip").value
+    return store.settings.find(item => item.name === "use_bottom_tip").value as boolean
 })
 const showMoreDetails = ref<boolean>(false)
 

@@ -245,9 +245,9 @@ const writeFile = async (filePath) => {
     await addThumbnail(key, tb)
 }
 
-const deleteFile = (filename, key) => {
-    props.adapter.deleteFile(filename)
-    deleteThumbnail(key)
+const deleteFile = async (filename, key) => {
+    await props.adapter.deleteFile(filename)
+    await deleteThumbnail(key)
     refresh()
 }
 

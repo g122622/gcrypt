@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import router from './router'
-import store from './store'
+import { useMainStore } from "./store"
+import { createPinia } from "pinia"
 import vuetify from './plugins/vuetify'
 import { loadFonts } from './plugins/webfontloader'
 import emitter from "./eventBus";
@@ -9,10 +10,6 @@ import utils from "./utils/utils";
 import ElectronStore from 'electron-store'
 import lodash from "lodash"
 import { nextTick } from 'process'
-import sharedUtils from './utils/sharedUtils'
-import toLegalRouterPath from './utils/toLegalRouterPath'
-import VueViewer from 'v-viewer'
-import 'viewerjs/dist/viewer.css'
 
 import TagsMgr from "./api/TagsMgr";
 
@@ -23,13 +20,17 @@ import ActionToolBarBase from "./components/ActionToolBarBase.vue";
 import IconBtn from "./components/IconBtn.vue";
 import DialogGenerator from "./components/DialogGenerator.vue";
 
+let pinia;
+
 /**
  * 常见BUG合集
  * 1.读取和修改ref没有加.value
  * 2.函数返回值或参数有时需要深拷贝
+ * 3.async函数调用时没有加await
  */
 class Application {
     private AppInstance
+    private MainStore
 
     private initEvents() {
         global.emitter = emitter
@@ -47,7 +48,7 @@ class Application {
                 // 应用设置
                 this.applySettings();
                 // 保存设置
-                store.commit("settings");
+                this.MainStore.setSettings();
                 // 通知用户
                 emitter.emit('showMsg', { level: "success", msg: "设置保存成功" });
             })
@@ -56,7 +57,7 @@ class Application {
         emitter.on("resetSettings", () => {
             nextTick(() => {
                 // 通知store
-                store.commit("resetSettings");
+                this.MainStore.resetSettings()
                 // 应用设置
                 this.applySettings();
                 // 通知用户
@@ -96,20 +97,20 @@ class Application {
     private applySettings() {
         setTimeout(() => {
             // 黑色遮罩
-            if (store.getters.settings.find(item => item.name === "use_shade").value) {
+            if (this.MainStore.settings.find(item => item.name === "use_shade").value) {
                 console.log("shader on!");
                 emitter.emit("showShade");
             } else {
                 emitter.emit("closeShade");
             }
             // 窗口置顶
-            if (store.getters.settings.find(item => item.name === "on_top").value) {
+            if (this.MainStore.settings.find(item => item.name === "on_top").value) {
                 emitter.emit("setOnTop");
             } else {
                 emitter.emit("unsetOnTop");
             }
             // 颜色主题
-            if (store.getters.settings.find(item => item.name === "is_dark").value) {
+            if (this.MainStore.settings.find(item => item.name === "is_dark").value) {
                 vuetify.theme.global.name.value = 'DarkTheme'
                 document.querySelector("#app").setAttribute("data-theme-type", "dark")
             } else {
@@ -117,6 +118,10 @@ class Application {
                 document.querySelector("#app").setAttribute("data-theme-type", "light")
             }
         }, 100)
+    }
+
+    private initPinia() {
+        pinia = createPinia()
     }
 
     private initVue() {
@@ -140,9 +145,9 @@ class Application {
         })
         // 使用插件并挂载
         this.AppInstance.use(router)
-        this.AppInstance.use(store)
         this.AppInstance.use(vuetify)
-        this.AppInstance.use(VueViewer)
+        this.AppInstance.use(pinia)
+        this.MainStore = useMainStore()
         this.AppInstance.mount('#app')
     }
 
@@ -193,6 +198,7 @@ class Application {
         console.log("init app")
         loadFonts()
         this.initEvents()
+        this.initPinia()
         this.initVue()
         this.showConsole()
         this.applySettings()

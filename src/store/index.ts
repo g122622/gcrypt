@@ -1,4 +1,4 @@
-import { createStore } from 'vuex'
+import { defineStore } from 'pinia'
 import ElectronStore from 'electron-store'
 import defaultSettings from "@/assets/json/defaultSettings";
 import settingItem from '@/types/settingItem';
@@ -10,7 +10,7 @@ const settingStore = new ElectronStore({
     clearInvalidConfig: true, // 发生 SyntaxError  则清空配置
 })
 
-export default createStore({
+export const useMainStore = defineStore("main", {
     state() {
         if (!settingStore.has('timestamp')) {
             settingStore.store = { settings: defaultSettings, timestamp: Date.now() }
@@ -20,29 +20,19 @@ export default createStore({
             COMPILE_DATE: COMPILE_DATE,
             COMPILE_NUMBER: COMPILE_NUMBER,
             notifications: [],
-            mainContentScrollable: true
+            mainContentScrollable: true,
         }
     },
-    mutations: {
-        settings(state: any) {
-            settingStore.set("settings", state.settings)
+    actions: {
+        setSettings() {
+            settingStore.set("settings", this.settings)
             settingStore.set("timestamp", Date.now())
         },
-        resetSettings(state: any) {
-            state.settings = defaultSettings
-            settingStore.set("settings", state.settings)
+        resetSettings() {
+            this.settings = defaultSettings
+            settingStore.set("settings", this.settings)
             settingStore.set("timestamp", Date.now())
-        }
-    },
-    getters: {
-        settings(state: any) {
-            return state.settings
-        },
-        'COMPILE_DATE'(state: any) {
-            return state.COMPILE_DATE
-        },
-        'COMPILE_NUMBER'(state: any) {
-            return state.COMPILE_NUMBER
         }
     }
-})
+}
+)

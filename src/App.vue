@@ -52,7 +52,7 @@
             <!-- 顶部工具栏 -->
             <div id="ActionToolBar" />
             <!-- router主内容区 -->
-            <v-main :scrollable="store.state.mainContentScrollable">
+            <v-main :scrollable="store.mainContentScrollable">
                 <router-view v-slot="{ Component }">
                     <keep-alive>
                         <component :is="Component" />
@@ -67,7 +67,7 @@
 <script setup lang="ts">
 import emitter from './eventBus'
 import { ref, computed, onMounted, nextTick } from "vue"
-import store from "./store"
+import { useMainStore } from "./store"
 import { useRouter } from 'vue-router';
 
 // 组件
@@ -79,6 +79,7 @@ import ContextMenuGlobalRenderArea from "./components/ContextMenuGlobalRenderAre
 import SystemBar from "./components/SystemBar.vue"
 import OpenMethodSelector from './components/Dialogs/OpenMethodSelector.vue';
 
+const store = useMainStore()
 /*
 一.事件命名规范:
     1.UI事件 只传达某个UI状态改变的信息
@@ -133,7 +134,7 @@ const handleNavClick = (value: string) => {
 }
 
 const imgOpacity = computed(() => {
-    let foo = store.getters.settings.find((item) => { return item.name === "background_img_transp" }).value / 100
+    let foo = Number(store.settings.find((item) => { return item.name === "background_img_transp" }).value) / 100
     if (foo >= 1) {
         foo = 0.99999
     }
@@ -142,7 +143,7 @@ const imgOpacity = computed(() => {
 
 onMounted(async () => {
     // 是否显示主内容区滚动条
-    store.state.mainContentScrollable = true
+    store.mainContentScrollable = true
     // 初始化事件
     emitter.on("UI::addTabItem", ({ name, legalPath, icon, onClick, onClose }) => {
         dynamicTabs.value.push({

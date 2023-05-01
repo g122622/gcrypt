@@ -232,14 +232,26 @@ class Adapter {
         await this.KVPEngine.setData(hash, Buffer.from(JSON.stringify(fileTableData)))
     }
 
+    /**
+     * 删除文件
+     * @param filename
+     */
     public deleteFile = async (filename: string) => {
         if (!this.exists(filename)) {
             error(`文件不存在，无法删除 ${filename}`)
+            return
         }
+        let key = null
         this.currentFileTable.items = this.currentFileTable.items.filter((item) => {
+            if (item.name === filename) {
+                key = item.key
+            }
+            console.log(item.name !== filename)
             return item.name !== filename
         })
         this._updateCache()
+        // [本地]删除键值对
+        await this.KVPEngine.deleteData(key)
         // [本地]保存更新后的文件列表到本地
         await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
     }

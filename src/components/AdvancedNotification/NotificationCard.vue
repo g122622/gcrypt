@@ -28,17 +28,16 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                             :color="this.$utils.getCSSVar('--highlight-color-1')" />
                     </div>
 
-                    <div v-if="notification.title" class="notification__item__title"
-                        :colorStatus="notification.colorStatus" v-html="notification.title" />
+                    <div v-if="notification.title" class="notification__item__title" :colorStatus="notification.colorStatus"
+                        v-html="notification.title" />
 
                     <v-spacer />
 
                     <!-- button:hide-notification -->
                     <v-tooltip v-if="!notification.isHidden" top>
                         <template #activator="{ on }">
-                            <v-btn v-show="notification.closeButton" icon size="small" color="rgba(0,0,0,0)"
-                                :border="false" v-bind="on"
-                                @click="this.$emitter.emit('HIDE_NOTIFICATION', notification)">
+                            <v-btn v-show="notification.closeButton" icon size="small" color="rgba(0,0,0,0)" :border="false"
+                                v-bind="on" @click="this.$emitter.emit('HIDE_NOTIFICATION', notification)">
                                 <div class="notification__item__icon--close">
                                     <v-icon>mdi-close</v-icon>
                                 </div>
@@ -50,9 +49,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                     <!-- button:remove-notification -->
                     <v-tooltip v-if="notification.isHidden && notification.isStatic" top>
                         <template #activator="{ on }">
-                            <v-btn v-show="notification.closeButton" icon size="small" color="rgba(0,0,0,0)"
-                                :border="false" v-bind="on"
-                                @click="this.$emitter.emit('REMOVE_NOTIFICATION', notification)">
+                            <v-btn v-show="notification.closeButton" icon size="small" color="rgba(0,0,0,0)" :border="false"
+                                v-bind="on" @click="this.$emitter.emit('REMOVE_NOTIFICATION', notification)">
                                 <div class="notification__item__icon--close">
                                     <v-icon>mdi-trash-can-outline</v-icon>
                                 </div>
@@ -82,8 +80,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                                 :key="'notification-content-list-item' + index"
                                 class="notification__item__message-content__action-list-item">
                                 <div class="notification__item__message-content__action-list-item-text">
-                                    <v-icon class="notification__item__message-content__action-list-item-icon"
-                                        size="20px">
+                                    <v-icon class="notification__item__message-content__action-list-item-icon" size="20px">
                                         {{ listItem.type.icon }}
                                     </v-icon>
                                     {{ listItem.command }}
@@ -98,8 +95,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
                 </div>
             </div>
 
-            <div v-if="notification.actionButtons && notification.actionButtons.length !== 0"
-                class="notification__actions">
+            <div v-if="notification.actionButtons && notification.actionButtons.length !== 0" class="notification__actions">
                 <v-tooltip v-for="(button, index) in notification.actionButtons" :key="`notification-button-${index}`"
                     :disabled="!(button.extrnalLink || button.tooltip)" bottom offset-overflow>
                     <template #activator="{ on }">
@@ -132,6 +128,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 </template>
 
 <script lang="ts">
+import { mapStores } from 'pinia'
+import { useMainStore } from "@/store"
 
 export default {
     props: {
@@ -161,8 +159,9 @@ export default {
         }, 100)
     },
     computed: {
+        ...mapStores(useMainStore),
         notifications() {
-            return this.$store.state.notifications
+            return this.mainStore.notifications
         },
         showProgressBar() {
             return this.notification.progress.started &&

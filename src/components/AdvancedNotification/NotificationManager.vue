@@ -16,6 +16,8 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 <script lang="ts">
 import TimeUtils from '../../utils/timeUtils'
 import NotificationCard from "./NotificationCard.vue";
+import { mapStores } from 'pinia'
+import { useMainStore } from "@/store";
 
 export default {
     name: 'NotificationManager',
@@ -79,8 +81,9 @@ export default {
         })
     },
     computed: {
+        ...mapStores(useMainStore),
         notifications() {
-            return this.$store.state.notifications
+            return this.mainStore.notifications
         },
         nonHiddenNotifications() {
             return [
@@ -214,11 +217,11 @@ export default {
         },
         REMOVE_NOTIFICATION(notification) {
             if (['update-by-hash', 'add', 'hide'].includes(notification.action)) {
-                const notificationIndex = this.$store.state.notifications.findIndex(item => item.hashID === notification.hashID)
-                this.$store.state.notifications.splice(notificationIndex, 1)
+                const notificationIndex = this.mainStore.notifications.findIndex(item => item.hashID === notification.hashID)
+                this.mainStore.notifications.splice(notificationIndex, 1)
             } else if (notification.action === 'update-by-type') {
-                const notificationIndex = this.$store.state.notifications.findIndex(item => item.type === notification.type)
-                this.$store.state.notifications.splice(notificationIndex, 1)
+                const notificationIndex = this.mainStore.notifications.findIndex(item => item.type === notification.type)
+                this.mainStore.notifications.splice(notificationIndex, 1)
             }
         },
         RESET_NOTIFICATION_TIMERS(notification) {

@@ -12,7 +12,7 @@
                 <v-list lines="two">
                     <v-list-subheader v-if="cat">{{ cat }}</v-list-subheader>
                     <v-list-subheader v-else>未分组</v-list-subheader>
-                    <v-list-item v-for="item in this.extractByCat(cat)" :key="item.name" :title="item.title"
+                    <v-list-item v-for="item in extractByCat(cat)" :key="item.name" :title="item.title"
                         :subtitle="item.des || '暂无描述'">
                         <template v-slot:append>
                             <!-- 开关 -->
@@ -27,8 +27,8 @@
                             <div v-else-if="item.type === 'img'" style="width:155px;">
                                 <v-file-input show-size accept="image/png, image/jpeg, image/bmp" label="选择图片"
                                     @update:modelValue="(files) => {
-                                        handleFile(files[0], 'background_img')
-                                    }" density="compact"></v-file-input>
+                                            handleFile(files[0], 'background_img')
+                                        }" density="compact"></v-file-input>
                             </div>
                             <!-- 滑动条 -->
                             <div v-else-if="item.type === 'slider'" @click="updateSettings" style="width:155px;">
@@ -44,81 +44,66 @@
     </v-col>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import settingItem from "../../types/settingItem";
 import emitter from "../../eventBus";
 import ActionToolBarBase from "@/components/ActionToolBarBase.vue";
+import { nextTick, computed } from "vue";
+import { useMainStore } from "@/store"
+const mainStore = useMainStore()
 
-export default {
-    name: 'AppSettings',
-    components: {
-        ActionToolBarBase
-    },
-    data() {
-        return {
+const updateSettings = () => {
+    nextTick(function () {
+        emitter.emit('updateSettings')
+    })
+}
 
-        }
-    },
-    props: {
+const resetSettings = () => {
+    emitter.emit("resetSettings")
+}
 
-    },
-    methods: {
-        updateSettings() {
-            this.$nextTick(function () {
-                emitter.emit('updateSettings')
-            })
-        },
-        resetSettings() {
-            emitter.emit("resetSettings")
-        },
-        extractByCat(cat) {
-            const settings = this.$store.getters.settings
-            return settings.filter((item) => { return item.cat === cat })
-        },
-        handleFile(file, targetSettingName) {
-            const settings: Array<settingItem> = this.$store.getters.settings
-            const updateSettings = this.updateSettings
-            const commit = this.$store.commit
+const extractByCat = (cat) => {
+    return mainStore.settings.filter((item) => { return item.cat === cat })
+}
 
-            if (file) {
-                const reader = new FileReader()
-                reader.onload = function () {
-                    const resBase64 = this.result.toString(); // 获取数据
-                    if (resBase64) {
-                        let index = -1
-                        // 获取索引
-                        for (let i = 0; i < settings.length; i++) {
-                            if (settings[i].name === targetSettingName) {
-                                index = i
-                                break
-                            }
-                        }
-                        // 修改对应设置&apply
-                        settings[index].value = resBase64
-                        commit("settings", settings)
-                        updateSettings()
-                    } else {
-                        console.error("读取base64失败");
-                        emitter.emit('showMsg', { level: "error", msg: "读取base64失败" });
+const handleFile = (file, targetSettingName) => {
+    const settings: Array<settingItem> = mainStore.settings
+    if (file) {
+        const reader = new FileReader()
+        reader.onload = function () {
+            const resBase64 = this.result.toString(); // 获取数据
+            if (resBase64) {
+                let index = -1
+                // 获取索引
+                for (let i = 0; i < settings.length; i++) {
+                    if (settings[i].name === targetSettingName) {
+                        index = i
+                        break
                     }
-                };
-
-                reader.readAsDataURL(file)
+                }
+                // 修改对应设置&apply
+                settings[index].value = resBase64
+                mainStore.setSettings()
+                updateSettings()
+            } else {
+                console.error("读取base64失败");
+                emitter.emit('showMsg', { level: "error", msg: "读取base64失败" });
             }
-        }
-    },
-    computed: {
-        cats() {
-            const settings = this.$store.getters.settings
-            const res = settings.map(item => {
-                return item.cat
-            }).filter(function (item, index, arr) {
-                return arr.indexOf(item) === index; // 数组去重
-            })
-            return res
-        }
+        };
+
+        reader.readAsDataURL(file)
     }
 }
+
+const cats = computed(() => {
+    const settings = mainStore.settings
+    const res = settings.map(item => {
+        return item.cat
+    }).filter(function (item, index, arr) {
+        return arr.indexOf(item) === index; // 数组去重
+    })
+    return res
+})
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

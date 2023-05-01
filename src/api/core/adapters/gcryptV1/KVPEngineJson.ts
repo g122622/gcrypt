@@ -3,7 +3,6 @@ import storageLibMetaData from "../../types/storageLibMetaData"
 import fileTable from "../../types/fileTable";
 import getFileName from "../../../../utils/getFileName";
 import fs from "fs-extra";
-import lodash from "lodash";
 
 class KVPEngineJson {
     private currentJson = null
@@ -112,11 +111,12 @@ class KVPEngineJson {
      * @param hash
      */
     public getData = (hash: string): Buffer => {
-        const data: string = this.currentJson.data[hash]
-        if (!data) {
-            console.error(`这个哈希key不存在`, hash, this.currentJson)
-        } else {
+        // eslint-disable-next-line dot-notation
+        if (Object['hasOwn'](this.currentJson.data, hash)) {
+            const data: string = this.currentJson.data[hash]
             return this.encryptionEngine.decrypt(data)
+        } else {
+            console.error(`这个哈希key不存在`, hash, this.currentJson)
         }
     }
 
@@ -135,6 +135,19 @@ class KVPEngineJson {
         // }
         return new Promise<void>((resolve) => {
             this.currentJson.data[hash] = this.encryptionEngine.encrypt(buf)
+            this.sync()
+            resolve()
+        })
+    }
+
+    /**
+     *
+     * @param hash 根据已有键去set数据
+     * @param buf
+     */
+    public deleteData = (hash: string) => {
+        return new Promise<void>((resolve) => {
+            delete this.currentJson.data[hash]
             this.sync()
             resolve()
         })
