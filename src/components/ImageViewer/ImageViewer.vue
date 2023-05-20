@@ -15,18 +15,20 @@
 
 <script setup lang="ts">
 // import { onMounted } from "vue"
-import { ref, onMounted, onUnmounted } from "vue"
+// import { ref, onMounted, nextTick, onUnmounted } from "vue"
+// import Viewer from 'viewerjs';
+// import 'viewerjs/dist/viewer.css'
 
-const loading = ref<boolean>(true)
-let viewer = null
-interface Props {
+// const loading = ref<boolean>(true)
+// let viewer: Viewer = null
+// interface Props {
     images: Array<{
         src: string
     }>
 }
-const props = defineProps<Props>()
+// const props = defineProps<Props>()
 
-const options = {
+/* const options = {
     inline: false,
     button: true,
     navbar: true,
@@ -47,15 +49,17 @@ const options = {
 }
 
 onMounted(async () => {
-    // viewer = new Viewer(document.getElementById('view-img'), {
-    //     ...options
-    // })
+    viewer = new Viewer(document.getElementById('view-img'), {
+        ...options
+    })
     viewer.show()
     loading.value = false
 })
 onUnmounted(async () => {
     viewer.destroy()
 })
+
+*/
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
