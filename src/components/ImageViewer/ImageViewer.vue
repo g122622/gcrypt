@@ -6,9 +6,9 @@
                 </li>
             </ul></div> -->
 
-        <div id="viewer-container">
+        <!-- <div id="viewer-container">
             <img :src="images[0].src" id="view-img">
-        </div>
+        </div> -->
 
     </v-main>
 </template>
@@ -21,7 +21,7 @@
 
 // const loading = ref<boolean>(true)
 // let viewer: Viewer = null
-// interface Props {
+interface Props {
     images: Array<{
         src: string
     }>
