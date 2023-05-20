@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, 'ubuntu-latest']
+        os: [windows-latest]
 
     # create steps
     steps:
@@ -33,7 +33,7 @@ jobs:
 
       # step2: install node env
       - name: Install Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v2.5.2
         with:
           node-version: 16
 

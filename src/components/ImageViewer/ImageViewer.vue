@@ -15,12 +15,10 @@
 
 <script setup lang="ts">
 // import { onMounted } from "vue"
-import { ref, onMounted, nextTick, onUnmounted } from "vue"
-import Viewer from 'viewerjs';
-import 'viewerjs/dist/viewer.css'
+import { ref, onMounted, onUnmounted } from "vue"
 
 const loading = ref<boolean>(true)
-let viewer: Viewer = null
+let viewer = null
 interface Props {
     images: Array<{
         src: string
@@ -49,9 +47,9 @@ const options = {
 }
 
 onMounted(async () => {
-    viewer = new Viewer(document.getElementById('view-img'), {
-        ...options
-    })
+    // viewer = new Viewer(document.getElementById('view-img'), {
+    //     ...options
+    // })
     viewer.show()
     loading.value = false
 })
