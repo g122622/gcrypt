@@ -1,12 +1,13 @@
 <template>
     <div id="words" v-if="showWords && useBottomTip" @mouseover="handleMouseOver()" @mouseleave="handleMouseLeave()">
         {{ words }}
-        <Transition name="tip-transition">
-            <span v-if="showMoreDetails">
-                出处: {{ fromWhere }}
-                <IconBtn icon="mdi-refresh" tooltip="换一个句子" @click="queryData" size="small" />
-            </span>
-        </Transition>
+        <span class="from-where" :style="{
+            width: showMoreDetails ? '' : '0px',
+            opacity: showMoreDetails ? '1' : '0'
+        }">
+            出处: {{ fromWhere }}
+            <IconBtn icon="mdi-refresh" tooltip="换一个句子" @click="queryData" size="small" />
+        </span>
     </div>
 </template>
 
@@ -65,7 +66,7 @@ const handleMouseLeave = () => {
     margin-bottom: 10px;
     font-size: 0.85em;
     opacity: 0.7;
-    transition: all 0.5s;
+    transition: all 0.3s;
     height: 45px;
     overflow: hidden;
 
@@ -75,16 +76,8 @@ const handleMouseLeave = () => {
     justify-content: center;
 }
 
-.tip-transition-enter-active {
-    transition: all 0.3s ease-out;
-}
-
-.tip-transition-leave-active {
-    transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.tip-transition-enter-from,
-.tip-transition-leave-to {
-    opacity: 0;
+.from-where {
+    display: inline-block;
+    transition: all 0.3s;
 }
 </style>

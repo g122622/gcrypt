@@ -8,6 +8,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue"
 import emitter from "@/eventBus"
+import { debounce } from "lodash"
 import { useMainStore } from "@/store"
 const store = useMainStore()
 
@@ -25,7 +26,7 @@ const updateSize = () => {
     backgroundImgAspectRatio.value = document.body.offsetWidth / window.innerHeight
 }
 
-window.onresize = updateSize
+window.addEventListener("resize", debounce(updateSize, 500))
 
 onMounted(() => {
     imgSrc.value = store.settings.filter((a) => { return a.name === "background_img" })[0].value as string

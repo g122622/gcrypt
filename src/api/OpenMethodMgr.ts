@@ -1,76 +1,58 @@
-import emitter from "../eventBus"
-import TagsMgr from "./TagsMgr"
-import WebBrowser from "@/components/WebBrowser/WebBrowser.vue";
-import ImageViewer from "@/components/ImageViewer/ImageViewer.vue"
+import { error } from "@/utils/gyConsole"
+import File from "./File"
 
-interface OpenMethod {
+declare interface OpenMethod {
     name: string, // 必须唯一，不能重复
     icon: string,
-    fileType: Array<string>,
-    dataTransfer: 'RAM' | 'LOCAL_DISK',
-    onSelected: (data: Buffer | string) => void
+    fileType: Array<string> | RegExp, // 可以用正则表达式
+    onSelected: (file: File, extra) => void
 }
 
 const formatFileType = (arg: string) => {
-    return arg.replaceAll('.', '')
+    return arg
+        .replaceAll('.', '')
         .toLowerCase()
 }
 
 class OpenMethodMgr {
     private methods: Array<OpenMethod> = []
 
-    private registerBulitinMethods() {
-        this.registerMethod({
-            name: "内置浏览器打开",
-            icon: 'mdi-earth',
-            fileType: ['html', 'txt', 'js'],
-            dataTransfer: 'RAM',
-            onSelected(data: string) {
-                TagsMgr.addTab(
-                    {
-                        name: `浏览器-${data}`,
-                        component: WebBrowser,
-                        icon: 'mdi-earth',
-                        onClick: () => null,
-                        props: { src: data }
-                    }
-                )
-            }
-        })
-        this.registerMethod({
-            name: "内置图片查看器",
-            icon: 'mdi-image',
-            fileType: ['jpg', 'jpeg', 'png', 'gif'],
-            dataTransfer: 'RAM',
-            onSelected(data: string) {
-                TagsMgr.addTab(
-                    {
-                        name: '图片查看器',
-                        component: ImageViewer,
-                        icon: "mdi-image",
-                        onClick: () => null,
-                        props: { images: [{ src: data }] }
-                    }
-                )
-            }
-        })
-    }
-
     public getMatchedMethod(fileType: string) {
-        return this.methods.filter(item => item.fileType.includes(formatFileType(fileType)))
+        // 空字符串表示没有扩展名的文件，这将匹配全部打开方法
+        if (fileType === "") {
+            return this.methods
+        }
+        // 无效类型将不匹配任何方法
+        if (!fileType) {
+            error("传入的类型无效")
+            return []
+        }
+        return this.methods.filter(item => {
+            if (item.fileType instanceof Array) {
+                return item.fileType.includes(formatFileType(fileType))
+            } else if (item.fileType instanceof RegExp) {
+                return item.fileType.exec(fileType)?.length
+            }
+            return false
+        }
+        )
     }
 
     public registerMethod = (openMethod: OpenMethod) => {
+        if (this.methods.find(item => item.name === openMethod.name)) {
+            error("method name 重名了:" + openMethod.name)
+            return
+        }
         this.methods.push(openMethod)
     }
 
-    public removeMethod = (name) => {
-        this.methods = this.methods.filter(item => item.name !== name)
+    public getMethodByName = (name: string) => {
+        return this.methods.find(item => item.name === name)
     }
 
-    constructor() {
-        this.registerBulitinMethods()
+    public removeMethodByName = (name: string) => {
+        this.methods = this.methods.filter(item => item.name !== name)
     }
 }
 
-export default new OpenMethodMgr()
+export default OpenMethodMgr

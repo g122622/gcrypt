@@ -141,7 +141,7 @@ export default defineComponent({
             const adapter = new Adapter()
             const adapterGuid = sharedUtils.getHash(16)
             await adapter.initAdapter(storeSrc, pwd, new KvpClass(), new EeClass(), adapterGuid)
-            this._inspectStoreSrc(storeSrc, adapter.getMeta())
+            this._inspectStoreSrc(storeSrc, await adapter.getMeta())
 
             this.$emitter.emit("Action::addTab", {
                 name: storeSrc,

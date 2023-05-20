@@ -11,6 +11,7 @@
                         <slot name="mainContent" />
                     </v-row>
                 </v-container>
+                <slot name="footer" />
                 <small v-if="props.footer">*{{ props.footer }}</small>
             </v-card-text>
             <v-card-actions v-if="props.bottomActions">

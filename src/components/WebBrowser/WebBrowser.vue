@@ -16,6 +16,7 @@
 
     <div id="web-browser-container">
         <!-- <webview :id="'webview' + guid" ref="webviewElement" /> -->
+        <iframe :id="'mainFrame'+guid" class="mainFrame"/>
     </div>
 </template>
 
@@ -25,13 +26,10 @@ import emitter from "@/eventBus"
 import sharedUtils from "@/utils/sharedUtils";
 
 interface Props {
-    // height: string,
-    // width: string,
     src: string,
 }
 const props = defineProps<Props>()
-// const currentSrc = ref<string>(props.src || "")
-const currentSrc = ref<string>("https://www.baidu.com")
+const currentSrc = ref<string>(props.src || "")
 const guid = sharedUtils.getHash(16)
 let webviewElement = null
 const currentZoomFactor = ref(null)
@@ -86,4 +84,7 @@ const toggleDevTools = () => {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.mainFrame{
+}
+</style>

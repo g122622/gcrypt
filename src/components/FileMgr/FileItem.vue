@@ -12,7 +12,10 @@
                 {{ singleFileItem.name }}
             </div>
         </div>
+
+        <!-- 自定义内容插槽 -->
         <slot></slot>
+
         <!-- 尾置内容 -->
         <div>
             <!-- <IconBtn tooltip="更多" icon="mdi-dots-vertical" :onClick="handleClickMore" /> -->
@@ -63,6 +66,12 @@ const fileItemClass = computed(() => {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+@container (width < 400px) {
+    .file-meta {
+        display: none;
+    }
+}
+
 .file-item {
     border-radius: 10px;
     background-color: rgba(131, 131, 131, 0.3);
@@ -74,6 +83,8 @@ const fileItemClass = computed(() => {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+
+    z-index: 1; // 为了全局contextmenu的右键点击激发区域在file-item之下
 
     position: relative !important; // 为了contextmenu的右键点击激发区域能够顺利溢出隐藏
 }
@@ -104,11 +115,11 @@ const fileItemClass = computed(() => {
     margin-top: 10px;
 
     .file-types-image {
-        width: 60px;
+        height: 60px;
     }
 
     .file-thumbnail-img {
-        max-height: 60px;
+        height: 60px;
     }
 }
 
@@ -129,11 +140,5 @@ const fileItemClass = computed(() => {
     font-size: 16px;
     margin-left: 10px;
     margin-right: 10px;
-}
-
-@container (width < 400px) {
-    .file-meta {
-        display: none;
-    }
 }
 </style>

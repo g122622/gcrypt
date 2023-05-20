@@ -30,8 +30,14 @@ export const useMainStore = defineStore("main", {
         },
         resetSettings() {
             this.settings = defaultSettings
-            settingStore.set("settings", this.settings)
-            settingStore.set("timestamp", Date.now())
+            this.setSettings()
+        },
+        setSetting(name: string, value) {
+            this.settings.find(item => item.name === name).value = value
+            this.setSettings()
+        },
+        getSetting(name: string) {
+            return this.settings.find(item => item.name === name).value
         }
     }
 }

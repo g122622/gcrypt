@@ -11,14 +11,12 @@ import ElectronStore from 'electron-store'
 import lodash from "lodash"
 import { nextTick } from 'process'
 
-import TagsMgr from "./api/TagsMgr";
-
 // 全局组件
 import VueApp from './App.vue'
-import BottomTip from "./components/BottomTip.vue";
-import ActionToolBarBase from "./components/ActionToolBarBase.vue";
-import IconBtn from "./components/IconBtn.vue";
-import DialogGenerator from "./components/DialogGenerator.vue";
+import BottomTip from "./components/shared/BottomTip.vue";
+import ActionToolBarBase from "./components/shared/ActionToolBarBase.vue";
+import IconBtn from "./components/shared/IconBtn.vue";
+import DialogGenerator from "./components/shared/DialogGenerator.vue";
 
 let pinia;
 
@@ -27,6 +25,7 @@ let pinia;
  * 1.读取和修改ref没有加.value
  * 2.函数返回值或参数有时需要深拷贝
  * 3.async函数调用时没有加await
+ * 4.await后的括号
  */
 class Application {
     private AppInstance
@@ -42,16 +41,12 @@ class Application {
         })
 
         emitter.on("updateSettings", () => {
-            // 这里的nexttick使用的是nodejs的API，不是vue的
-            // electron里边事件轮询是统一的，二者等效
-            nextTick(() => {
-                // 应用设置
-                this.applySettings();
-                // 保存设置
-                this.MainStore.setSettings();
-                // 通知用户
-                emitter.emit('showMsg', { level: "success", msg: "设置保存成功" });
-            })
+            // 应用设置
+            this.applySettings();
+            // 保存设置
+            this.MainStore.setSettings();
+            // 通知用户
+            emitter.emit('showMsg', { level: "success", msg: "设置保存成功" });
         })
 
         emitter.on("resetSettings", () => {
@@ -67,14 +62,6 @@ class Application {
                         msg: "设置重置成功。<br>有些设置可能需要重启app才能应用!"
                     })
             })
-        })
-
-        emitter.on("Action::addTab", (payload) => {
-            TagsMgr.addTab(<any>payload)
-        })
-
-        emitter.on("Action::removeTab", (payload) => {
-            TagsMgr.removeTab(<any>payload)
         })
 
         emitter.on("showShade", () => {

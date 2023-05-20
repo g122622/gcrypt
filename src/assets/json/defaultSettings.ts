@@ -4,14 +4,6 @@ const text = "孩提时，我有许多美丽的憧憬，天真的梦。那时，
 
 const defaultSettings = <Array<settingItem>>[
     {
-        name: "is_dark",
-        type: "switcher",
-        value: true,
-        title: "夜间模式",
-        des: "使用黑色元素配色",
-        cat: "外观",
-    },
-    {
         name: "use_shade",
         type: "switcher",
         value: false,
@@ -34,38 +26,6 @@ const defaultSettings = <Array<settingItem>>[
         title: "窗口悬浮顶层",
         des: "没什么好说的",
         cat: "通用",
-    },
-    {
-        name: "on_top",
-        type: "button",
-        value: "emitter.emit('showLayout')",
-        title: "高亮显示布局",
-        des: "用于调试布局，尚处在实验阶段",
-        cat: "外观"
-    },
-    {
-        name: "background_img",
-        type: "img",
-        value: "",
-        title: "背景图片",
-        des: "从指定本地路径选择背景图片",
-        cat: "外观"
-    },
-    {
-        name: "background_img_blur",
-        type: "slider",
-        value: "70",
-        title: "背景图片模糊度",
-        des: "给背景图加上指定半径的高斯模糊filter，并不会修改原文件",
-        cat: "外观"
-    },
-    {
-        name: "background_img_transp",
-        type: "slider",
-        value: "80",
-        title: "背景图片透明度",
-        des: "调低调高都不好",
-        cat: "外观"
     },
     {
         name: "dev2",
@@ -116,12 +76,68 @@ const defaultSettings = <Array<settingItem>>[
         cat: "测试"
     },
     {
+        name: "is_dark",
+        type: "switcher",
+        value: true,
+        title: "夜间模式",
+        des: "使用黑色元素配色",
+        cat: "外观",
+    },
+    {
+        name: "on_top",
+        type: "button",
+        value: "emitter.emit('showLayout')",
+        title: "高亮显示布局",
+        des: "用于调试布局，尚处在实验阶段",
+        cat: "外观"
+    },
+    {
+        name: "background_img",
+        type: "img",
+        value: "",
+        title: "背景图片",
+        des: "从指定本地路径选择背景图片",
+        cat: "外观"
+    },
+    {
+        name: "background_img_blur",
+        type: "slider",
+        value: "70",
+        title: "背景图片模糊度",
+        des: "给背景图加上指定半径的高斯模糊filter，并不会修改原文件",
+        cat: "外观"
+    },
+    {
+        name: "background_img_transp",
+        type: "slider",
+        value: "80",
+        title: "背景图片透明度",
+        des: "调低调高都不好",
+        cat: "外观"
+    },
+    {
         name: "use_bottom_tip",
         type: "switcher",
         value: true,
         title: "显示底部句子",
         des: "是否从网络获取并显示列表底部的装饰性句子",
         cat: "外观"
+    },
+    {
+        name: "appointed_file_open_methods",
+        type: "text",
+        value: '{}',
+        title: "已指定的文件打开方式",
+        des: "这是一段存储了文件打开方式的JSON字符串",
+        cat: "文件"
+    },
+    {
+        name: "tmp_file_sync_interval",
+        type: "slider",
+        value: "30000",
+        title: "临时文件同步间隔",
+        des: "外部打开的临时文件与加密库之间的最小同步间隔",
+        cat: "文件"
     },
 ]
 

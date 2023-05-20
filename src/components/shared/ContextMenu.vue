@@ -71,7 +71,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-    // TODO 有这个off方法吗
     emitter.off("UI::contextMenu::clickOutside")
 })
 
@@ -84,6 +83,7 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
     position: absolute;
+    top: 0;
 }
 
 .context_menu_container {

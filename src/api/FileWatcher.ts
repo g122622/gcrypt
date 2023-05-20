@@ -22,11 +22,12 @@ class FileWatcher {
         this.filePath = filePath
         this.options = options
         this.newFilename = path.basename(filePath)
+
         this.initWatcher()
         this.initTimer()
     }
 
-    initWatcher() {
+    private initWatcher() {
         fs.watch(this.filePath, async (eventType, filename) => {
             switch (eventType) {
                 case "rename":
@@ -41,7 +42,7 @@ class FileWatcher {
         })
     }
 
-    initTimer() {
+    private initTimer() {
         // TODO 销毁定时器
         setInterval(() => {
             // NOTE: 回调函数执行顺序有要求
@@ -52,6 +53,8 @@ class FileWatcher {
             if (this.shouldChange) {
                 this.onChange(this.newFilename)
             }
-        }, this.options.minUpdateIntervalMs)
+        }, this.options.minUpdateIntervalMs ?? 30000)
     }
 }
+
+export default FileWatcher

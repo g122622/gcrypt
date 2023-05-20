@@ -33,6 +33,7 @@ class encryptionEngineAES192 {
             return res;
         } catch (e) {
             error("加密失败" + e.toString())
+            throw e
         }
     }
 
@@ -51,7 +52,8 @@ class encryptionEngineAES192 {
             res = Buffer.concat([res, deciper.final("buffer")])
             return res;
         } catch (e) {
-            error("解密失败" + e.toString())
+            error("解密失败 " + e.toString())
+            throw e
         }
     }
 }

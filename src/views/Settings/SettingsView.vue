@@ -27,12 +27,14 @@
                             <div v-else-if="item.type === 'img'" style="width:155px;">
                                 <v-file-input show-size accept="image/png, image/jpeg, image/bmp" label="选择图片"
                                     @update:modelValue="(files) => {
-                                            handleFile(files[0], 'background_img')
+                                            handleFile(files[0], item.name)
                                         }" density="compact"></v-file-input>
                             </div>
                             <!-- 滑动条 -->
                             <div v-else-if="item.type === 'slider'" @click="updateSettings" style="width:155px;">
-                                <v-slider v-model="item.value" thumb-label="always" color="primary"></v-slider>
+                                <!-- TS类型限制，只能把v-model展开 -->
+                                <v-slider thumb-label="always" color="primary" :modelValue="item.value.toString()"
+                                    @update:modelValue="newValue => { item.value = newValue.toString() }"></v-slider>
                             </div>
                         </template>
 
@@ -47,10 +49,14 @@
 <script setup lang="ts">
 import settingItem from "../../types/settingItem";
 import emitter from "../../eventBus";
-import ActionToolBarBase from "@/components/ActionToolBarBase.vue";
+import ActionToolBarBase from "@/components/shared/ActionToolBarBase.vue";
 import { nextTick, computed } from "vue";
 import { useMainStore } from "@/store"
 const mainStore = useMainStore()
+
+const log = (arg) => {
+    console.log(arg)
+}
 
 const updateSettings = () => {
     nextTick(function () {

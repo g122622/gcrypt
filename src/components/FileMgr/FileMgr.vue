@@ -39,16 +39,20 @@
                         </v-btn>
                     </template>
                     <v-card>
-                        <div v-for="item in viewOptionsLists" :key="item.name">
-                            <span class="viewSelectorText">{{ item.name }}</span>
-                            <v-btn-toggle shaped mandatory divided v-model="viewOptions[item.modelName]">
-                                <v-btn v-for="listItem in item.list" :key="listItem.title">
-                                    <v-icon>{{ listItem.icon }}</v-icon>
-                                    <v-tooltip activator="parent" location="bottom">{{ listItem.title }}</v-tooltip>
-                                </v-btn>
+                        <v-list lines="one">
+                            <v-list-subheader>布局选项</v-list-subheader>
+                            <v-list-item v-for="item in viewOptionsLists" :key="item.name" :title="item.name">
+                                <template #append>
+                                    <v-btn-toggle shaped mandatory divided v-model="viewOptions[item.modelName]">
+                                        <v-btn v-for="listItem in item.list" :key="listItem.title">
+                                            <v-icon>{{ listItem.icon }}</v-icon>
+                                            <v-tooltip activator="parent" location="bottom">{{ listItem.title }}</v-tooltip>
+                                        </v-btn>
 
-                            </v-btn-toggle>
-                        </div>
+                                    </v-btn-toggle>
+                                </template>
+                            </v-list-item>
+                        </v-list>
                     </v-card>
                 </v-menu>
                 <!-- 新建按钮 -->
@@ -92,7 +96,7 @@
             </v-app-bar>
 
             <!-- 主内容区 -->
-            <v-main :scrollable="true">
+            <v-main>
                 <div v-if="currentFileTableForRender.length > 0">
                     <!-- <TransitionGroup name="file-item-transition"> -->
                     <div v-for="(item, index) in currentFileTableForRender" :key="item.key">
@@ -113,7 +117,8 @@
                                     },
                                     {
                                         text: '属性', icon: 'mdi-information', actions: { onClick: () => { handlePropertiesClick(item) } }
-                                    }]"></ContextMenu>
+                                    }]">
+                            </ContextMenu>
                         </FileItem>
                     </div>
                     <!-- </TransitionGroup> -->
@@ -123,6 +128,20 @@
                     当前目录下没有文件
                 </div>
                 <BottomTip></BottomTip>
+                <ContextMenu :width="200" :menuList="[
+                        {
+                            text: '上一级目录', icon: 'mdi-arrow-up', actions: { onClick: () => { up() } }
+                        },
+                        {
+                            text: '后退', icon: 'mdi-arrow-left', actions: { onClick: () => { back() } }
+                        },
+                        {
+                            type: 'divider'
+                        },
+                        {
+                            text: '刷新', icon: 'mdi-refresh', actions: { onClick: () => { refresh() } }
+                        }]">
+                </ContextMenu>
             </v-main>
         </v-app>
     </div>
@@ -132,28 +151,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, reactive, onMounted, nextTick, toRaw } from "vue";
+import { ref, computed, watch, reactive, onMounted } from "vue";
 import Addr from "@/api/core/common/Addr"
-import sharedUtils from "@/utils/sharedUtils"
 import getFileName from "@/utils/getFileName";
 import fs from "fs-extra";
 import Electron from "electron";
-import os from "os";
-import path from "path";
 import lodash from "lodash";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import fileTable from "@/api/core/types/fileTable";
 import emitter from "@/eventBus";
+import { error } from "@/utils/gyConsole";
+import AdapterBase from "@/api/core/types/AdapterBase";
+import File from "@/api/File";
 
-import ContextMenu from "../ContextMenu.vue";
+import ContextMenu from "../shared/ContextMenu.vue";
 import FileItem from "./FileItem.vue"
 import DialogMgr from "./DialogMgr.vue";
-import ImageViewer from "../ImageViewer/ImageViewer.vue";
-import sleep from "@/utils/sleep";
-import { error } from "@/utils/gyConsole";
+import getExtName from "@/utils/getExtName";
 
 interface Props {
-    adapter
+    adapter: AdapterBase
 }
 const props = defineProps<Props>()
 const isLoading = ref<boolean>(true)
@@ -193,8 +210,8 @@ onMounted(async () => {
 })
 
 // <核心功能-文件相关>
-watch(currentDir, (newVal) => {
-    refresh(newVal)
+watch(currentDir, async (newVal) => {
+    await refresh(newVal)
 },
     { deep: true })
 
@@ -207,13 +224,13 @@ const refresh = async (arg?: Addr) => {
                 return
             }
         }
-        props.adapter.changeCurrentDirectory(arg)
+        await props.adapter.changeCurrentDirectory(arg)
         operationHistory.value.push(lodash.cloneDeep(arg))
     }
     // 更改currentFileTable
-    currentFileTable.value = props.adapter.getCurrentFileTable()
+    currentFileTable.value = await props.adapter.getCurrentFileTable()
     // 加载缩略图
-    loadThumbnails()
+    await loadThumbnails()
     // 如果是纯刷新，则显示提示
     if (!arg) {
         emitter.emit("showMsg", { level: 'success', msg: `刷新成功` })
@@ -232,14 +249,13 @@ const back = () => {
 }
 
 const openFile = (filename) => {
-    emitter.emit('openFile', { dataArg: filename, fileTypeArg: "txt" })
-    // const tmpdir = path.join(os.tmpdir(), sharedUtils.getHash(16))
-    // fs.writeFile(tmpdir, props.adapter.readFile(filename)).then(function () {
-    //     Electron.shell.openExternal(tmpdir)
-    // })
+    emitter.emit('openFile', {
+        fileArg: new File().fromAdapter(props.adapter, filename),
+        fileTypeArg: getExtName(filename)
+    })
 }
 
-const writeFile = async (filePath) => {
+const importFile = async (filePath) => {
     const key = await props.adapter.writeFile(getFileName(filePath, true), fs.readFileSync(filePath))
     const tb = await getThumbnail(filePath)
     await addThumbnail(key, tb)
@@ -248,7 +264,7 @@ const writeFile = async (filePath) => {
 const deleteFile = async (filename, key) => {
     await props.adapter.deleteFile(filename)
     await deleteThumbnail(key)
-    refresh()
+    await refresh()
 }
 
 // <UI事件处理>
@@ -276,7 +292,7 @@ const handleFileImportClick = () => {
         }
         try {
             for (const file of foo.files) {
-                await writeFile(file.path)
+                await importFile(file.path)
             }
         } catch (error) {
             emitter.emit("showMsg",
@@ -284,7 +300,7 @@ const handleFileImportClick = () => {
                     level: "error",
                     msg: `导入文件失败 ${error.message}`
                 })
-            refresh()
+            await refresh()
             return
         }
         emitter.emit("showMsg",
@@ -292,7 +308,7 @@ const handleFileImportClick = () => {
                 level: "success",
                 msg: `导入${foo.files.length}个文件成功`
             })
-        refresh()
+        await refresh()
     }
 }
 
@@ -303,6 +319,9 @@ const viewOptions = reactive({
     sortBy: 0, // 0 name, 1 timeModify
     folderFirst: 1,
     sequence: 0, // 0 ascending | 1 descending
+    showHiddenItem: 1,
+    showExtName: 1,
+    showThumbnails: 1
 })
 
 const viewOptionsLists = [
@@ -385,9 +404,14 @@ const currentFileTableForRender = computed(() => {
     if (viewOptions.sequence === 1) {
         res.reverse()
     }
+    // 文件夹优先
     if (viewOptions.folderFirst) {
         // NOTE: ES2019已经要求sort为稳定排序，没必要这样先展开再合并
         res = [...res.filter(item => item.type === "folder"), ...res.filter(item => item.type === "file")]
+    }
+    // 不显示隐藏文件
+    if (!viewOptions.showHiddenItem) {
+        res = res.filter(item => item.name[0] !== ".")
     }
     return res
 })
@@ -403,9 +427,13 @@ const DialogMgrRef = ref(null)
 // <缩略图>
 const thumbnails = ref({})
 
-const loadThumbnails = () => {
-    if (props.adapter.exists(".thumbnails")) {
-        const foo = props.adapter.readFile(".thumbnails")
+const loadThumbnails = async () => {
+    if (!viewOptions.showThumbnails) {
+        thumbnails.value = {}
+        return
+    }
+    if (await props.adapter.exists(".thumbnails")) {
+        const foo = await props.adapter.readFile(".thumbnails")
         thumbnails.value = JSON.parse(foo.toString())
     }
 }
@@ -413,8 +441,13 @@ const loadThumbnails = () => {
 const getThumbnail = async (filePath: string): Promise<Buffer> => {
     let thumbnail = null
     const quality = 50
+
     try {
-        thumbnail = await (await Electron.nativeImage.createThumbnailFromPath(filePath, { height: 128, width: 128 })).toJPEG(quality)
+        thumbnail = await (await Electron
+            .nativeImage
+            .createThumbnailFromPath(filePath, { height: 128, width: 128 }))
+            .toJPEG(quality)
+
         if (thumbnail) {
             return thumbnail
         } else {
@@ -427,7 +460,6 @@ const getThumbnail = async (filePath: string): Promise<Buffer> => {
 }
 
 const saveThumbnailFile = async () => {
-    // convert reactive obj to raw obj, removing unneeded properties
     await props.adapter.writeFile(".thumbnails", JSON.stringify(thumbnails.value))
 }
 

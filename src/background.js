@@ -27,16 +27,11 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow() {
     // Create the browser window.
     const mainWindow = new BrowserWindow({
-        width: windowConfigStore.get("width", 900),
-        height: windowConfigStore.get("height", 500),
+        width: windowConfigStore.get("width", 1100),
+        height: windowConfigStore.get("height", 650),
         backgroundColor: "#000000",
         title: "隐域-Gcrypt",
         titleBarStyle: 'hidden',
-        // titleBarOverlay: {
-        //    color: '#42424200',
-        //    symbolColor: '#999999',
-        //    height: 32
-        // },
         webPreferences: {
             // Use pluginOptions.nodeIntegration, leave this alone
             // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -46,7 +41,6 @@ async function createWindow() {
             nodeIntegration: true,
             contextIsolation: false,
             devTools: true,
-            webviewTag: true
         }
     })
 

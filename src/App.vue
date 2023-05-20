@@ -25,25 +25,8 @@
                     }">
                 </v-list>
                 <v-divider></v-divider>
-                <!-- 动态标签页 -->
-                <v-list density="compact" nav>
-                    <v-list-item v-for="item in dynamicTabs" :title="item.name" @click="item.handleClick()"
-                        :key="item.name">
-                        <template #prepend>
-                            <v-icon>
-                                {{ item.icon }}
-                            </v-icon>
-                        </template>
-                        <template #append>
-                            <IconBtn size="small" icon="mdi-close" tooltip="关闭标签页" @click="item.handleClose()" />
-                        </template>
-                        <v-tooltip activator="parent" location="right">
-                            {{ item.name }}
-                        </v-tooltip>
-                    </v-list-item>
-                </v-list>
-
-                <v-spacer />
+                <!-- 标签页管理器 -->
+                <TabsMgr />
                 <!-- 性能监视器 -->
                 <PerformanceMonitor />
 
@@ -78,8 +61,8 @@ import PerformanceMonitor from "./components/PerformanceMonitor/PerformanceMonit
 import ContextMenuGlobalRenderArea from "./components/ContextMenuGlobalRenderArea.vue"
 import SystemBar from "./components/SystemBar.vue"
 import OpenMethodSelector from './components/Dialogs/OpenMethodSelector.vue';
+import TabsMgr from './components/TabsMgr.vue';
 
-const store = useMainStore()
 /*
 一.事件命名规范:
     1.UI事件 只传达某个UI状态改变的信息
@@ -92,6 +75,7 @@ const store = useMainStore()
         LifeCycle::clearMem
 */
 
+const store = useMainStore()
 const router = useRouter()
 const isSideDrawerOpen = ref<boolean>(true)
 const isSideDrawerRail = ref<boolean>(true)
@@ -127,7 +111,6 @@ const sidebarMainItems =
             value: "about"
         },
     ]
-const dynamicTabs = ref<Array<any>>([])
 
 const handleNavClick = (value: string) => {
     router.push(`/${value}`)
@@ -144,31 +127,6 @@ const imgOpacity = computed(() => {
 onMounted(async () => {
     // 是否显示主内容区滚动条
     store.mainContentScrollable = true
-    // 初始化事件
-    emitter.on("UI::addTabItem", ({ name, legalPath, icon, onClick, onClose }) => {
-        dynamicTabs.value.push({
-            name,
-            icon,
-            handleClick: () => {
-                router.push(`/${legalPath}`)
-                onClick()
-            },
-
-            handleClose: async () => {
-                // 执行onClose钩子
-                if (onClose) {
-                    // NOTE: onClose可以返回promise，也可以是普通的void函数
-                    // 使用时可以在onClose函数里面reject掉promise，这样会阻止标签页继续关闭
-                    await Promise.resolve(onClose)
-                }
-                // 移除标签页
-                dynamicTabs.value = dynamicTabs.value.filter(item => item.name !== name)
-
-                emitter.emit("Action::removeTab", { name })
-            }
-        })
-    })
-
     await nextTick()
     finishLoading.value = true
     emitter.emit("LifeCycle::finishedLoadingApp")
