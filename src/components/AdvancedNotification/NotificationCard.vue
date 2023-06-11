@@ -129,7 +129,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
 <script lang="ts">
 import { mapStores } from 'pinia'
-import { useMainStore } from "@/store"
+import { useMainStore } from "@/store/main"
 
 export default {
     props: {

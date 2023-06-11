@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import router from './router'
-import { useMainStore } from "./store"
+import { useMainStore } from "./store/main"
+import { useSettingsStore } from "./store/settings"
 import { createPinia } from "pinia"
 import vuetify from './plugins/vuetify'
 import { loadFonts } from './plugins/webfontloader'
@@ -8,7 +9,7 @@ import emitter from "./eventBus";
 import Electron from "electron";
 import utils from "./utils/utils";
 import ElectronStore from 'electron-store'
-import lodash from "lodash"
+import lodash, { debounce } from "lodash"
 import { nextTick } from 'process'
 
 // 全局组件
@@ -27,9 +28,22 @@ let pinia;
  * 3.async函数调用时没有加await
  * 4.await后的括号
  */
+/*
+一.事件命名规范:
+    1.UI事件 只传达某个UI状态改变的信息
+        UI::contextMenu::clickOutside
+    2.Action 强调动作
+        Action::showMsg
+    3.LifeCycle 生命周期事件
+        LifeCycle::finishedLoadingApp
+        LifeCycle::outOfMem
+        LifeCycle::clearMem
+*/
+
 class Application {
     private AppInstance
     private MainStore
+    private SettingsStore
 
     private initEvents() {
         global.emitter = emitter
@@ -40,19 +54,10 @@ class Application {
             emitter.emit('showMsg', { level: "error", msg: str });
         })
 
-        emitter.on("updateSettings", () => {
-            // 应用设置
-            this.applySettings();
-            // 保存设置
-            this.MainStore.setSettings();
-            // 通知用户
-            emitter.emit('showMsg', { level: "success", msg: "设置保存成功" });
-        })
-
         emitter.on("resetSettings", () => {
             nextTick(() => {
                 // 通知store
-                this.MainStore.resetSettings()
+                this.SettingsStore.resetSettings()
                 // 应用设置
                 this.applySettings();
                 // 通知用户
@@ -62,6 +67,10 @@ class Application {
                         msg: "设置重置成功。<br>有些设置可能需要重启app才能应用!"
                     })
             })
+        })
+
+        emitter.on('applySettings', () => {
+            this.applySettings()
         })
 
         emitter.on("showShade", () => {
@@ -84,20 +93,20 @@ class Application {
     private applySettings() {
         setTimeout(() => {
             // 黑色遮罩
-            if (this.MainStore.settings.find(item => item.name === "use_shade").value) {
+            if (this.SettingsStore.settings.find(item => item.name === "use_shade").value) {
                 console.log("shader on!");
                 emitter.emit("showShade");
             } else {
                 emitter.emit("closeShade");
             }
             // 窗口置顶
-            if (this.MainStore.settings.find(item => item.name === "on_top").value) {
+            if (this.SettingsStore.settings.find(item => item.name === "on_top").value) {
                 emitter.emit("setOnTop");
             } else {
                 emitter.emit("unsetOnTop");
             }
             // 颜色主题
-            if (this.MainStore.settings.find(item => item.name === "is_dark").value) {
+            if (this.SettingsStore.settings.find(item => item.name === "is_dark").value) {
                 vuetify.theme.global.name.value = 'DarkTheme'
                 document.querySelector("#app").setAttribute("data-theme-type", "dark")
             } else {
@@ -130,11 +139,13 @@ class Application {
             encryptionKey: "aes-256-cbc", // 对配置文件进行加密
             clearInvalidConfig: true, // 发生 SyntaxError  则清空配置
         })
-        // 使用插件并挂载
+        // 使用插件
         this.AppInstance.use(router)
         this.AppInstance.use(vuetify)
         this.AppInstance.use(pinia)
         this.MainStore = useMainStore()
+        this.SettingsStore = useSettingsStore()
+        // 根节点挂载
         this.AppInstance.mount('#app')
     }
 
@@ -180,15 +191,22 @@ class Application {
         })
     }
 
+    private initSettingsObserver() {
+        this.SettingsStore.$subscribe(debounce(() => {
+            this.applySettings()
+            this.SettingsStore.saveSettings()
+        }, 500))
+    }
+
     public initAll() {
         const startTime = Date.now()
-        console.log("init app")
         loadFonts()
         this.initEvents()
         this.initPinia()
         this.initVue()
-        this.showConsole()
+        this.initSettingsObserver()
         this.applySettings()
+        this.showConsole()
         if (utils.env === "development") {
             // this.toggleDevTools()
         }

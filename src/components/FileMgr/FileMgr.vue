@@ -2,9 +2,9 @@
     <!-- 对话框管理器 -->
     <DialogMgr ref="DialogMgrRef" :adapter="props.adapter" :refresh="refresh"></DialogMgr>
     <!-- 文件属性 -->
-    <DialogGenerator title="属性" v-model:isDialogOpen="models.isPropOpening">
+    <DialogGenerator title="属性" v-model:isDialogOpen="models.isPropOpening" width="700px">
         <template #mainContent>
-            <v-list lines="one">
+            <v-list lines="one" width="700px">
                 <v-list-subheader>属性值</v-list-subheader>
                 <v-list-item v-for="key in Object.keys(itemCache)" :key="key" :title="key">
                     <template #append>
@@ -39,7 +39,7 @@
                         </v-btn>
                     </template>
                     <v-card>
-                        <v-list lines="one">
+                        <v-list lines="one" width="300px">
                             <v-list-subheader>布局选项</v-list-subheader>
                             <v-list-item v-for="item in viewOptionsLists" :key="item.name" :title="item.name">
                                 <template #append>
@@ -248,9 +248,13 @@ const back = () => {
     }
 }
 
-const openFile = (filename) => {
+const openFile = (filename, fileguid) => {
+    const fileArg = new File()
+    fileArg.fileguid = fileguid
+    fileArg.fromAdapter(props.adapter, filename)
+
     emitter.emit('openFile', {
-        fileArg: new File().fromAdapter(props.adapter, filename),
+        fileArg,
         fileTypeArg: getExtName(filename)
     })
 }
@@ -278,7 +282,7 @@ const handleItemClick = (item) => {
     if (item.type === "folder") {
         currentDir.value.down(item.name)
     } else if (item.type === "file") {
-        openFile(item.name)
+        openFile(item.name, item.key)
     }
 }
 

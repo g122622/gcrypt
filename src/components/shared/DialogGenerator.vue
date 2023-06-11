@@ -16,7 +16,7 @@
             </v-card-text>
             <v-card-actions v-if="props.bottomActions">
                 <v-spacer></v-spacer>
-                <v-btn v-for="(item, index) in props.bottomActions" color="blue-darken-1" variant="text"
+                <v-btn v-for="(item, index) in props.bottomActions" color="blue-darken-1" variant="tonal"
                     @click="item.onClick" :key="index">
                     {{ item.text }}
                 </v-btn>

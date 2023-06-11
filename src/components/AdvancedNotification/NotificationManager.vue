@@ -17,7 +17,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 import TimeUtils from '../../utils/timeUtils'
 import NotificationCard from "./NotificationCard.vue";
 import { mapStores } from 'pinia'
-import { useMainStore } from "@/store";
+import { useMainStore } from "@/store/main";
 
 export default {
     name: 'NotificationManager',

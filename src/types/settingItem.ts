@@ -1,10 +1,16 @@
+import settingTypes from "./settingTypes"
+
 interface settingItem {
     name: string,
-    type: string,
+    type: settingTypes,
     value: string | boolean,
     des: string,
-    cat: string,
-    title: string
+    category: string,
+    title: string,
+    extra?: {
+        maxLimitation?: string,
+        minLimitation?: string
+    }
 }
 
 export default settingItem

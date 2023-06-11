@@ -13,29 +13,12 @@
             <!-- 顶部系统状态栏 -->
             <SystemBar />
             <!-- 左侧导航栏 -->
-            <v-navigation-drawer v-model="isSideDrawerOpen" :rail="isSideDrawerRail" permanent
-                @click="isSideDrawerRail = false" width="200">
-                <v-list-item prepend-avatar="./assets/avatar-ss.jpg" title="g122622" nav
-                    @click.stop="isSideDrawerRail = !isSideDrawerRail">
-                </v-list-item>
-                <v-divider></v-divider>
-                <!-- 静态标签页 -->
-                <v-list density="compact" nav :items="sidebarMainItems" @click:select="(value) => {
-                        handleNavClick(value.id as string);
-                    }">
-                </v-list>
-                <v-divider></v-divider>
-                <!-- 标签页管理器 -->
-                <TabsMgr />
-                <!-- 性能监视器 -->
-                <PerformanceMonitor />
-
-            </v-navigation-drawer>
+            <SideColumn />
 
             <!-- 顶部工具栏 -->
             <div id="ActionToolBar" />
             <!-- router主内容区 -->
-            <v-main :scrollable="store.mainContentScrollable">
+            <v-main :scrollable="mainStore.mainContentScrollable">
                 <router-view v-slot="{ Component }">
                     <keep-alive>
                         <component :is="Component" />
@@ -50,74 +33,24 @@
 <script setup lang="ts">
 import emitter from './eventBus'
 import { ref, computed, onMounted, nextTick } from "vue"
-import { useMainStore } from "./store"
-import { useRouter } from 'vue-router';
+import { useSettingsStore } from "./store/settings"
+import { useMainStore } from "./store/main"
 
 // 组件
 import MsgContainer from "./components/Msg/MsgContainer.vue"
 import BackgroundImg from "./components/BackgroundImg.vue"
 import NotificationManager from "./components/AdvancedNotification/NotificationManager.vue";
-import PerformanceMonitor from "./components/PerformanceMonitor/PerformanceMonitor.vue";
 import ContextMenuGlobalRenderArea from "./components/ContextMenuGlobalRenderArea.vue"
 import SystemBar from "./components/SystemBar.vue"
 import OpenMethodSelector from './components/Dialogs/OpenMethodSelector.vue';
-import TabsMgr from './components/TabsMgr.vue';
+import SideColumn from "./components/SideColumn.vue";
 
-/*
-一.事件命名规范:
-    1.UI事件 只传达某个UI状态改变的信息
-        UI::contextMenu::clickOutside
-    2.Action 强调动作
-        Action::showMsg
-    3.LifeCycle 生命周期事件
-        LifeCycle::finishedLoadingApp
-        LifeCycle::outOfMem
-        LifeCycle::clearMem
-*/
-
-const store = useMainStore()
-const router = useRouter()
-const isSideDrawerOpen = ref<boolean>(true)
-const isSideDrawerRail = ref<boolean>(true)
+const settingsStore = useSettingsStore()
+const mainStore = useMainStore()
 const finishLoading = ref<boolean>(false)
-const sidebarMainItems =
-    [
-        {
-            title: '主页',
-            props: {
-                prependIcon: 'mdi-home',
-            },
-            value: "home"
-        },
-        {
-            title: '加密库',
-            props: {
-                prependIcon: 'mdi-lock',
-            },
-            value: "store"
-        },
-        {
-            title: '设置',
-            props: {
-                prependIcon: 'mdi-cog',
-            },
-            value: "settings"
-        },
-        {
-            title: '关于',
-            props: {
-                prependIcon: 'mdi-information',
-            },
-            value: "about"
-        },
-    ]
-
-const handleNavClick = (value: string) => {
-    router.push(`/${value}`)
-}
 
 const imgOpacity = computed(() => {
-    let foo = Number(store.settings.find((item) => { return item.name === "background_img_transp" }).value) / 100
+    let foo = Number(settingsStore.settings.find((item) => { return item.name === "background_img_transp" }).value) / 100
     if (foo >= 1) {
         foo = 0.99999
     }
@@ -126,7 +59,7 @@ const imgOpacity = computed(() => {
 
 onMounted(async () => {
     // 是否显示主内容区滚动条
-    store.mainContentScrollable = true
+    mainStore.mainContentScrollable = true
     await nextTick()
     finishLoading.value = true
     emitter.emit("LifeCycle::finishedLoadingApp")
@@ -135,10 +68,10 @@ onMounted(async () => {
 </script>
 
 <style lang="less">
-@import url('./styles/globalVariables.less');
-@import url('./styles/globalVuetifyOverrides.less');
+@import './styles/globalVariables.less';
+@import './styles/globalVuetifyOverrides.less';
 
-@import url('./styles/scrollbars.less');
+@import './styles/scrollbars.less';
 
 html {
     width: 100%;

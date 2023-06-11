@@ -69,7 +69,7 @@
 
 <script setup lang="ts">
 import { version } from "vue";
-import { useMainStore } from "@/store"
+import { useMainStore } from "@/store/main"
 const store = useMainStore()
 
 interface Versions {

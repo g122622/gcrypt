@@ -26,10 +26,10 @@ import { ref, computed, onMounted } from "vue"
 import OpenMethodMgr from "@/api/OpenMethodMgr"
 import emitter from "@/eventBus"
 import File from "@/api/File"
-import { useMainStore } from "@/store"
+import { useSettingsStore } from "@/store/settings"
 import registerBulitinOpenMethods from "@/api/registerBuiltinOpenMethods"
 
-const store = useMainStore()
+const store = useSettingsStore()
 const fileType = ref<string>('')
 const isShowing = ref<boolean>(false)
 const isRememberMethod = ref<boolean>(false)
@@ -38,13 +38,8 @@ const openMethodMgr = new OpenMethodMgr()
 let currentFile: File = null
 let currentExtra = null
 
-const appointedFileOpenMethods = computed({
-    get() {
-        return JSON.parse(store.getSetting("appointed_file_open_methods"))
-    },
-    set(newVal) {
-        store.setSetting("appointed_file_open_methods", JSON.stringify(newVal))
-    }
+const appointedFileOpenMethods = computed(() => {
+    return JSON.parse(store.getSetting("appointed_file_open_methods"))
 })
 
 // 用于显示的列表
@@ -54,8 +49,8 @@ const methodsList = computed(() => {
 
 // 设置记住的打开方式
 const setAppointedMethod = (ft, nm) => {
-    // store.setSetting("appointed_file_open_methods",)
     appointedFileOpenMethods.value[ft] = nm
+    store.setSetting("appointed_file_open_methods", JSON.stringify(appointedFileOpenMethods.value))
 }
 
 // 每个item的点击事件handler
@@ -64,6 +59,7 @@ const onItemClick = (item) => {
         setAppointedMethod(fileType.value, item.name)
     }
     item.onSelected(currentFile, currentExtra)
+    isShowing.value = false
 }
 
 onMounted(() => {

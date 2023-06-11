@@ -1,8 +1,10 @@
 import fs from "fs-extra"
 import path from "path"
+import isFileOccupied from '@/utils/isFileOccupied'
 
 interface Options {
-    minUpdateIntervalMs: number
+    minUpdateIntervalMs: number,
+    destroyIfNotOccupied: boolean
 }
 
 class FileWatcher {
@@ -14,10 +16,13 @@ class FileWatcher {
     shouldChange = false
     onRename
     onChange
+    onDestroyed
+    private abortController: AbortController // watcher的中断控制器
+    private interval
 
     constructor(filePath, options: Options) {
         if (!fs.existsSync(filePath)) {
-            throw new Error(`要watch的文件不存在:${filePath}`)
+            throw new Error(`要watch的文件不存在: ${filePath}`)
         }
         this.filePath = filePath
         this.options = options
@@ -28,7 +33,8 @@ class FileWatcher {
     }
 
     private initWatcher() {
-        fs.watch(this.filePath, async (eventType, filename) => {
+        this.abortController = new AbortController()
+        fs.watch(this.filePath, { signal: this.abortController.signal }, async (eventType, filename) => {
             switch (eventType) {
                 case "rename":
                     this.shouldRename = true
@@ -43,17 +49,42 @@ class FileWatcher {
     }
 
     private initTimer() {
-        // TODO 销毁定时器
-        setInterval(() => {
+        let intervalNum = 0
+        this.interval = setInterval(async () => {
             // NOTE: 回调函数执行顺序有要求
             // 必须先执行onrename
             if (this.shouldRename) {
-                this.onRename(this.oldFilename, this.newFilename)
+                await this.onRename(this.oldFilename, this.newFilename)
             }
             if (this.shouldChange) {
-                this.onChange(this.newFilename)
+                await this.onChange(this.newFilename)
             }
+            /**
+             * NOTE:
+             * 由于setInterval会立即运行一次回调函数
+             * 为了避免外部程序反应不及时导致文件watcher一创建就被销毁
+             */
+            if (intervalNum >= 1 && this.options.destroyIfNotOccupied && !(await isFileOccupied(this.filePath))) {
+                if (this.options.destroyIfNotOccupied) {
+                    this.destroy()
+                }
+            }
+            intervalNum++
         }, this.options.minUpdateIntervalMs ?? 30000)
+    }
+
+    /**
+     * destroy 销毁实例
+     */
+    public destroy() {
+        // 销毁定时器
+        clearInterval(this.interval)
+        // 中止文件监听
+        this.abortController.abort()
+        // call hook
+        if (this.onDestroyed) {
+            this.onDestroyed()
+        }
     }
 }
 

@@ -10,31 +10,30 @@ const settingStore = new ElectronStore({
     clearInvalidConfig: true, // 发生 SyntaxError  则清空配置
 })
 
-export const useMainStore = defineStore("main", {
+export const useSettingsStore = defineStore("settings", {
     state() {
         if (!settingStore.has('timestamp')) {
             settingStore.store = { settings: defaultSettings, timestamp: Date.now() }
         }
         return {
             settings: <Array<settingItem>>settingStore.get("settings"),
-            COMPILE_DATE: COMPILE_DATE,
-            COMPILE_NUMBER: COMPILE_NUMBER,
-            notifications: [],
-            mainContentScrollable: true,
         }
     },
     actions: {
-        setSettings() {
+        /**
+         * 保存设置到本地磁盘
+         */
+        saveSettings() {
             settingStore.set("settings", this.settings)
             settingStore.set("timestamp", Date.now())
         },
         resetSettings() {
             this.settings = defaultSettings
-            this.setSettings()
+            this.saveSettings()
         },
         setSetting(name: string, value) {
             this.settings.find(item => item.name === name).value = value
-            this.setSettings()
+            this.saveSettings()
         },
         getSetting(name: string) {
             return this.settings.find(item => item.name === name).value

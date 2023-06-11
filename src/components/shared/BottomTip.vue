@@ -12,11 +12,11 @@
 </template>
 
 <script setup lang="ts">
-import { useMainStore } from "@/store"
+import { useSettingsStore } from "@/store/settings"
 import { log, error } from "@/utils/gyConsole";
 import axios from "axios";
 import { ref, onMounted, onActivated, computed } from "vue";
-const store = useMainStore()
+const store = useSettingsStore()
 
 const words = ref<string>("")
 const fromWhere = ref<string>("")

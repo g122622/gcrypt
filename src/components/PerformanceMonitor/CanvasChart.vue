@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch, toRef } from "vue"
+import { onMounted, onUnmounted } from "vue"
 import Chart, { ChartConfiguration } from 'chart.js/auto';
 import { memoryUsage } from "memoryUsage";
 import utils from "@/utils/utils";

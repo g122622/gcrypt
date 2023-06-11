@@ -1,9 +1,14 @@
 <template>
-    <div class="file-item" :class="fileItemClass" v-ripple ref="fileItemElement">
+    <div class="file-item" :class="fileItemClassList" v-ripple ref="fileItemElement">
+        <v-tooltip activator="parent" location="right" open-delay="500">
+            {{ singleFileItem.name }}
+        </v-tooltip>
         <!-- 前置内容 -->
         <div style="display: flex;justify-content: flex-start;align-items: center;"
             :style="{ flexDirection: (displayMode === 1 ? 'column' : 'row') }">
-            <img v-if="singleFileItem.type === `folder`" :src="`./assets/fileTypes/folder.png`" class="file-types-image" />
+            <div v-if="singleFileItem.type === `folder`">
+                <img :src="`./assets/fileTypes/folder.png`" class="file-types-image" />
+            </div>
             <div v-if="singleFileItem.type === `file`">
                 <img v-if="thumbnail" :src="toDataURL(thumbnail)" class="file-thumbnail-img" />
                 <img v-else :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`" class="file-types-image" />
@@ -38,6 +43,8 @@
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import getFileType from "@/utils/getFileType";
 import { computed } from "vue";
+import { useMainStore } from "@/store/main"
+const mainStore = useMainStore()
 
 interface Props {
     displayMode: number,
@@ -55,12 +62,23 @@ const toDataURL = (str: string) => {
 const isHidden = computed(() => {
     return props.singleFileItem.name[0] === "."
 })
-const fileItemClass = computed(() => {
+const fileItemClassList = computed(() => {
     return {
         'file-item-list': props.displayMode === 0,
         'file-item-item': props.displayMode === 1,
         'file-item-hidden': isHidden.value
     }
+})
+const markerColor = computed(() => {
+    if (mainStore.activeFiles.get(props.singleFileItem.key)) {
+        if (mainStore.activeFiles.get(props.singleFileItem.key).isUsingTempFile) {
+            return '#FFC300'
+        }
+        if (mainStore.activeFiles.get(props.singleFileItem.key).isOpen) {
+            return '#23B6FC'
+        }
+    }
+    return 'none'
 })
 </script>
 
@@ -80,9 +98,6 @@ const fileItemClass = computed(() => {
     align-items: center;
     transition: 0.25s;
     cursor: pointer;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
 
     z-index: 1; // 为了全局contextmenu的右键点击激发区域在file-item之下
 
@@ -137,8 +152,22 @@ const fileItemClass = computed(() => {
 }
 
 .file-name {
+    display: list-item;
+    list-style-position: inside;
+
+    max-width: 100px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+
     font-size: 16px;
     margin-left: 10px;
     margin-right: 10px;
+}
+
+.file-name::marker {
+    content: v-bind("markerColor === 'none' ? `''` : `'• '`");
+    font-weight: 900;
+    color: v-bind('markerColor');
 }
 </style>

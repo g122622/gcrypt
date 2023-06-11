@@ -1,6 +1,8 @@
 import emitter from "@/eventBus"
 import WebBrowser from "@/components/WebBrowser/WebBrowser.vue";
 import ImageViewer from "@/components/ImageViewer/ImageViewer.vue"
+import File from "@/api/File";
+import Electron from 'electron'
 
 /**
  * 注册内置方法
@@ -12,7 +14,7 @@ export default async function registerBulitinOpenMethods(mgr) {
         name: "内置浏览器打开",
         icon: 'mdi-earth',
         fileType: ['html', 'txt', 'js'],
-        async onSelected(file) {
+        async onSelected(file: File) {
             emitter.emit("Action::addTab",
                 {
                     name: `浏览器-${await file.read()}`,
@@ -27,7 +29,7 @@ export default async function registerBulitinOpenMethods(mgr) {
         name: "内置图片查看器",
         icon: 'mdi-image',
         fileType: ['jpg', 'jpeg', 'png', 'gif'],
-        async onSelected(file) {
+        async onSelected(file: File) {
             emitter.emit("Action::addTab",
                 {
                     name: '图片查看器',
@@ -43,7 +45,7 @@ export default async function registerBulitinOpenMethods(mgr) {
         name: "生成md5值",
         icon: 'mdi-folder-pound',
         fileType: /./,
-        async onSelected(file) {
+        async onSelected(file: File) {
             // TODO const md5 = await getMD5(await file.read())
             // TODO showMsg
         }
@@ -52,7 +54,7 @@ export default async function registerBulitinOpenMethods(mgr) {
         name: "外部打开(写入本地文件系统缓存,并监听写入以同步)",
         icon: 'mdi-open-in-new',
         fileType: /./,
-        async onSelected(file) {
+        async onSelected(file: File) {
             const tmpdir = await file.toTempFile()
             Electron.shell.openExternal(tmpdir)
         }
