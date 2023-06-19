@@ -1,23 +1,24 @@
-import { createApp } from 'vue'
-import router from './router'
-import { useMainStore } from "./store/main"
-import { useSettingsStore } from "./store/settings"
-import { createPinia } from "pinia"
-import vuetify from './plugins/vuetify'
-import { loadFonts } from './plugins/webfontloader'
+import { createApp } from 'vue';
+import router from './router';
+import { useMainStore } from "./store/main";
+import { useSettingsStore } from "./store/settings";
+import { createPinia } from "pinia";
+import vuetify from './plugins/vuetify';
+import { loadFonts } from './plugins/webfontloader';
 import emitter from "./eventBus";
 import Electron from "electron";
 import utils from "./utils/utils";
-import ElectronStore from 'electron-store'
-import lodash, { debounce } from "lodash"
-import { nextTick } from 'process'
+import ElectronStore from 'electron-store';
+import lodash, { debounce } from "lodash";
+import { nextTick } from 'process';
 
 // 全局组件
-import VueApp from './App.vue'
+import VueApp from './App.vue';
 import BottomTip from "./components/shared/BottomTip.vue";
 import ActionToolBarBase from "./components/shared/ActionToolBarBase.vue";
 import IconBtn from "./components/shared/IconBtn.vue";
 import DialogGenerator from "./components/shared/DialogGenerator.vue";
+import AdvancedList from "./components/shared/AdvancedList.vue";
 
 let pinia;
 
@@ -118,6 +119,8 @@ class Application {
 
     private initPinia() {
         pinia = createPinia()
+        // eslint-disable-next-line dot-notation
+        window['pinia'] = pinia
     }
 
     private initVue() {
@@ -131,14 +134,8 @@ class Application {
         this.AppInstance.component("ActionToolBarBase", ActionToolBarBase)
         this.AppInstance.component("IconBtn", IconBtn)
         this.AppInstance.component("DialogGenerator", DialogGenerator)
-        // 初始化electron-store
-        this.AppInstance.config.globalProperties.$electronStore = new ElectronStore({
-            name: "data", // 文件名称,默认 config
-            fileExtension: "json", // 文件后缀,默认json
-            //  cwd: Electron.app.getPath('userData'), // 文件位置,尽量不要动，默认情况下，它将通过遵循系统约定来选择最佳位置。C:\Users\xxx\AppData\Roaming\test\config.json
-            encryptionKey: "aes-256-cbc", // 对配置文件进行加密
-            clearInvalidConfig: true, // 发生 SyntaxError  则清空配置
-        })
+        this.AppInstance.component("AdvancedList", AdvancedList)
+
         // 使用插件
         this.AppInstance.use(router)
         this.AppInstance.use(vuetify)
@@ -149,7 +146,7 @@ class Application {
         this.AppInstance.mount('#app')
     }
 
-    private showConsole() {
+    private showNotesInConsole() {
         console.log(
             '%cNOTE | Early development',
             `
@@ -206,7 +203,7 @@ class Application {
         this.initVue()
         this.initSettingsObserver()
         this.applySettings()
-        this.showConsole()
+        this.showNotesInConsole()
         if (utils.env === "development") {
             // this.toggleDevTools()
         }

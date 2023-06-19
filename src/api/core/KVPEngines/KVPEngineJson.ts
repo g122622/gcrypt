@@ -1,10 +1,11 @@
-import sharedUtils from "../../../../utils/sharedUtils"
-import storageLibMetaData from "../../types/storageLibMetaData"
-import fileTable from "../../types/fileTable";
-import getFileName from "../../../../utils/getFileName";
+import sharedUtils from "@/utils/sharedUtils"
+import storageLibMetaData from "../types/storageLibMetaData"
+import fileTable from "../types/fileTable";
+import getFileName from "@/utils/getFileName";
 import fs from "fs-extra";
+import KVPEngineBase from "../types/KVPEngineBase";
 
-class KVPEngineJson {
+class KVPEngineJson extends KVPEngineBase {
     private currentJson = null
     private currentSrc: string = null
     private encryptionEngine
@@ -19,21 +20,13 @@ class KVPEngineJson {
         this.encryptionEngine = encryptionEngine
         this.encryptionEngine.init(pwd)
 
-        // 密码是无效字符串
-        if (!pwd) {
-            console.error("密码是无效字符串")
-            console.log(pwd)
-            throw pwd
-        }
         if (fs.existsSync(src)) {
             this.currentJson = JSON.parse(await fs.readFile(src, 'utf-8'))
             // 随便进行一个读取操作，检测密码是否错误
             try {
                 await this.getData(this.currentJson.meta.entryKey)
             } catch (e) {
-                console.error("密码错误", e)
-                console.log(pwd)
-                throw pwd
+                throw new Error("wrong-password")
             }
         } else {
             await this._createNewStore(src, getFileName(src))

@@ -56,10 +56,22 @@
             <div class="bottom">
                 <v-list-subheader>构建信息</v-list-subheader>
                 构建日期：
-                {{ store["COMPILE_DATE"] }}
+                {{ store.COMPILE_DATE }}
                 <br>
                 构建号：
-                {{ store["COMPILE_NUMBER"] }}
+                {{ store.COMPILE_NUMBER }}
+                <br>
+                构建平台：
+                {{ store.COMPILE_PLATFORM }}
+                <br>
+                构建CPU信息：
+                {{ store.COMPILE_CPU }}
+                <br>
+                构建内存信息：
+                {{ store.COMPILE_MEM }}
+                <br>
+                构建环境：
+                {{ store.COMPILE_ENV }}
             </div>
 
         </v-card>
@@ -107,7 +119,8 @@ const depLibsTableData = [
 <style scoped lang="less">
 .bottom {
     font-size: 15px;
-    padding: 15px;
+    white-space: pre-wrap;
+    padding: 10px 25px 10px 25px;
 }
 
 .image {

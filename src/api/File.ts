@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 import os from "os";
 import path from "path";
 import fs from "fs-extra";
@@ -8,8 +9,15 @@ import AdapterBase from "./core/types/AdapterBase";
 
 import { useSettingsStore } from "@/store/settings"
 import { useMainStore } from "@/store/main"
-const settingsStore = useSettingsStore()
-const mainStore = useMainStore()
+import emitter from "@/eventBus";
+let settingsStore = null
+let mainStore = null
+
+// 初始化过早会导致找不到活跃pinia实例
+emitter.on('LifeCycle::finishedLoadingApp', () => {
+    settingsStore = useSettingsStore(window['pinia'])
+    mainStore = useMainStore(window['pinia'])
+})
 
 class File {
     private data
@@ -20,6 +28,7 @@ class File {
     public type: number
 
     constructor(fileguid) {
+        this.fileguid = fileguid
         mainStore.setFileActiveState(fileguid, 'file', this)
     }
 

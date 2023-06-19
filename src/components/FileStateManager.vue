@@ -11,12 +11,11 @@
 
             <v-card width="600" height='350'>
                 <!-- 主内容 -->
-                <v-list lines="one" width="700px">
+                <v-list lines="one" width="590px">
                     <v-list-subheader>打开的文件</v-list-subheader>
                     <v-list-item v-for="item in listItems" :key="item.key" :title="item.key">
                         <template #append>
-                            {{ item.value.isOpen }}
-                            {{ item.value.isUsingTempFile }}
+                            <IconBtn icon="mdi-information" :tooltip="getTooltip(item.value)" size="small" />
                             <IconBtn icon="mdi-close" tooltip="解除占用(inactivate)" size="small"
                                 @click="File.inactivateFile(item.key)" />
                         </template>
@@ -24,6 +23,13 @@
                 </v-list>
                 <v-divider />
                 <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn variant="text" @click="isMenuOpen = false">
+                        退出
+                    </v-btn>
+                    <v-btn color="primary" variant="text" @click="inactivateAllFiles()">
+                        解除全部
+                    </v-btn>
                 </v-card-actions>
             </v-card>
         </v-menu>
@@ -45,6 +51,17 @@ const listItems = computed(() => {
     })
     return res
 })
+const getTooltip = (item: FileActiveState) => {
+    return `
+    isOpen: ${item.isOpen},
+    isUsingTempFile: ${item.isUsingTempFile}
+    `
+}
+const inactivateAllFiles = () => {
+    mainStore.activeFiles.forEach((value, key) => {
+        File.inactivateFile(key)
+    })
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

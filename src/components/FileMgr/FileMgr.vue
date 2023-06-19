@@ -249,8 +249,7 @@ const back = () => {
 }
 
 const openFile = (filename, fileguid) => {
-    const fileArg = new File()
-    fileArg.fileguid = fileguid
+    const fileArg = new File(fileguid)
     fileArg.fromAdapter(props.adapter, filename)
 
     emitter.emit('openFile', {

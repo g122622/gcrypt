@@ -14,7 +14,6 @@
             <SystemBar />
             <!-- 左侧导航栏 -->
             <SideColumn />
-
             <!-- 顶部工具栏 -->
             <div id="ActionToolBar" />
             <!-- router主内容区 -->

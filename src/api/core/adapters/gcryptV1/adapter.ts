@@ -5,9 +5,10 @@ import dirSingleItem from "../../types/dirSingleItem";
 import fileTable from "../../types/fileTable";
 import lodash from "lodash";
 import AdapterBase from "@/api/core/types/AdapterBase"
+import KVPEngineBase from "../../types/KVPEngineBase";
 
 class Adapter extends AdapterBase {
-    private KVPEngine
+    private KVPEngine: KVPEngineBase
     private encryptionEngine
     private currentDirectory: Addr
     private currentFileTable: fileTable
@@ -18,7 +19,7 @@ class Adapter extends AdapterBase {
      * @param storageSrc example:C:/gy/store.json
      * @param pwd
      */
-    public initAdapter = async function (storageSrc, pwd, KVPEngine, encryptionEngine, adapterGuid = null) {
+    public initAdapter = async function (storageSrc, pwd, KVPEngine: KVPEngineBase, encryptionEngine, adapterGuid = null) {
         this.adapterGuid = adapterGuid ?? sharedUtils.getHash(16)
         this.KVPEngine = KVPEngine
         this.encryptionEngine = encryptionEngine
@@ -81,7 +82,7 @@ class Adapter extends AdapterBase {
         // 缓存未命中
         if (foo.isRoot()) {
             const entryKey: string = (await this.KVPEngine.getMeta()).entryKey
-            const tempTable: fileTable = <fileTable>JSON.parse((await this.KVPEngine.getData(entryKey)).toString())
+            const tempTable: fileTable = JSON.parse((await this.KVPEngine.getData(entryKey)).toString())
             this._cacheFileTables(tempTable, foo)
             return tempTable
         } else {

@@ -5,7 +5,6 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import emitter from "../eventBus"
 const dayjsCustomParseFormat = require('dayjs/plugin/customParseFormat')
 const dayjsDuration = require('dayjs/plugin/duration')
 const dayjs = require('dayjs')
@@ -14,7 +13,6 @@ dayjs.extend(dayjsDuration)
 const ColorUtils = require('./colorUtils.js')
 const PATH = require('path')
 const fs = require('fs')
-const MIME = require('mime-types')
 const lodash = require('lodash')
 const electron = require('electron')
 const mainWindow = null
