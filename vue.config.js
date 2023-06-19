@@ -1,4 +1,3 @@
-import prettyBytes from "./src/utils/prettyBytes"
 /* eslint-disable quote-props */
 const { defineConfig } = require('@vue/cli-service')
 const webpack = require('webpack');
@@ -25,6 +24,16 @@ const generateBuildNumber = () => {
         res += mapTable[randomRange(0, mapTable.length - 1)]
     }
     return res;
+}
+
+function prettyBytes(bytes, decimals) {
+    if (isNaN(parseInt(bytes))) return 'unknown'
+    if (bytes === 0) return '0 Bytes'
+    const k = 1024
+    const dm = decimals <= 0 ? 0 : decimals || 2
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
 
 module.exports = defineConfig({
