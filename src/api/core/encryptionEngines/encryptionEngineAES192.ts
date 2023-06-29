@@ -10,7 +10,7 @@ const EncryptConfig = {
     outputStringEncoding: 'base64'
 }
 
-class encryptionEngineAES192 {
+class EncryptionEngineAES192 {
     private currentPwd: string = null
 
     public init(pwd) {
@@ -58,4 +58,4 @@ class encryptionEngineAES192 {
     }
 }
 
-export default encryptionEngineAES192
+export default EncryptionEngineAES192

@@ -3,9 +3,12 @@ interface EntryJson {
     createdTime: number,
     accessedTime: number,
     storageName:string,
-    comment:string,
-    extra: {
-        entryKey?,
+    comment: string,
+    storeType: string,
+    config: {
+        KVPEngine: string,
+        adapter: string,
+        encryptionEngine: string
     }
 }
 

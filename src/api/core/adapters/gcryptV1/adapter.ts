@@ -1,29 +1,42 @@
 import { error } from "@/utils/gyConsole";
 import sharedUtils from "@/utils/sharedUtils";
-import Addr from "../../common/Addr";
-import dirSingleItem from "../../types/dirSingleItem";
-import fileTable from "../../types/fileTable";
+import Addr from "@/api/core/common/Addr";
+import dirSingleItem from "@/api/core/types/dirSingleItem";
+import fileTable from "@/api/core/types/fileTable";
 import lodash from "lodash";
 import AdapterBase from "@/api/core/types/AdapterBase"
-import KVPEngineBase from "../../types/KVPEngineBase";
+import KVPEngineBase from "@/api/core/types/KVPEngineBase";
 
-class Adapter extends AdapterBase {
+class GcryptV1Adapter extends AdapterBase {
     private KVPEngine: KVPEngineBase
     private encryptionEngine
     private currentDirectory: Addr
     private currentFileTable: fileTable
     private cachedFileTables: Array<{ fileTable: fileTable, dir: Addr }> = []
+    private storageEntrySrc
     public adapterGuid: string
+
     /**
      * 初始化adapter，若不存在，则根据传入的src的末尾文件名解析出storeName
-     * @param storageSrc example:C:/gy/store.json
+     * @param storageEntrySrc example:C:/gy/store.json
      * @param pwd
      */
-    public initAdapter = async function (storageSrc, pwd, KVPEngine: KVPEngineBase, encryptionEngine, adapterGuid = null) {
+    public initAdapter = async function (storageEntrySrc, pwd, KVPEngine: KVPEngineBase, encryptionEngine, adapterGuid = null) {
         this.adapterGuid = adapterGuid ?? sharedUtils.getHash(16)
         this.KVPEngine = KVPEngine
         this.encryptionEngine = encryptionEngine
-        await this.KVPEngine.init(storageSrc, pwd, encryptionEngine)
+        this.storageEntrySrc = storageEntrySrc
+        await this.KVPEngine.init(storageEntrySrc, pwd, encryptionEngine, async (store: KVPEngineBase) => {
+            // 若为第一次使用该库，则初始化
+            const entryKey = sharedUtils.getHash(32)
+            // 准备根目录filetable
+            const fileTableData: fileTable = {
+                selfKey: entryKey,
+                items: []
+            }
+            await store.setData("entryKey", Buffer.from(entryKey))
+            await store.setData(entryKey, Buffer.from(JSON.stringify(fileTableData)))
+        })
         this.currentDirectory = new Addr("")
         this.currentFileTable = await this._getFileTable(this.currentDirectory)
     }
@@ -81,7 +94,7 @@ class Adapter extends AdapterBase {
 
         // 缓存未命中
         if (foo.isRoot()) {
-            const entryKey: string = (await this.KVPEngine.getMeta()).entryKey
+            const entryKey: string = (await this.KVPEngine.getData("entryKey")).toString()
             const tempTable: fileTable = JSON.parse((await this.KVPEngine.getData(entryKey)).toString())
             this._cacheFileTables(tempTable, foo)
             return tempTable
@@ -261,13 +274,6 @@ class Adapter extends AdapterBase {
     public getCurrentFileTable = async function (): Promise<fileTable> {
         return lodash.cloneDeep(this.currentFileTable)
     }
-
-    /**
-     * 获取当前存储库的元数据（不是文件的元数据）
-     */
-    public getMeta = async function () {
-        return await this.KVPEngine.getMeta()
-    }
 }
 
-export default Adapter
+export default GcryptV1Adapter

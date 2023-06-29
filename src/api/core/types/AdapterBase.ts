@@ -13,7 +13,6 @@ abstract class AdapterBase {
     public abstract mkdir
     public abstract deleteFile
     public abstract getCurrentFileTable
-    public abstract getMeta
     // public abstract renameFile
 }
 

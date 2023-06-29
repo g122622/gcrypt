@@ -93,6 +93,7 @@ const markerColor = computed(() => {
 .file-item {
     border-radius: 10px;
     background-color: rgba(131, 131, 131, 0.3);
+    overflow: hidden;
     color: white;
     display: flex;
     align-items: center;

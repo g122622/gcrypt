@@ -2,7 +2,7 @@
     <div id="words" v-if="showWords && useBottomTip" @mouseover="handleMouseOver()" @mouseleave="handleMouseLeave()">
         {{ words }}
         <span class="from-where" :style="{
-            width: showMoreDetails ? '' : '0px',
+            width: showMoreDetails ? `${fromWhere.length + 7}em` : '0px',
             opacity: showMoreDetails ? '1' : '0'
         }">
             出处: {{ fromWhere }}
@@ -79,5 +79,8 @@ const handleMouseLeave = () => {
 .from-where {
     display: inline-block;
     transition: all 0.3s;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 </style>

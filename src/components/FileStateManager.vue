@@ -9,18 +9,18 @@
                 </v-btn>
             </template>
 
-            <v-card width="600" height='350'>
+            <v-card width="600" height='400'>
                 <!-- 主内容 -->
-                <v-list lines="one" width="590px">
-                    <v-list-subheader>打开的文件</v-list-subheader>
-                    <v-list-item v-for="item in listItems" :key="item.key" :title="item.key">
+                <AdvancedList lines="two" subheader="打开的文件" :items="listItems" useBottomTip useSearch
+                    v-slot="{ matchedItems }" width="590px" height="215px">
+                    <v-list-item v-for="item in matchedItems" :key="item.key" :title="item.key">
                         <template #append>
                             <IconBtn icon="mdi-information" :tooltip="getTooltip(item.value)" size="small" />
                             <IconBtn icon="mdi-close" tooltip="解除占用(inactivate)" size="small"
                                 @click="File.inactivateFile(item.key)" />
                         </template>
                     </v-list-item>
-                </v-list>
+                </AdvancedList>
                 <v-divider />
                 <v-card-actions>
                     <v-spacer></v-spacer>

@@ -103,44 +103,44 @@
                         <FileItem :displayMode="viewOptions.itemDisplayMode" :singleFileItem="item" :index="index"
                             @click="handleItemClick(item)" :thumbnail="thumbnails[item.key] || ''">
                             <ContextMenu :width="200" :menuList="[
-                                    {
-                                        text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemClick(item) } }
-                                    },
-                                    {
-                                        text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile(item.name, item.key) } }
-                                    },
-                                    {
-                                        text: '重命名', icon: 'mdi-rename-box', actions: { onClick: () => { /* renameFile(item.name)*/ } }
-                                    },
-                                    {
-                                        type: 'divider'
-                                    },
-                                    {
-                                        text: '属性', icon: 'mdi-information', actions: { onClick: () => { handlePropertiesClick(item) } }
-                                    }]">
+                                {
+                                    text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemClick(item) } }
+                                },
+                                {
+                                    text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile(item.name, item.key) } }
+                                },
+                                {
+                                    text: '重命名', icon: 'mdi-rename-box', actions: { onClick: () => { /* renameFile(item.name)*/ } }
+                                },
+                                {
+                                    type: 'divider'
+                                },
+                                {
+                                    text: '属性', icon: 'mdi-information', actions: { onClick: () => { handlePropertiesClick(item) } }
+                                }]">
                             </ContextMenu>
                         </FileItem>
                     </div>
                     <!-- </TransitionGroup> -->
                 </div>
                 <div v-else style=" display:flex;justify-content: center;flex-direction: column;align-items: center;">
-                    <img src="./assets/fileMgr/noData.png" style="width:270px;" />
+                    <img src="./assets/fileMgr/404.png" style="width:270px;" />
                     当前目录下没有文件
                 </div>
                 <BottomTip></BottomTip>
                 <ContextMenu :width="200" :menuList="[
-                        {
-                            text: '上一级目录', icon: 'mdi-arrow-up', actions: { onClick: () => { up() } }
-                        },
-                        {
-                            text: '后退', icon: 'mdi-arrow-left', actions: { onClick: () => { back() } }
-                        },
-                        {
-                            type: 'divider'
-                        },
-                        {
-                            text: '刷新', icon: 'mdi-refresh', actions: { onClick: () => { refresh() } }
-                        }]">
+                    {
+                        text: '上一级目录', icon: 'mdi-arrow-up', actions: { onClick: () => { up() } }
+                    },
+                    {
+                        text: '后退', icon: 'mdi-arrow-left', actions: { onClick: () => { back() } }
+                    },
+                    {
+                        type: 'divider'
+                    },
+                    {
+                        text: '刷新', icon: 'mdi-refresh', actions: { onClick: () => { refresh() } }
+                    }]">
                 </ContextMenu>
             </v-main>
         </v-app>

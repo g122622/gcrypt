@@ -1,35 +1,33 @@
-import sharedUtils from "@/utils/sharedUtils"
-import storageLibMetaData from "../types/storageLibMetaData"
-import fileTable from "../types/fileTable";
-import getFileName from "@/utils/getFileName";
 import fs from "fs-extra";
 import KVPEngineBase from "../types/KVPEngineBase";
 
+const calcDataJsonSrc = (entryJsonSrc, dataJsonFileName: string) => {
+    let foo = entryJsonSrc.split("/")
+    foo.pop()
+    foo.push(dataJsonFileName)
+    return foo.join("/")
+}
+
 class KVPEngineJson extends KVPEngineBase {
     private currentJson = null
-    private currentSrc: string = null
+    private currentDataJsonSrc: string = null
     private encryptionEngine
 
     /**
      * 初始化jsonStorage
-     * @param src 若不存在，就建一个新的
+     * @param storeEntryJsonSrc 入口json文件的绝对路径，不是data.json的路径！！！
      * @param pwd 密码
      */
-    public init = async (src: string, pwd: string, encryptionEngine) => {
-        this.currentSrc = src
+    public init = async (storeEntryJsonSrc: string, pwd: string, encryptionEngine, onNewStore: (store) => null) => {
+        this.currentDataJsonSrc = calcDataJsonSrc(storeEntryJsonSrc, "data.json")
         this.encryptionEngine = encryptionEngine
         this.encryptionEngine.init(pwd)
 
-        if (fs.existsSync(src)) {
-            this.currentJson = JSON.parse(await fs.readFile(src, 'utf-8'))
-            // 随便进行一个读取操作，检测密码是否错误
-            try {
-                await this.getData(this.currentJson.meta.entryKey)
-            } catch (e) {
-                throw new Error("wrong-password")
-            }
+        if (fs.existsSync(this.currentDataJsonSrc)) {
+            this.currentJson = JSON.parse(await fs.readFile(this.currentDataJsonSrc, 'utf-8'))
         } else {
-            await this._createNewStore(src, getFileName(src))
+            await this.createNewStore()
+            await onNewStore(this)
         }
     }
 
@@ -38,26 +36,11 @@ class KVPEngineJson extends KVPEngineBase {
      * @param storageName
      * @param comment
      */
-    public getEmptyJson = (storageName: string, comment: string = null) => {
-        const dateNum: number = new Date().getTime()
-        const hash = sharedUtils.getHash(32)
+    public getEmptyJson = () => {
         const res = {
-            meta: <storageLibMetaData>{
-                modifiedTime: dateNum,
-                createdTime: dateNum,
-                accessedTime: dateNum,
-                storageName,
-                comment,
-                entryKey: hash
-            },
-            data: {}
+            data: {},
+            extra: {}
         }
-        // 准备根目录filetable
-        const fileTableData: fileTable = {
-            selfKey: hash,
-            items: []
-        }
-        res.data[hash] = this.encryptionEngine.encrypt(Buffer.from(JSON.stringify(fileTableData)))
         return res
     }
 
@@ -65,7 +48,7 @@ class KVPEngineJson extends KVPEngineBase {
      * 将内存和本地数据同步
      */
     private sync = async () => {
-        await fs.writeFile(this.currentSrc, JSON.stringify(this.currentJson))
+        await fs.writeFile(this.currentDataJsonSrc, JSON.stringify(this.currentJson))
     }
 
     /**
@@ -74,21 +57,9 @@ class KVPEngineJson extends KVPEngineBase {
      * @param storageName
      * @param comment
      */
-    private _createNewStore = async (src: string, storageName: string, comment: string = null) => {
-        this.currentJson = this.getEmptyJson(storageName, comment)
-        this.currentSrc = src
+    private createNewStore = async () => {
+        this.currentJson = this.getEmptyJson()
         await this.sync()
-    }
-
-    /**
-     * 写入新数据
-     * @param buf
-     */
-    private createNewData = async (buf: Buffer) => {
-        const hash = <string>sharedUtils.getHash(32)
-        this.currentJson.data[hash] = buf.toString()
-        await this.sync()
-        return hash
     }
 
     /**
@@ -111,13 +82,6 @@ class KVPEngineJson extends KVPEngineBase {
      * @param buf
      */
     public setData = async (hash: string, buf: Buffer) => {
-        // if (buf.length === 0) { // 空字符串会被json解析的时候忽略
-        //     return new Promise<void>((resolve) => {
-        //         currentJson.data[hash] = encrypt(Buffer.from("no data"))
-        //         sync()
-        //         resolve()
-        //     })
-        // }
         this.currentJson.data[hash] = this.encryptionEngine.encrypt(buf)
         await this.sync()
     }
@@ -130,14 +94,6 @@ class KVPEngineJson extends KVPEngineBase {
     public deleteData = async (hash: string) => {
         delete this.currentJson.data[hash]
         await this.sync()
-    }
-
-    public getMeta = async (): Promise<storageLibMetaData> => {
-        return this.currentJson.meta
-    }
-
-    public setMeta = async (meta: storageLibMetaData) => {
-        this.currentJson.meta = meta
     }
 }
 

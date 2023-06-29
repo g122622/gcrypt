@@ -3,6 +3,7 @@ import WebBrowser from "@/components/WebBrowser/WebBrowser.vue";
 import ImageViewer from "@/components/ImageViewer/ImageViewer.vue"
 import File from "@/api/File";
 import Electron from 'electron'
+import FroalaEditor from "@/components/FroalaEditor/FroalaEditor.vue";
 
 /**
  * 注册内置方法
@@ -57,6 +58,22 @@ export default async function registerBulitinOpenMethods(mgr) {
         async onSelected(file: File) {
             const tmpdir = await file.toTempFile()
             Electron.shell.openExternal(tmpdir)
+        }
+    })
+    mgr.registerMethod({
+        name: "FroalaEditor",
+        icon: 'mdi-file-edit',
+        fileType: ['txt', 'html'],
+        async onSelected(file: File) {
+            emitter.emit("Action::addTab",
+                {
+                    name: 'FroalaEditor',
+                    component: FroalaEditor,
+                    icon: "mdi-file-edit",
+                    onClick: () => null,
+                    props: { file }
+                }
+            )
         }
     })
 }
