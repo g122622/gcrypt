@@ -45,38 +45,6 @@ const defaultSettings = <Array<settingItem>>[
         category: "开发者"
     },
     {
-        name: "test1",
-        type: SettingTypes.button,
-        value: `parent.emitter.emit('showMsg', { level: 'error', msg: '${text}' })`,
-        title: "显示error通知",
-        des: "nothing",
-        category: "测试"
-    },
-    {
-        name: "test2",
-        type: SettingTypes.button,
-        value: `parent.emitter.emit('showMsg', { level: 'warning', msg: '${text}' })`,
-        title: "显示warning通知",
-        des: "nothing",
-        category: "测试"
-    },
-    {
-        name: "test3",
-        type: SettingTypes.button,
-        value: `parent.emitter.emit('showMsg', { level: 'info', msg: '${text}' })`,
-        title: "显示info通知",
-        des: "nothing",
-        category: "测试"
-    },
-    {
-        name: "test4",
-        type: SettingTypes.button,
-        value: `parent.emitter.emit('showMsg', { level: 'success', msg: '${text}' })`,
-        title: "显示success通知",
-        des: "nothing",
-        category: "测试"
-    },
-    {
         name: "is_dark",
         type: SettingTypes.switcher,
         value: true,
@@ -151,6 +119,38 @@ const defaultSettings = <Array<settingItem>>[
             maxLimitation: '60000',
             minLimitation: '1000'
         }
+    },
+    {
+        name: "test1",
+        type: SettingTypes.button,
+        value: `parent.emitter.emit('showMsg', { level: 'error', msg: '${text}' })`,
+        title: "显示error通知",
+        des: "nothing",
+        category: "测试"
+    },
+    {
+        name: "test2",
+        type: SettingTypes.button,
+        value: `parent.emitter.emit('showMsg', { level: 'warning', msg: '${text}' })`,
+        title: "显示warning通知",
+        des: "nothing",
+        category: "测试"
+    },
+    {
+        name: "test3",
+        type: SettingTypes.button,
+        value: `parent.emitter.emit('showMsg', { level: 'info', msg: '${text}' })`,
+        title: "显示info通知",
+        des: "nothing",
+        category: "测试"
+    },
+    {
+        name: "test4",
+        type: SettingTypes.button,
+        value: `parent.emitter.emit('showMsg', { level: 'success', msg: '${text}' })`,
+        title: "显示success通知",
+        des: "nothing",
+        category: "测试"
     },
 ]
 

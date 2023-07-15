@@ -6,6 +6,7 @@ import fileTable from "@/api/core/types/fileTable";
 import lodash from "lodash";
 import AdapterBase from "@/api/core/types/AdapterBase"
 import KVPEngineBase from "@/api/core/types/KVPEngineBase";
+import calcBufSize from "@/utils/calcBufSize";
 
 class GcryptV1Adapter extends AdapterBase {
     private KVPEngine: KVPEngineBase
@@ -46,6 +47,9 @@ class GcryptV1Adapter extends AdapterBase {
      * @param newDir 新的工作目录
      */
     public changeCurrentDirectory = async function (newDir: Addr) {
+        if (!newDir) {
+            return
+        }
         // 没有改变，再见
         if (this.currentDirectory.compareWith(newDir)) {
             return
@@ -101,7 +105,7 @@ class GcryptV1Adapter extends AdapterBase {
         } else {
             foo.up()
             // 查找符合上一层dir的子文件列表，将其应用在本层dir
-            const tempTable: fileTable = JSON.parse((await this.readFile(dir.getTopToken(), await this._getFileTable(foo))).toString())
+            const tempTable: fileTable = JSON.parse((await this.readFile(dir.getTopToken(), foo)).toString())
             this._cacheFileTables(tempTable, dir)
             return tempTable
         }
@@ -112,26 +116,26 @@ class GcryptV1Adapter extends AdapterBase {
      * @param filename the name of the file to read
      * @param fileTable optional:if provided,this function will search the file in the given file table instead of the this.currentFileTable
      */
-    public readFile = async function (filename, fileTable = null): Promise<Buffer> {
+    public readFile = async function (filename, dir?: Addr): Promise<Buffer> {
         if (!filename) {
             error("地址无效")
             return
         }
         // 拿到key
         let matches: Array<dirSingleItem>
-        if (fileTable === null) {
-            matches = this.currentFileTable.items.filter(item => item.name === filename)
-        } else {
+        if (dir) {
+            const fileTable = await this._getFileTable(dir)
             matches = fileTable.items.filter(item => item.name === filename)
+        } else {
+            matches = this.currentFileTable.items.filter(item => item.name === filename)
         }
-        let key: string = null
+
         if (matches.length === 0) {
             error("文件不存在")
             throw new Error("")
         }
-        key = matches[0].key
         // 取数据
-        return await this.KVPEngine.getData(key)
+        return await this.KVPEngine.getData(matches[0].key)
     }
 
     /**
@@ -140,76 +144,73 @@ class GcryptV1Adapter extends AdapterBase {
      * @param data Buffer数据或字符串数据
      * @return Promise<文件的唯一标识符key>
      */
-    public writeFile = async function (filename: string, data: Buffer | string): Promise<string> {
-        if (typeof data === "string") {
-            data = Buffer.from(data)
-        }
+    public writeFile = async function (filename: string, data: Buffer | string, dir?: Addr): Promise<string> {
+        let oldDir = this.currentDirectory
+        await this.changeCurrentDirectory(dir)
 
+        let bufData: Buffer = typeof data === "string" ? Buffer.from(data) : data
+        let key: string
+        let newDirItem: dirSingleItem
+        const currentDate = Date.now()
+
+        // [内存]当前文件表增加一个dirSingleItem，并更新缓存
         if (await this.exists(filename)) {
-            // [内存]当前文件表修改dirSingleItem，并更新缓存
-            const dateNum = Date.now()
             const idx = this.currentFileTable.items.findIndex(item => item.name === filename)
-            const foo: dirSingleItem = this.currentFileTable.items[idx]
-            foo.meta.modifiedTime = dateNum
-
-            this.currentFileTable.items.push(foo)
-            this.currentFileTable.items.splice(idx, 1)
-            this._updateCache()
-
-            // [本地]1.保存更新后的文件列表到本地
-            await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
-
-            // [本地]2.创建文件数据到本地
-            await this.KVPEngine.setData(foo.key, data)
-            return foo.key
+            newDirItem = this.currentFileTable.items.splice(idx, 1)[0]
+            key = newDirItem.key
+            // 修改元数据
+            newDirItem.meta.modifiedTime = currentDate
+            newDirItem.meta.size = calcBufSize(bufData)
         } else {
-            // [内存]当前文件表增加一个dirSingleItem，并更新缓存
-            const dateNum: number = new Date().getTime()
-            const hash = sharedUtils.getHash(32)
-            const foo: dirSingleItem = {
+            key = sharedUtils.getHash(32)
+            newDirItem = {
                 name: filename,
                 type: "file",
                 meta: {
-                    modifiedTime: dateNum,
-                    createdTime: dateNum,
-                    accessedTime: dateNum,
+                    modifiedTime: currentDate,
+                    createdTime: currentDate,
+                    accessedTime: currentDate,
+                    size: calcBufSize(bufData)
                 },
-                key: hash,
+                key
             }
-
-            this.currentFileTable.items.push(foo)
-            this._updateCache()
-            // [本地]1.保存更新后的文件列表到本地
-            await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
-
-            // [本地]2.创建文件数据到本地
-            await this.KVPEngine.setData(hash, data)
-
-            return hash
         }
+
+        this.currentFileTable.items.push(newDirItem)
+        this._updateCache()
+        // [本地]1.保存更新后的文件列表到本地
+        await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
+        // [本地]2.创建文件数据到本地
+        await this.KVPEngine.setData(key, bufData)
+
+        await this.changeCurrentDirectory(oldDir)
+        return key
     }
 
     /**
      * 当前工作目录是否存在给定文件名
      * @param filename 文件名
      */
-    public exists = async function (filename: string): Promise<boolean> {
+    public exists = async function (filename: string, dir?: Addr): Promise<boolean> {
+        let oldDir = this.currentDirectory
+        await this.changeCurrentDirectory(dir)
         const matches = this.currentFileTable.items.filter(item => item.name === filename)
-        if (matches.length === 0) {
-            return false
-        } else {
-            return true
-        }
+        await this.changeCurrentDirectory(oldDir)
+        return !(matches.length === 0)
     }
 
     /**
      * 创建文件夹
      * @param folderName 文件夹名
      */
-    public mkdir = async function (folderName: string): Promise<void> {
+    public mkdir = async function (folderName: string, dir?: Addr): Promise<void> {
+        let oldDir = this.currentDirectory
+        await this.changeCurrentDirectory(dir)
+
         // if names conflict
         if (await this.exists(folderName)) {
             console.error("文件夹已存在");
+            await this.changeCurrentDirectory(oldDir)
             return
         }
         // [内存]当前文件表增加一个dirSingleItem，并更新缓存
@@ -222,6 +223,7 @@ class GcryptV1Adapter extends AdapterBase {
                 modifiedTime: dateNum,
                 createdTime: dateNum,
                 accessedTime: dateNum,
+                size: -1
             },
             key: hash
         }
@@ -237,15 +239,21 @@ class GcryptV1Adapter extends AdapterBase {
             items: []
         }
         await this.KVPEngine.setData(hash, Buffer.from(JSON.stringify(fileTableData)))
+
+        await this.changeCurrentDirectory(oldDir)
     }
 
     /**
      * 删除文件系统对象
      * @param filename
      */
-    public deleteFile = async (filename: string) => {
+    public deleteFile = async (filename: string, dir?: Addr) => {
+        let oldDir = this.currentDirectory
+        await this.changeCurrentDirectory(dir)
+
         if (!(await this.exists(filename))) {
             error(`文件不存在，无法删除 ${filename}`)
+            await this.changeCurrentDirectory(oldDir)
             return
         }
 
@@ -266,6 +274,7 @@ class GcryptV1Adapter extends AdapterBase {
         await this.KVPEngine.deleteData(key)
         // [本地]保存更新后的文件列表到本地
         await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
+        await this.changeCurrentDirectory(oldDir)
     }
 
     /**
@@ -273,6 +282,10 @@ class GcryptV1Adapter extends AdapterBase {
      */
     public getCurrentFileTable = async function (): Promise<fileTable> {
         return lodash.cloneDeep(this.currentFileTable)
+    }
+
+    public getCurrentDirectory = function () {
+        return lodash.cloneDeep(this.currentDirectory)
     }
 }
 

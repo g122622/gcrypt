@@ -1,5 +1,5 @@
 <template>
-    <v-btn icon :size="props.size || 'default'" flat>
+    <v-btn icon :size="props.size || 'default'" :variant="props.variant || 'flat'">
         <v-icon>{{ props.icon }}</v-icon>
         <v-tooltip activator="parent" location="bottom" v-if="props.tooltip">
             {{ props.tooltip }}
@@ -11,9 +11,10 @@
 // import { ref } from "vue"
 
 interface Props {
-    icon: string
+    icon: string,
     tooltip?: string,
-    size?: string
+    size?: string,
+    variant?: "flat" | "text" | "elevated" | "tonal" | "outlined" | "plain"
 }
 
 const props = defineProps<Props>()

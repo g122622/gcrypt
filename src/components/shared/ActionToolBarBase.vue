@@ -1,7 +1,6 @@
-
 <template>
     <v-app-bar density="compact">
-        <v-app-bar-title>{{ props.ToolbarTitle }}</v-app-bar-title>
+        <v-app-bar-title style="font-size: 1em;">{{ props.ToolbarTitle }}</v-app-bar-title>
         <slot name="prepend"></slot>
         <v-spacer></v-spacer>
         <!-- 默认插槽，默认append到末尾 -->

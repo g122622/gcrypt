@@ -30,6 +30,18 @@
     <!-- built files will be auto injected -->
 </body>
 
+<script>
+    // monaco编辑器会污染原生node的require函数，在此暂存，随后恢复
+    window.myRequire = require;
+</script>
+<script src="./libs/vs/loader.js"></script>
+<script>
+    require.config({paths: {'vs': './public/vs'}});
+    // 将monaco变量赋值为全局变量
+    require(['./vs/editor/editor.main'], function () { });
+    window.require = myRequire;
+</script>
+
 </html>
 
 <style>
@@ -41,4 +53,5 @@
     }
 </style>
 <link href='./libs/FroalaEditor/css/froala_editor.pkgd.min.css' rel='stylesheet' type='text/css' />
+<link href='./libs/FroalaEditor/css/themes/dark.min.css' rel='stylesheet' type='text/css' />
 <script type='text/javascript' src='./libs/FroalaEditor/js/froala_editor.pkgd.min.js'></script>

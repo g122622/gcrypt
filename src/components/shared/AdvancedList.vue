@@ -1,23 +1,31 @@
 <template>
-    <!-- 搜索框 -->
-    <v-text-field label="搜索..." prepend-inner-icon="mdi-magnify" v-model="searchWord"></v-text-field>
-    <div v-if="matchedItems.length >= 1">
-        <!-- 列表主内容 -->
-        <v-list :lines="lines ?? 'one'" :density="density ?? 'compact'" :width="width" :height="height">
-            <v-list-subheader v-if="subheader">
-                {{ subheader }}
-            </v-list-subheader>
-            <slot :matchedItems="matchedItems" />
-        </v-list>
-        <BottomTip v-if="useBottomTip" />
-    </div>
-    <div v-else style=" display:flex;justify-content: center;flex-direction: column;align-items: center;">
-        <img src="./assets/fileMgr/404.png" style="width:200px;" />
-        暂无内容
+    <div>
+        <!-- 顶部工具栏 -->
+        <ToolBarBase :ToolbarTitle="subheader ?? ''" width="100%">
+            <template #prepend>
+                <!-- 搜索框 -->
+                <v-text-field label="搜索..." prepend-inner-icon="mdi-magnify" v-model="searchWord"></v-text-field>
+            </template>
+            <IconBtn icon="mdi-arrow-up" @click="handleBackToTop()" tooltip="回到顶部" />
+        </ToolBarBase>
+
+        <div v-if="matchedItems.length >= 1" :id="`advanced-list-${guid}`">
+            <!-- 列表主内容 -->
+            <v-list :lines="lines ?? 'one'" :density="density ?? 'compact'" :width="width" :height="height">
+                <slot :matchedItems="matchedItems" />
+            </v-list>
+            <BottomTip v-if="useBottomTip" />
+        </div>
+        <div v-else
+            style=" display:flex;justify-content: center;flex-direction: column;align-items: center;margin-bottom: 20px;">
+            <img src="./assets/fileMgr/404.png" style="width:200px;" />
+            暂无内容
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
+import sharedUtils from "@/utils/sharedUtils";
 import traverseObj from "@/utils/traverseObj";
 import { ref, computed } from "vue"
 
@@ -32,6 +40,7 @@ interface Props {
     width?: string
 }
 const props = defineProps<Props>()
+const guid = sharedUtils.getHash(16)
 const searchWord = ref("")
 const matchedItems = computed(() => {
     if (props.useSearch) {
@@ -49,6 +58,12 @@ const matchedItems = computed(() => {
         return props.items
     }
 })
+
+const handleBackToTop = () => {
+    document.querySelector(`#advanced-list-${guid}`).scrollIntoView({
+        behavior: "smooth",
+    })
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

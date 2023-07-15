@@ -5,32 +5,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue"
+import { ref, onMounted, onBeforeUnmount } from "vue"
 import sharedUtils from "@/utils/sharedUtils"
 import File from "@/api/File";
-import sleep from "@/utils/sleep";
 import { useSettingsStore } from "@/store/settings";
+import sleep from "@/utils/sleep";
 
 const settingsStore = useSettingsStore()
 const props = defineProps<{
     file: File
 }>()
 const guid = sharedUtils.getHash(10)
+let FroalaEditorInstance = null
 
 onMounted(async () => {
-    console.log(settingsStore.getSetting("is_dark"))
+    setInterval(async () => {
+        console.log(await props.file.read())
+    }, 1000)
     // 创建editor实例
     // eslint-disable-next-line no-undef
-    const FroalaEditorInstance = new FroalaEditor('#FroalaEditor' + guid, {
+    FroalaEditorInstance = new FroalaEditor('#FroalaEditor' + guid, {
         events: {
             contentChanged: async function () {
-                await props.file.write(Buffer.from(this.html.get(true)))
+                await props.file.write(this.html.get(true))
             }
         },
-        theme: settingsStore.getSetting("is_dark") ? "dark" : "royal"
+        theme: settingsStore.getSetting("is_dark") ? "dark" : "royal",
+        spellcheck: false
     })
-    await sleep(1000)
+    await sleep(100)
     FroalaEditorInstance.html.set((await props.file.read()).toString())
+})
+
+onBeforeUnmount(() => {
+    FroalaEditorInstance?.destroy()
+    console.log('FroalaEditor destroyed')
 })
 
 </script>

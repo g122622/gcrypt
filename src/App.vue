@@ -1,14 +1,16 @@
 <template>
     <BackgroundImg :finishLoading="finishLoading" />
-    <div style="position: fixed;width: 100%;height: 100%;z-index: 1000000;pointer-events: none;">
+    <div style="position: fixed;width: 100%;height: 100%;z-index: 100000;pointer-events: none;">
         <!-- 弹出消息顶层容器 -->
         <MsgContainer />
         <NotificationManager />
     </div>
+    <!-- 右键菜单全局绘制区域 -->
     <ContextMenuGlobalRenderArea />
+    <!-- 打开方式管理器 -->
     <OpenMethodSelector />
 
-    <div :style="{ opacity: imgOpacity }">
+    <div :style="{ opacity: backgroundOpacity }">
         <v-app>
             <!-- 顶部系统状态栏 -->
             <SystemBar />
@@ -20,7 +22,7 @@
             <v-main :scrollable="mainStore.mainContentScrollable">
                 <router-view v-slot="{ Component }">
                     <keep-alive>
-                        <component :is="Component" />
+                        <component :is="Component" :key="this.$route.fullPath" />
                     </keep-alive>
                 </router-view>
             </v-main>
@@ -48,13 +50,17 @@ const settingsStore = useSettingsStore()
 const mainStore = useMainStore()
 const finishLoading = ref<boolean>(false)
 
-const imgOpacity = computed(() => {
+const backgroundOpacity = computed(() => {
     let foo = Number(settingsStore.settings.find((item) => { return item.name === "background_img_transp" }).value) / 100
-    if (foo >= 1) {
-        foo = 0.99999
-    }
-    return foo
+    return foo >= 1 ? 0.99999 : foo
 })
+
+// const routerKey = computed(() => {
+//     if (router.getRoutes().length) {
+//         return router.getRoutes()[router.getRoutes().length - 1].path
+//     }
+//     return "initial"
+// })
 
 onMounted(async () => {
     // 是否显示主内容区滚动条
@@ -75,5 +81,6 @@ onMounted(async () => {
 html {
     width: 100%;
     overflow: hidden !important;
+    scroll-behavior: smooth;
 }
 </style>

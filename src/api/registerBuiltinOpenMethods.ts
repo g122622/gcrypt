@@ -4,6 +4,7 @@ import ImageViewer from "@/components/ImageViewer/ImageViewer.vue"
 import File from "@/api/File";
 import Electron from 'electron'
 import FroalaEditor from "@/components/FroalaEditor/FroalaEditor.vue";
+import MonacoEditor from "@/components/MonacoEditor/MonacoEditor.vue";
 
 /**
  * 注册内置方法
@@ -67,9 +68,25 @@ export default async function registerBulitinOpenMethods(mgr) {
         async onSelected(file: File) {
             emitter.emit("Action::addTab",
                 {
-                    name: 'FroalaEditor',
+                    name: 'FroalaEditor-' + file.filename,
                     component: FroalaEditor,
                     icon: "mdi-file-edit",
+                    onClick: () => null,
+                    props: { file }
+                }
+            )
+        }
+    })
+    mgr.registerMethod({
+        name: "MonacoEditor",
+        icon: 'mdi-microsoft-visual-studio-code',
+        fileType: ['txt', 'html', 'js', 'json', 'vue', 'ts'],
+        async onSelected(file: File) {
+            emitter.emit("Action::addTab",
+                {
+                    name: 'MonacoEditor-' + file.filename,
+                    component: MonacoEditor,
+                    icon: "mdi-microsoft-visual-studio-code",
                     onClick: () => null,
                     props: { file }
                 }

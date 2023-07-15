@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { useSettingsStore } from "@/store/settings"
-import { log, error } from "@/utils/gyConsole";
+import { error } from "@/utils/gyConsole";
 import axios from "axios";
 import { ref, onMounted, onActivated, computed } from "vue";
 const store = useSettingsStore()
@@ -39,7 +39,6 @@ const queryData = async () => {
             showWords.value = true
             words.value = hitokoto
             fromWhere.value = from
-            log(hitokoto)
         } catch (e) {
             error(`从网络获取句子失败!只能显示之前的旧句子了 ${e.message}`)
         }
@@ -74,6 +73,7 @@ const handleMouseLeave = () => {
     flex-direction: row;
     align-items: center;
     justify-content: center;
+
 }
 
 .from-where {

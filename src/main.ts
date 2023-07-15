@@ -8,7 +8,6 @@ import { loadFonts } from './plugins/webfontloader';
 import emitter from "./eventBus";
 import Electron from "electron";
 import utils from "./utils/utils";
-import ElectronStore from 'electron-store';
 import lodash, { debounce } from "lodash";
 import { nextTick } from 'process';
 
@@ -19,6 +18,7 @@ import ActionToolBarBase from "./components/shared/ActionToolBarBase.vue";
 import IconBtn from "./components/shared/IconBtn.vue";
 import DialogGenerator from "./components/shared/DialogGenerator.vue";
 import AdvancedList from "./components/shared/AdvancedList.vue";
+import ToolBarBase from './components/shared/ToolBarBase.vue';
 
 let pinia;
 
@@ -131,10 +131,11 @@ class Application {
         this.AppInstance.config.globalProperties.$emitter = emitter
         this.AppInstance.config.globalProperties.$lodash = lodash
         this.AppInstance.component("BottomTip", BottomTip)
-        this.AppInstance.component("ActionToolBarBase", ActionToolBarBase)
-        this.AppInstance.component("IconBtn", IconBtn)
-        this.AppInstance.component("DialogGenerator", DialogGenerator)
-        this.AppInstance.component("AdvancedList", AdvancedList)
+            .component("ActionToolBarBase", ActionToolBarBase)
+            .component("IconBtn", IconBtn)
+            .component("DialogGenerator", DialogGenerator)
+            .component("AdvancedList", AdvancedList)
+            .component("ToolBarBase", ToolBarBase)
 
         // 使用插件
         this.AppInstance.use(router)

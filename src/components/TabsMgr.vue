@@ -13,7 +13,7 @@
                 </v-icon>
             </template>
             <template #append>
-                <IconBtn size="small" icon="mdi-close" tooltip="关闭标签页" @click="item.handleClose()" />
+                <IconBtn size="x-small" icon="mdi-close" tooltip="关闭标签页" @click="item.handleClose()" variant="plain" />
             </template>
             <v-tooltip activator="parent" location="right">
                 {{ item.name }}
@@ -74,4 +74,8 @@ onMounted(() => {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.v-list-item__prepend>.v-icon {
+    margin-inline-end: 10px;
+}
+</style>

@@ -90,6 +90,7 @@ onUnmounted(() => {
     border-radius: 15px;
     overflow: hidden;
     box-shadow: var(--shadow-x4_hover);
+
 }
 
 .ctxmenu-transition-enter-active {

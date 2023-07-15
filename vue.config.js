@@ -38,6 +38,7 @@ function prettyBytes(bytes, decimals) {
 
 module.exports = defineConfig({
     transpileDependencies: true,
+    productionSourceMap: false,
     pluginOptions: {
         electronBuilder: {
             disableMainProcessTypescript: true,

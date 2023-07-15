@@ -7,8 +7,8 @@
         <v-divider></v-divider>
         <!-- 静态标签页 -->
         <v-list density="compact" nav :items="sideColumnMainItems" @click:select="(value) => {
-                handleNavClick(value.id as string);
-            }">
+            handleNavClick(value.id as string);
+        }">
         </v-list>
         <v-divider></v-divider>
         <!-- 标签页管理器 -->
@@ -84,5 +84,18 @@ const handleNavClick = (value: string) => {
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
+}
+
+hr {
+    width: 70%;
+    margin: 5px auto 5px auto;
+}
+</style>
+
+<style>
+.v-navigation-drawer {
+    border: none;
+    /* box-shadow: 0px 2px 4px -1px var(--v-shadow-key-umbra-opacity, rgba(0, 0, 0, 0.2)), 0px 4px 5px 0px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.14)), 0px 1px 10px 0px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.12)); */
+    box-shadow: 0px 0px 7px 5px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.25));
 }
 </style>

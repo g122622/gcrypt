@@ -27,8 +27,8 @@
                             <div v-else-if="item.type === SettingTypes.img" style="width:155px;">
                                 <v-file-input show-size accept="image/png, image/jpeg, image/bmp" label="选择图片"
                                     @update:modelValue="(files) => {
-                                            handleFile(files[0], item.name)
-                                        }" density="compact"></v-file-input>
+                                        handleFile(files[0], item.name)
+                                    }" density="compact"></v-file-input>
                             </div>
                             <!-- 滑动条 -->
                             <div v-else-if="item.type === SettingTypes.slider" style="width:155px;">
@@ -37,6 +37,11 @@
                                     @update:modelValue="newValue => { item.value = newValue.toString() }"
                                     :max="item.extra.maxLimitation" :min="item.extra.minLimitation">
                                 </v-slider>
+                            </div>
+                            <!-- 文本 -->
+                            <div v-else-if="item.type === SettingTypes.text">
+                                <IconBtn icon="mdi-open-in-new" tooltip="打开并编辑" variant="plain" @click="handleText(item)">
+                                </IconBtn>
                             </div>
                         </template>
 
@@ -51,9 +56,12 @@
 <script setup lang="ts">
 import emitter from "../../eventBus";
 import ActionToolBarBase from "@/components/shared/ActionToolBarBase.vue";
-import { computed } from "vue";
+import { computed, toRefs } from "vue";
 import SettingTypes from "@/types/settingTypes"
 import { useSettingsStore } from "@/store/settings"
+import settingItem from "@/types/settingItem";
+import File from "@/api/File";
+import fileTypes from "@/types/fileTypes";
 const settingsStore = useSettingsStore()
 
 const resetSettings = () => {
@@ -80,6 +88,15 @@ const handleFile = (file, targetSettingName) => {
         };
         reader.readAsDataURL(file)
     }
+}
+
+const handleText = (item: settingItem) => {
+    const file = new File()
+    file.fromRef(toRefs(item).value)
+    emitter.emit('openFile', {
+        fileArg: file,
+        fileTypeArg: 'txt'
+    })
 }
 
 const cats = computed(() => {

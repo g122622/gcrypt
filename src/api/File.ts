@@ -6,12 +6,19 @@ import getExtName from "@/utils/getExtName";
 import sharedUtils from "@/utils/sharedUtils";
 import FileWatcher from "./FileWatcher";
 import AdapterBase from "./core/types/AdapterBase";
-
 import { useSettingsStore } from "@/store/settings"
 import { useMainStore } from "@/store/main"
 import emitter from "@/eventBus";
+import Addr from "./core/common/Addr";
+
 let settingsStore = null
 let mainStore = null
+
+enum FileType {
+    RawData,
+    Adapter,
+    Ref
+}
 
 // 初始化过早会导致找不到活跃pinia实例
 emitter.on('LifeCycle::finishedLoadingApp', () => {
@@ -25,22 +32,29 @@ class File {
     private fileWatcher: FileWatcher = null
     public filename: string
     private fileguid: string
-    public type: number
+    private fileType: FileType
+    private AdapterCWD: Addr
 
-    constructor(fileguid) {
+    constructor(fileguid = sharedUtils.getHash(16)) {
         this.fileguid = fileguid
         mainStore.setFileActiveState(fileguid, 'file', this)
     }
 
-    public fromData(arg) {
+    public fromRawData(arg) {
         this.data = arg
-        this.type = 0
+        this.fileType = FileType.RawData
     }
 
-    public fromAdapter(adapter: AdapterBase, filename: string) {
+    public fromRef(arg) {
+        this.data = arg
+        this.fileType = FileType.Ref
+    }
+
+    public async fromAdapter(adapter: AdapterBase, filename: string) {
         this.adapter = adapter
         this.filename = filename
-        this.type = 1
+        this.fileType = FileType.Adapter
+        this.AdapterCWD = adapter.getCurrentDirectory()
         if (this.fileguid) {
             mainStore.setFileActiveState(this.fileguid, 'isOpen', true)
         }
@@ -59,7 +73,7 @@ class File {
         // 创建filewatcher，监听临时文件修改
         this.fileWatcher = new FileWatcher(tmpdir, {
             minUpdateIntervalMs: Number(settingsStore.getSetting('tmp_file_sync_interval')),
-            destroyIfNotOccupied: true
+            destroyIfNotOccupied: false
         })
         this.fileWatcher.onChange = async () => {
             const newTmpFile = await fs.readFile(tmpdir)
@@ -81,24 +95,35 @@ class File {
     }
 
     public async read() {
-        switch (this.type) {
-            case 0:
+        switch (this.fileType) {
+            case FileType.RawData:
                 return this.data
 
-            case 1:
-                return await this.adapter.readFile(this.filename)
+            case FileType.Adapter:
+                return await this.adapter.readFile(this.filename, this.AdapterCWD)
+
+            case FileType.Ref:
+                return this.data.value
         }
     }
 
+    /**
+     * 写入文件
+     * @param arg 在adapter模式下会自动转为buffer
+     */
     public async write(arg) {
         // TODO 节流
-        switch (this.type) {
-            case 0:
+        switch (this.fileType) {
+            case FileType.RawData:
                 this.data = arg
                 break
 
-            case 1:
-                return await this.adapter.writeFile(this.filename, arg)
+            case FileType.Adapter:
+                return await this.adapter.writeFile(this.filename, Buffer.from(arg), this.AdapterCWD)
+
+            case FileType.Ref:
+                this.data.value = arg
+                break
         }
     }
 
