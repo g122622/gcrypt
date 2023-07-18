@@ -6,12 +6,13 @@
                 <!-- 搜索框 -->
                 <v-text-field label="搜索..." prepend-inner-icon="mdi-magnify" v-model="searchWord"></v-text-field>
             </template>
-            <IconBtn icon="mdi-arrow-up" @click="handleBackToTop()" tooltip="回到顶部" />
+            <IconBtn icon="mdi-arrow-up" @click="handleBackToTop()" tooltip="回到顶部" v-if="matchedItems.length >= 1" />
         </ToolBarBase>
 
-        <div v-if="matchedItems.length >= 1" :id="`advanced-list-${guid}`">
+        <div v-if="matchedItems.length >= 1">
             <!-- 列表主内容 -->
-            <v-list :lines="lines ?? 'one'" :density="density ?? 'compact'" :width="width" :height="height">
+            <v-list :lines="lines ?? 'one'" :density="density ?? 'compact'" :width="width" :height="height"
+                :id="`advanced-list-${guid}`">
                 <slot :matchedItems="matchedItems" />
             </v-list>
             <BottomTip v-if="useBottomTip" />
@@ -60,9 +61,7 @@ const matchedItems = computed(() => {
 })
 
 const handleBackToTop = () => {
-    document.querySelector(`#advanced-list-${guid}`).scrollIntoView({
-        behavior: "smooth",
-    })
+    document.querySelector(`#advanced-list-${guid}`).scrollTop = 0
 }
 </script>
 

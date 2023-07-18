@@ -76,7 +76,7 @@
                 </v-menu>
                 <!-- 引入按钮 -->
                 <v-btn icon @click="handleFileImportClick()">
-                    <input type="file" id='file-import' style="display: none;" />
+                    <input type="file" id='file-import' style="display: none;" multiple />
                     <v-icon>mdi-import</v-icon>
                     <v-tooltip activator="parent" location="bottom">从外部引入文件</v-tooltip>
                 </v-btn>
@@ -163,16 +163,20 @@ import emitter from "@/eventBus";
 import { error } from "@/utils/gyConsole";
 import AdapterBase from "@/api/core/types/AdapterBase";
 import File from "@/api/File";
+import getExtName from "@/utils/getExtName";
+import { useTaskStore } from '@/store/task'
 
 import ContextMenu from "../shared/ContextMenu.vue";
 import FileItem from "./FileItem.vue"
 import DialogMgr from "./DialogMgr.vue";
-import getExtName from "@/utils/getExtName";
+import Task from "@/api/Task";
+import sharedUtils from "@/utils/sharedUtils";
 
 interface Props {
     adapter: AdapterBase
 }
 const props = defineProps<Props>()
+const taskStore = useTaskStore()
 const isLoading = ref<boolean>(true)
 const currentFileTable = ref<fileTable>(null)
 const currentDir = ref(new Addr(""))
@@ -258,10 +262,12 @@ const openFile = (filename, fileguid) => {
     })
 }
 
-const importFile = async (filePath) => {
-    const key = await props.adapter.writeFile(getFileName(filePath, true), fs.readFileSync(filePath))
-    const tb = await getThumbnail(filePath)
-    await addThumbnail(key, tb)
+const importFile = async (filePath: string, taskGroupId: string) => {
+    taskStore.addTask(new Task(async () => {
+        const key = await props.adapter.writeFile(getFileName(filePath, true), fs.readFileSync(filePath))
+        const tb = await getThumbnail(filePath)
+        await addThumbnail(key, tb)
+    }, `引入文件 ${filePath}`, taskGroupId), { runImmediately: false })
 }
 
 const deleteFile = async (filename, key) => {
@@ -287,6 +293,7 @@ const handleItemClick = (item) => {
 
 // TODO 测试复杂目录导入速度
 const handleFileImportClick = () => {
+    const taskGroupId = sharedUtils.getHash(16)
     let foo: HTMLInputElement = document.querySelector("#file-import")
     foo.click()
     foo.onchange = async () => {
@@ -295,7 +302,7 @@ const handleFileImportClick = () => {
         }
         try {
             for (const file of foo.files) {
-                await importFile(file.path)
+                await importFile(file.path, taskGroupId)
             }
         } catch (error) {
             emitter.emit("showMsg",
@@ -306,6 +313,8 @@ const handleFileImportClick = () => {
             await refresh()
             return
         }
+
+        await taskStore.runTaskGroup(taskGroupId)
         emitter.emit("showMsg",
             {
                 level: "success",
@@ -352,7 +361,12 @@ const viewOptionsLists = [
             {
                 title: '修改时间',
                 icon: "mdi-clock-time-nine"
-            }]
+            },
+            {
+                title: '大小',
+                icon: "mdi-file-chart"
+            }
+        ]
     },
     {
         name: '排列顺序',
@@ -402,7 +416,14 @@ const currentFileTableForRender = computed(() => {
             res.sort((a, b) => {
                 return a.meta.modifiedTime > b.meta.modifiedTime ? 1 : -1
             })
+            break
+        case 2:
+            res.sort((a, b) => {
+                return a.meta.size > b.meta.size ? 1 : -1
+            })
+            break
     }
+
     // 降序排序
     if (viewOptions.sequence === 1) {
         res.reverse()

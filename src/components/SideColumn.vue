@@ -20,6 +20,8 @@
             <PerformanceMonitor />
             <!-- 文件状态管理 -->
             <FileStateManager />
+            <!-- 任务管理器 -->
+            <TaskMgr />
         </div>
     </v-navigation-drawer>
 </template>
@@ -28,6 +30,7 @@
 import { ref } from "vue"
 import PerformanceMonitor from "@/components/PerformanceMonitor/PerformanceMonitor.vue";
 import TabsMgr from '@/components/TabsMgr.vue';
+import TaskMgr from "./TaskMgr.vue";
 import FileStateManager from "@/components/FileStateManager.vue";
 import { useRouter } from 'vue-router';
 
@@ -84,6 +87,7 @@ const handleNavClick = (value: string) => {
     flex-direction: row;
     align-items: center;
     justify-content: space-around;
+    flex-wrap: wrap;
 }
 
 hr {

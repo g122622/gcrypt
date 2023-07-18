@@ -51,6 +51,7 @@ class Application {
 
         window.addEventListener('error', function (event) {
             // onerror_statements
+            console.log(event)
             const str = `主窗口渲染进程发生代码执行错误，错误栈消息如下：${event.error.stack}`
             emitter.emit('showMsg', { level: "error", msg: str });
         })

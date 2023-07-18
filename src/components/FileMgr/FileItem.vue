@@ -31,7 +31,7 @@
                     modified: {{ new Date(singleFileItem.meta.modifiedTime).toLocaleString() }}
                 </div>
                 <div v-else-if="displayMode === 1">
-                    {{ new Date(singleFileItem.meta.modifiedTime).toLocaleDateString() }}
+                    {{ prettyBytes(props.singleFileItem.meta.size, 2) }}
                 </div>
             </div>
         </div>
@@ -44,6 +44,7 @@ import dirSingleItem from "@/api/core/types/dirSingleItem";
 import getFileType from "@/utils/getFileType";
 import { computed } from "vue";
 import { useMainStore } from "@/store/main"
+import prettyBytes from "@/utils/prettyBytes";
 const mainStore = useMainStore()
 
 interface Props {

@@ -1,25 +1,27 @@
 <template>
-    <div class="v-list-item-title" style="text-align: center;font-size: small;margin-top: 10px;">
-        标签页({{ dynamicTabs.length }})
-    </div>
+    <div style="container-type: inline-size;">
+        <div class="v-list-item-title" style="text-align: center;font-size: small;margin-top: 10px;" id="tabs-counter">
+            标签页({{ dynamicTabs.length }})
+        </div>
 
-    <!-- 动态标签页 -->
-    <v-list density="compact" nav>
-        <v-list-item v-for="item in dynamicTabs" :title="item.name" @click="item.handleClick()" :key="item.name"
-            :active="item.name === activeTab">
-            <template #prepend>
-                <v-icon>
-                    {{ item.icon }}
-                </v-icon>
-            </template>
-            <template #append>
-                <IconBtn size="x-small" icon="mdi-close" tooltip="关闭标签页" @click="item.handleClose()" variant="plain" />
-            </template>
-            <v-tooltip activator="parent" location="right">
-                {{ item.name }}
-            </v-tooltip>
-        </v-list-item>
-    </v-list>
+        <!-- 动态标签页 -->
+        <v-list density="compact" nav>
+            <v-list-item v-for="item in dynamicTabs" :title="item.name" @click="item.handleClick()" :key="item.name"
+                :active="item.name === activeTab">
+                <template #prepend>
+                    <v-icon>
+                        {{ item.icon }}
+                    </v-icon>
+                </template>
+                <template #append>
+                    <IconBtn size="x-small" icon="mdi-close" tooltip="关闭标签页" @click="item.handleClose()" variant="plain" />
+                </template>
+                <v-tooltip activator="parent" location="right">
+                    {{ item.name }}
+                </v-tooltip>
+            </v-list-item>
+        </v-list>
+    </div>
 </template>
 
 <script setup lang="ts">
@@ -77,5 +79,11 @@ onMounted(() => {
 <style scoped lang="less">
 .v-list-item__prepend>.v-icon {
     margin-inline-end: 10px;
+}
+
+@container (width < 70px) {
+    #tabs-counter {
+        display: none;
+    }
 }
 </style>

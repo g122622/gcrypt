@@ -53,14 +53,6 @@ const defaultSettings = <Array<settingItem>>[
         category: "外观",
     },
     {
-        name: "on_top",
-        type: SettingTypes.button,
-        value: "emitter.emit('showLayout')",
-        title: "高亮显示布局",
-        des: "用于调试布局，尚处在实验阶段",
-        category: "外观"
-    },
-    {
         name: "background_img",
         type: SettingTypes.img,
         value: "",
