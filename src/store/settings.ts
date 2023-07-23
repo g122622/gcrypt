@@ -2,12 +2,14 @@ import { defineStore } from 'pinia'
 import ElectronStore from 'electron-store'
 import defaultSettings from "@/assets/json/defaultSettings";
 import settingItem from '@/types/settingItem';
+import { log } from '@/utils/gyConsole';
+import { cloneDeep } from "lodash"
 
 // 初始化electron-store
 const settingStore = new ElectronStore({
-    name: "settings", // 文件名称,默认 config
-    fileExtension: "json", // 文件后缀,默认json
-    clearInvalidConfig: true, // 发生 SyntaxError  则清空配置
+    name: "settings",
+    fileExtension: "json",
+    clearInvalidConfig: true,
 })
 
 export const useSettingsStore = defineStore("settings", {
@@ -26,17 +28,34 @@ export const useSettingsStore = defineStore("settings", {
         saveSettings() {
             settingStore.set("settings", this.settings)
             settingStore.set("timestamp", Date.now())
+            log("设置保存成功")
         },
         resetSettings() {
             this.settings = defaultSettings
-            this.saveSettings()
         },
         setSetting(name: string, value) {
             this.settings.find(item => item.name === name).value = value
-            this.saveSettings()
         },
         getSetting(name: string) {
-            return this.settings.find(item => item.name === name).value
+            try {
+                return this.settings.find(item => item.name === name).value
+            } catch (e) {
+                this.resetSettings()
+            }
+        },
+        hasSetting(name: string) {
+            return !!this.settings.find(item => item.name === name)
+        },
+        updateSettings() {
+            let temp: settingItem[] = []
+            defaultSettings.forEach((item) => {
+                temp.push(cloneDeep(item))
+                // 不是新的设置项
+                if (this.hasSetting(item.name)) {
+                    temp[temp.length - 1].value = this.getSetting(item.name)
+                }
+            });
+            this.settings = temp
         }
     }
 }

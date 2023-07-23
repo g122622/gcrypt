@@ -143,6 +143,11 @@
                     }]">
                 </ContextMenu>
             </v-main>
+
+            <!-- 底部栏 -->
+            <v-footer>
+                <BottomBar></BottomBar>
+            </v-footer>
         </v-app>
     </div>
     <div v-if="isLoading" style="display: flex;flex-direction: column;align-items: center;margin-top: 20px;">

@@ -19,9 +19,6 @@ const guid = sharedUtils.getHash(10)
 let FroalaEditorInstance = null
 
 onMounted(async () => {
-    setInterval(async () => {
-        console.log(await props.file.read())
-    }, 1000)
     // 创建editor实例
     // eslint-disable-next-line no-undef
     FroalaEditorInstance = new FroalaEditor('#FroalaEditor' + guid, {

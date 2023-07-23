@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue"
-import { debounce } from "lodash"
+// import { debounce } from "lodash"
 import { useSettingsStore } from "@/store/settings"
 const settingsStore = useSettingsStore()
 
@@ -27,7 +27,7 @@ const updateSize = () => {
     backgroundImgAspectRatio.value = document.body.offsetWidth / window.innerHeight
 }
 
-window.addEventListener("resize", debounce(updateSize, 500))
+window.addEventListener("resize", updateSize)
 
 onMounted(() => {
     updateSize()

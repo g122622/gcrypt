@@ -10,6 +10,8 @@
     <!-- 打开方式管理器 -->
     <OpenMethodSelector />
 
+    <PostUpdateInfo />
+
     <div :style="{ opacity: backgroundOpacity }">
         <v-app>
             <!-- 顶部系统状态栏 -->
@@ -22,7 +24,7 @@
             <v-main :scrollable="mainStore.mainContentScrollable">
                 <router-view v-slot="{ Component }">
                     <keep-alive>
-                        <component :is="Component" :key="this.$route.fullPath" />
+                        <component :is="Component" :key="route.fullPath" />
                     </keep-alive>
                 </router-view>
             </v-main>
@@ -36,6 +38,8 @@ import emitter from './eventBus'
 import { ref, computed, onMounted, nextTick } from "vue"
 import { useSettingsStore } from "./store/settings"
 import { useMainStore } from "./store/main"
+import { useRoute } from 'vue-router'
+import hexToRGB from "@/utils/hexToRGB"
 
 // 组件
 import MsgContainer from "./components/Msg/MsgContainer.vue"
@@ -45,22 +49,17 @@ import ContextMenuGlobalRenderArea from "./components/ContextMenuGlobalRenderAre
 import SystemBar from "./components/SystemBar.vue"
 import OpenMethodSelector from './components/Dialogs/OpenMethodSelector.vue';
 import SideColumn from "./components/SideColumn.vue";
+import PostUpdateInfo from './components/Dialogs/PostUpdateInfo.vue'
 
 const settingsStore = useSettingsStore()
 const mainStore = useMainStore()
+const route = useRoute()
 const finishLoading = ref<boolean>(false)
 
 const backgroundOpacity = computed(() => {
-    let foo = Number(settingsStore.settings.find((item) => { return item.name === "background_img_transp" }).value) / 100
+    let foo = Number(settingsStore.getSetting("background_img_transp")) / 100
     return foo >= 1 ? 0.99999 : foo
 })
-
-// const routerKey = computed(() => {
-//     if (router.getRoutes().length) {
-//         return router.getRoutes()[router.getRoutes().length - 1].path
-//     }
-//     return "initial"
-// })
 
 onMounted(async () => {
     // 是否显示主内容区滚动条
@@ -82,5 +81,9 @@ html {
     width: 100%;
     overflow: hidden !important;
     scroll-behavior: smooth;
+}
+
+.v-theme--DarkTheme {
+    --v-theme-primary: v-bind('hexToRGB(settingsStore.getSetting("theme_color"))') !important;
 }
 </style>

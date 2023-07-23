@@ -60,6 +60,7 @@ module.exports = defineConfig({
                 nsis: {
                     oneClick: false,
                     allowToChangeInstallationDirectory: true,
+                    displayLanguageSelector: true,
                 }
             },
         },

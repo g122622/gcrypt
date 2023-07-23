@@ -13,14 +13,6 @@ const defaultSettings = <Array<settingItem>>[
         category: "通用"
     },
     {
-        name: "dev1",
-        type: SettingTypes.button,
-        value: "require('electron').ipcRenderer.send('mainService',{ code: 'toggleDT'})",
-        title: "切换开发者工具",
-        des: "打开或关闭开发者工具窗口，用于开发和调试",
-        category: "开发者"
-    },
-    {
         name: "on_top",
         type: SettingTypes.switcher,
         value: true,
@@ -29,28 +21,20 @@ const defaultSettings = <Array<settingItem>>[
         category: "通用",
     },
     {
-        name: "dev2",
-        type: SettingTypes.button,
-        value: "require('electron').ipcRenderer.send('mainService',{ code: 'reload'})",
-        title: "强制重启渲染进程",
-        des: "在主进程中重载browser window",
-        category: "开发者"
-    },
-    {
-        name: "dev3",
-        type: SettingTypes.button,
-        value: "require('electron').ipcRenderer.send('mainService',{ code: 'relaunch'})",
-        title: "强制重载app主进程",
-        des: "直接重启整个electron app，开发环境下使用会导致退出cli",
-        category: "开发者"
-    },
-    {
         name: "is_dark",
         type: SettingTypes.switcher,
         value: true,
         title: "夜间模式",
         des: "使用黑色元素配色",
         category: "外观",
+    },
+    {
+        name: "theme_color",
+        type: SettingTypes.color,
+        value: "",
+        title: "主题色",
+        des: "选择的颜色将作为界面主色展示",
+        category: "外观"
     },
     {
         name: "background_img",
@@ -113,6 +97,30 @@ const defaultSettings = <Array<settingItem>>[
         }
     },
     {
+        name: "dev1",
+        type: SettingTypes.button,
+        value: "require('electron').ipcRenderer.send('mainService',{ code: 'toggleDT'})",
+        title: "切换开发者工具",
+        des: "打开或关闭开发者工具窗口，用于开发和调试",
+        category: "开发者"
+    },
+    {
+        name: "dev2",
+        type: SettingTypes.button,
+        value: "require('electron').ipcRenderer.send('mainService',{ code: 'reload'})",
+        title: "强制重启渲染进程",
+        des: "在主进程中重载browser window",
+        category: "开发者"
+    },
+    {
+        name: "dev3",
+        type: SettingTypes.button,
+        value: "require('electron').ipcRenderer.send('mainService',{ code: 'relaunch'})",
+        title: "强制重载app主进程",
+        des: "直接重启整个electron app，开发环境下使用会导致退出cli",
+        category: "开发者"
+    },
+    {
         name: "test1",
         type: SettingTypes.button,
         value: `parent.emitter.emit('showMsg', { level: 'error', msg: '${text}' })`,
@@ -143,6 +151,14 @@ const defaultSettings = <Array<settingItem>>[
         title: "显示success通知",
         des: "nothing",
         category: "测试"
+    },
+    {
+        name: 'always_display_update_info',
+        type: SettingTypes.switcher,
+        value: false,
+        title: '总是显示版本更新信息',
+        des: "每次更新后都会跳出来的版本更新详情",
+        category: "通用"
     },
 ]
 

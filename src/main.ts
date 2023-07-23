@@ -95,20 +95,20 @@ class Application {
     private applySettings() {
         setTimeout(() => {
             // 黑色遮罩
-            if (this.SettingsStore.settings.find(item => item.name === "use_shade").value) {
+            if (this.SettingsStore.getSetting("use_shade")) {
                 console.log("shader on!");
                 emitter.emit("showShade");
             } else {
                 emitter.emit("closeShade");
             }
             // 窗口置顶
-            if (this.SettingsStore.settings.find(item => item.name === "on_top").value) {
+            if (this.SettingsStore.getSetting("on_top")) {
                 emitter.emit("setOnTop");
             } else {
                 emitter.emit("unsetOnTop");
             }
-            // 颜色主题
-            if (this.SettingsStore.settings.find(item => item.name === "is_dark").value) {
+            // 夜间模式
+            if (this.SettingsStore.getSetting("is_dark")) {
                 vuetify.theme.global.name.value = 'DarkTheme'
                 document.querySelector("#app").setAttribute("data-theme-type", "dark")
             } else {
@@ -203,6 +203,9 @@ class Application {
         this.initEvents()
         this.initPinia()
         this.initVue()
+        if (this.MainStore.appVersion !== this.MainStore.appVersionOld) {
+            this.SettingsStore.updateSettings()
+        }
         this.initSettingsObserver()
         this.applySettings()
         this.showNotesInConsole()

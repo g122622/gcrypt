@@ -14,8 +14,7 @@
             </v-list>
         </template>
         <template #footer>
-            下次仍然用这种方式打开
-            <v-switch v-model="isRememberMethod" color="primary" density="compact" />
+            <v-switch v-model="isRememberMethod" color="primary" density="compact" label="下次仍然用这种方式打开" />
         </template>
     </DialogGenerator>
 </template>
@@ -34,7 +33,6 @@ const fileType = ref<string>('')
 const isShowing = ref<boolean>(false)
 const isRememberMethod = ref<boolean>(false)
 const openMethodMgr = new OpenMethodMgr()
-// const appointedFileOpenMethods = store.getSetting("appointed_file_open_methods")
 let currentFile: File = null
 let currentExtra = null
 

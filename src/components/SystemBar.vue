@@ -1,6 +1,12 @@
 <template>
     <v-system-bar window style="-webkit-app-region: drag;padding-right: 0px;" height="32">
-        <span class="ml-2">隐域-Gcrypt</span>
+        <span class="ml-2">隐域-Gcrypt v{{ mainStore.appVersion }}</span>
+        <v-chip class="ma-2" color="red" size="x-small" v-if="sharedUtils.env === 'development'">
+            dev
+        </v-chip>
+        <v-chip class="ma-2" color="green" size="x-small" v-if="sharedUtils.env === 'production'">
+            prod
+        </v-chip>
         <v-spacer />
         <div v-ripple class="system-bar-item" v-for="item in itemList" :key="item.name" @click="item.onClick"
             :class="item.class">
@@ -17,11 +23,10 @@
 <script setup lang="ts">
 import { ref } from "vue"
 import Electron from "electron"
+import { useMainStore } from "@/store/main"
+import sharedUtils from "@/utils/sharedUtils";
 
-// interface Props {
-
-// }
-// const props = defineProps<Props>()
+const mainStore = useMainStore()
 
 const itemList = ref([
     {
