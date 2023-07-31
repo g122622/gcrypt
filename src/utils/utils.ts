@@ -5,8 +5,6 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-import * as notifications from './notifications'
-import emitter from "../eventBus"
 const dayjsCustomParseFormat = require('dayjs/plugin/customParseFormat')
 const dayjsDuration = require('dayjs/plugin/duration')
 const dayjs = require('dayjs')
@@ -15,7 +13,6 @@ dayjs.extend(dayjsDuration)
 const ColorUtils = require('./colorUtils.js')
 const PATH = require('path')
 const fs = require('fs')
-const MIME = require('mime-types')
 const lodash = require('lodash')
 const electron = require('electron')
 const mainWindow = null
@@ -208,20 +205,7 @@ export default {
 
         try {
             electron.clipboard.writeText(data.text)
-            notifications.emit({
-                name: 'copyTextToClipboard',
-                props: {
-                    title: data.title,
-                    message: data.message ?? data.text,
-                },
-            })
         } catch (error) {
-            notifications.emit({
-                name: 'copyTextToClipboardError',
-                props: {
-                    text: data.text,
-                },
-            })
         }
     },
     /** Encode URL, replacing all URL-unsafe

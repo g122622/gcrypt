@@ -32,7 +32,7 @@
                         <img :src="`./assets/about/${item.img}`" class="image" />
                     </template>
                     <template #append>
-                        <IconBtn icon="mdi-open-link" tooltip="item.link" onClick="TODO"/>
+                        <IconBtn icon="mdi-open-in-new" tooltip="item.link" :onClick="() => { }" />
                     </template>
                 </v-list-item>
             </v-list>
@@ -56,10 +56,22 @@
             <div class="bottom">
                 <v-list-subheader>构建信息</v-list-subheader>
                 构建日期：
-                {{ store.getters["COMPILE_DATE"] }}
+                {{ store.COMPILE_DATE }}
                 <br>
                 构建号：
-                {{ store.getters["COMPILE_NUMBER"] }}
+                {{ store.COMPILE_NUMBER }}
+                <br>
+                构建平台：
+                {{ store.COMPILE_PLATFORM }}
+                <br>
+                构建CPU信息：
+                {{ store.COMPILE_CPU }}
+                <br>
+                构建内存信息：
+                {{ store.COMPILE_MEM }}
+                <br>
+                构建环境：
+                {{ store.COMPILE_ENV }}
             </div>
 
         </v-card>
@@ -69,7 +81,8 @@
 
 <script setup lang="ts">
 import { version } from "vue";
-import store from "@/store"
+import { useMainStore } from "@/store/main"
+const store = useMainStore()
 
 interface Versions {
     node: string,
@@ -93,7 +106,7 @@ const runtimeTableData = [
 
 const depLibsTableData = [
     { key: `工具库`, value: `Lodash`, img: "lodash.png" },
-    { key: `状态管理`, value: `Vuex`, img: "vuex.png" },
+    { key: `状态管理`, value: `Pinia`, img: "pinia.svg" },
     { key: `路由管理`, value: `Vue Router`, img: "Vue.png" },
     { key: `中央事件总线`, value: `Mitt`, img: "mitt.png" },
     { key: `网络请求库`, value: `Axios`, img: "axios.png" },
@@ -106,7 +119,8 @@ const depLibsTableData = [
 <style scoped lang="less">
 .bottom {
     font-size: 15px;
-    padding: 15px;
+    white-space: pre-wrap;
+    padding: 10px 25px 10px 25px;
 }
 
 .image {

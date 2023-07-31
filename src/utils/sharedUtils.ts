@@ -5,10 +5,10 @@
 
 // This modules contains functions that can be used in both main and rendrer processes
 
-const PATH = require('path')
-const MIME = require('mime-types')
+// const PATH = require('path')
+// const MIME = require('mime-types')
 
-export {
+export default {
     env: process.env.NODE_ENV,
     platform: process.platform,
     winFSstatusAttributes: {
@@ -108,29 +108,29 @@ export {
         }
         return newObject
     },
-    getFileType(path, type = 'file') {
-        const data = {
-            mime: '',
-            mimeDescription: '',
-        }
-        if (type === 'file' || type === 'extension') {
-            if (type === 'extension') {
-                path = `file.${path}`
-            }
-            const ext = PATH.extname(path)
-            const mime = MIME.lookup(ext) || ''
-            const isImage = mime.includes('image/')
-            const isVideo = mime.includes('video/')
-            const isAudio = mime.includes('audio/')
-            const isText = mime.includes('text/')
-            // Set properties
-            data.mime = mime
-            if (isImage) { data.mimeDescription = 'image' } else if (isVideo) { data.mimeDescription = 'video' } else if (isAudio) { data.mimeDescription = 'audio' } else if (isText) { data.mimeDescription = 'text' } else {
-                data.mimeDescription = mime.length === 0
-                    ? ext.replace('.', '')
-                    : mime
-            }
-        }
-        return data
-    },
+    // getFileType(path, type = 'file') {
+    //     const data = {
+    //         mime: '',
+    //         mimeDescription: '',
+    //     }
+    //     if (type === 'file' || type === 'extension') {
+    //         if (type === 'extension') {
+    //             path = `file.${path}`
+    //         }
+    //         const ext = PATH.extname(path)
+    //         const mime = MIME.lookup(ext) || ''
+    //         const isImage = mime.includes('image/')
+    //         const isVideo = mime.includes('video/')
+    //         const isAudio = mime.includes('audio/')
+    //         const isText = mime.includes('text/')
+    //         // Set properties
+    //         data.mime = mime
+    //         if (isImage) { data.mimeDescription = 'image' } else if (isVideo) { data.mimeDescription = 'video' } else if (isAudio) { data.mimeDescription = 'audio' } else if (isText) { data.mimeDescription = 'text' } else {
+    //             data.mimeDescription = mime.length === 0
+    //                 ? ext.replace('.', '')
+    //                 : mime
+    //         }
+    //     }
+    //     return data
+    // },
 }

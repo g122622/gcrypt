@@ -8,8 +8,6 @@
 <script lang="ts">
 import PopMsg from "./PopMsg.vue"
 import { reactive } from "vue";
-import emitter from "../../eventBus"
-import { error } from "../../utils/gyConsole";
 
 export default {
     name: 'MsgContainer',

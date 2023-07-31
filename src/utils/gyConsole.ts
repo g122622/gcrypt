@@ -28,6 +28,7 @@ const error = function (arg: string) {
             arg
         ].join('')
     )
+    console.trace()
 }
 
 const warn = function (arg: string) {

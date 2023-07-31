@@ -7,16 +7,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue"
-import emitter from "@/eventBus"
-import store from "@/store"
+// import { debounce } from "lodash"
+import { useSettingsStore } from "@/store/settings"
+const settingsStore = useSettingsStore()
 
 const backgroundImgWidth = ref(0)
 const backgroundImgAspectRatio = ref(1)
-const imgSrc = ref("")
+const imgSrc = computed(() => {
+    return settingsStore.getSetting('background_img')
+})
 const props = defineProps(["finishLoading"])
 
 const imgBlur = computed(() => {
-    return store.getters.settings.find((item) => item.name === "background_img_blur").value / 10
+    return Number(settingsStore.settings.find((item) => item.name === "background_img_blur").value) / 10
 })
 
 const updateSize = () => {
@@ -24,14 +27,10 @@ const updateSize = () => {
     backgroundImgAspectRatio.value = document.body.offsetWidth / window.innerHeight
 }
 
-window.onresize = updateSize
+window.addEventListener("resize", updateSize)
 
 onMounted(() => {
-    imgSrc.value = store.getters.settings.filter((a) => { return a.name === "background_img" })[0].value
     updateSize()
-    emitter.on("updateSettings", () => {
-        imgSrc.value = store.getters.settings.filter((a) => { return a.name === "background_img" })[0].value
-    })
 })
 </script>
 

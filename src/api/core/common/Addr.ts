@@ -11,11 +11,11 @@ import { error, warn } from "../../../utils/gyConsole";
 class Addr {
     tokens: Array<string>
 
-    toPathStr(): string {
+    toPathStr = function (): string {
         return "/" + this.tokens.join("/")
     }
 
-    compareWith(arg): boolean {
+    compareWith = function (arg): boolean {
         if (arg.tokens.length !== this.tokens.length) {
             return false
         }
@@ -27,7 +27,7 @@ class Addr {
         return true
     }
 
-    up(): Addr {
+    up = function (): Addr {
         if (this.isRoot()) {
             return null
         }
@@ -35,7 +35,7 @@ class Addr {
         return this
     }
 
-    down(arg: string): Addr {
+    down = function (arg: string): Addr {
         if (arg.indexOf("/") > -1) {
             error("folder token 名不能包含斜杠")
         }
@@ -43,7 +43,7 @@ class Addr {
         return this
     }
 
-    isRoot(): boolean {
+    isRoot = function (): boolean {
         // 故意多加的if，方便后续加逻辑
         if (this.tokens.length === 0) {
             return true
@@ -52,14 +52,14 @@ class Addr {
         }
     }
 
-    getTopToken(): string | null {
+    getTopToken = function (): string | null {
         if (this.tokens.length === 0) {
             return null
         }
         return this.tokens[this.tokens.length - 1]
     }
 
-    toBreadcrumbs() {
+    toBreadcrumbs = function () {
         return this.tokens.map(token => {
             return {
                 title: token,

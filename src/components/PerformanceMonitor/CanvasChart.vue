@@ -5,10 +5,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, watch, toRef } from "vue"
+import { onMounted, onUnmounted } from "vue"
 import Chart, { ChartConfiguration } from 'chart.js/auto';
 import { memoryUsage } from "memoryUsage";
-import utils from "@/utils/utils";
+import prettyBytes from "@/utils/prettyBytes";
 const props = defineProps(["maxDataAmountLimit", "memDatas", "updateIntervalMs"])
 
 // 如果想减少打包大小，则这样按需引入
@@ -23,7 +23,7 @@ let chartInstance = null
 let updateIntervalHandle = null
 
 const formatSize = (arg) => {
-    return utils.prettyBytes(arg, 0)
+    return prettyBytes(arg, 0)
         .replaceAll("MB", "")
         .replaceAll("Bytes", "")
         .replaceAll("GB", "")

@@ -70,7 +70,8 @@ import { defineComponent } from "vue"
 export default defineComponent({
     name: 'DialogMgr',
     props: {
-        adapter: Object
+        adapter: Object,
+        refresh: Function
     },
     data() {
         return {
@@ -87,13 +88,13 @@ export default defineComponent({
         showAddFileDialog() {
             this.fileDialogIsOpen = true
         },
-        handleSaveFile() {
-            this.adapter.writeFile(this.fileName, Buffer.from(''))
-            this.$parent.refresh()
+        async handleSaveFile() {
+            await this.adapter.writeFile(this.fileName, Buffer.from(''))
+            this.refresh()
         },
-        handleSaveFolder() {
-            this.adapter.mkdir(this.folderName)
-            this.$parent.refresh()
+        async handleSaveFolder() {
+            await this.adapter.mkdir(this.folderName)
+            this.refresh()
         }
     }
     // mounted() {
