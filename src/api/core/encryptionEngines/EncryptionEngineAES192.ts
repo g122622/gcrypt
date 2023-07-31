@@ -1,8 +1,6 @@
 /* eslint-disable node/no-deprecated-api */
-
-import { error } from "@/utils/gyConsole"
-
 /* eslint-disable @typescript-eslint/no-var-requires */
+import { error } from "@/utils/gyConsole"
 const crypto = require("crypto")
 
 const EncryptConfig = {
@@ -24,10 +22,10 @@ class EncryptionEngineAES192 {
     public encrypt = function (rawData: Buffer): string {
         if (!this.currentPwd) {
             console.error("currentPwd无效", this.currentPwd)
-            return
+            throw new TypeError()
         }
         try {
-            let ciper = crypto.createCipher(EncryptConfig.algorithm, this.currentPwd);
+            const ciper = crypto.createCipher(EncryptConfig.algorithm, this.currentPwd);
             let res = ciper.update(rawData, 'buffer', EncryptConfig.outputStringEncoding);
             res += ciper.final(EncryptConfig.outputStringEncoding);
             return res;
@@ -43,11 +41,11 @@ class EncryptionEngineAES192 {
      */
     public decrypt = function (rawStringData: string): Buffer {
         if (!this.currentPwd) {
-            console.error("currentPwd无效", this.currentPwd)
-            return
+            error("currentPwd无效: " + this.currentPwd)
+            throw new TypeError()
         }
         try {
-            let deciper = crypto.createDecipher(EncryptConfig.algorithm, this.currentPwd);
+            const deciper = crypto.createDecipher(EncryptConfig.algorithm, this.currentPwd);
             let res = deciper.update(rawStringData, EncryptConfig.outputStringEncoding, "buffer");
             res = Buffer.concat([res, deciper.final("buffer")])
             return res;

@@ -15,8 +15,15 @@
                     v-slot="{ matchedItems }" width="590px" height="230px">
                     <v-list-item v-for="item in matchedItems" :key="item.guid" :title="item.name">
                         <template #append>
+                            <v-icon color="success" v-if="item.state === 'succeed'">mdi-check-circle</v-icon>
+                            <v-icon color="error" v-if="item.state === 'failed'">mdi-close-circle</v-icon>
+                            <v-icon v-if="item.state === 'cancelled'">mdi-cancel</v-icon>
+                            <v-icon v-if="item.state === 'pending'">mdi-clock-time-eight</v-icon>
+                            <v-progress-circular indeterminate color="primary" bg-color="rgba(0,0,0,0)"
+                                v-if="item.state === 'running'"></v-progress-circular>
                             <IconBtn icon="mdi-information" :tooltip="getTooltip(item)" size="small" />
-                            <IconBtn icon="mdi-close" tooltip="取消该任务" size="small" @click="item.cancell()" />
+                            <IconBtn icon="mdi-close" tooltip="取消该任务" size="small" @click="item.cancell()"
+                                :disabled="!item.isCancellable()" />
                         </template>
                     </v-list-item>
                 </AdvancedList>

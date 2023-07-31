@@ -1,5 +1,6 @@
 <template>
-    <div class="file-item" :class="fileItemClassList" v-ripple ref="fileItemElement">
+    <div class="file-item" :class="fileItemClassList" v-ripple ref="fileItemElement" @click="handleClick()"
+        @click.right="handleClick(true)">
         <v-tooltip activator="parent" location="right" open-delay="500">
             {{ singleFileItem.name }}
         </v-tooltip>
@@ -30,7 +31,7 @@
                     <br />
                     modified: {{ new Date(singleFileItem.meta.modifiedTime).toLocaleString() }}
                 </div>
-                <div v-else-if="displayMode === 1">
+                <div v-else-if="displayMode === 1 && props.singleFileItem.type === 'file'">
                     {{ prettyBytes(props.singleFileItem.meta.size, 2) }}
                 </div>
             </div>
@@ -42,18 +43,20 @@
 <script setup lang="ts">
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import getFileType from "@/utils/getFileType";
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { useMainStore } from "@/store/main"
 import prettyBytes from "@/utils/prettyBytes";
-const mainStore = useMainStore()
 
 interface Props {
     displayMode: number,
     singleFileItem: dirSingleItem,
     index: number,
-    thumbnail: string
+    thumbnail: string,
+    isSelected: boolean
 }
 const props = defineProps<Props>()
+const emit = defineEmits(['selected', 'unselected'])
+const mainStore = useMainStore()
 
 const toDataURL = (str: string) => {
     const prefix = 'data:image/jpg;base64,'
@@ -63,13 +66,16 @@ const toDataURL = (str: string) => {
 const isHidden = computed(() => {
     return props.singleFileItem.name[0] === "."
 })
+
 const fileItemClassList = computed(() => {
     return {
         'file-item-list': props.displayMode === 0,
         'file-item-item': props.displayMode === 1,
-        'file-item-hidden': isHidden.value
+        'file-item-hidden': isHidden.value,
+        'file-item-selected': props.isSelected,
     }
 })
+
 const markerColor = computed(() => {
     if (mainStore.activeFiles.get(props.singleFileItem.key)) {
         if (mainStore.activeFiles.get(props.singleFileItem.key).isUsingTempFile) {
@@ -81,10 +87,22 @@ const markerColor = computed(() => {
     }
     return 'none'
 })
+
+const handleClick = (isRightClick = false) => {
+    if (props.isSelected) {
+        if (!isRightClick) {
+            emit("unselected")
+        }
+    } else {
+        emit("selected")
+    }
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+@item-background-alpha: 0.3;
+
 @container (width < 400px) {
     .file-meta {
         display: none;
@@ -93,7 +111,7 @@ const markerColor = computed(() => {
 
 .file-item {
     border-radius: 10px;
-    background-color: rgba(131, 131, 131, 0.3);
+    background-color: rgba(131, 131, 131, @item-background-alpha);
     overflow: hidden;
     color: white;
     display: flex;
@@ -171,5 +189,9 @@ const markerColor = computed(() => {
     content: v-bind("markerColor === 'none' ? `''` : `'• '`");
     font-weight: 900;
     color: v-bind('markerColor');
+}
+
+.file-item-selected {
+    background-color: rgba(var(--v-theme-primary), @item-background-alpha);
 }
 </style>

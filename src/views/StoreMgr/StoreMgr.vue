@@ -25,11 +25,12 @@
                 <v-container>
                     <v-row>
                         <v-col cols="12">
-                            <v-text-field label="密码*" required density="compact" v-model="password"
+                            <v-text-field autofocus label="密码*" required density="compact" v-model="password"
                                 :rules="[() => !!password || '请输入密码']" ref="passwordInputView"
                                 :type="showPassword ? 'text' : 'password'"
                                 :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
-                                @click:append="showPassword = !showPassword"></v-text-field>
+                                @click:append="showPassword = !showPassword"
+                                @keyup.enter="onPasswordConfirm()"></v-text-field>
                         </v-col>
                     </v-row>
                 </v-container>

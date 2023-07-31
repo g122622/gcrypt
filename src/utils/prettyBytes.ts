@@ -1,4 +1,4 @@
-function prettyBytes(bytes, decimals) {
+function prettyBytes(bytes, decimals = 2) {
     if (isNaN(parseInt(bytes))) return 'unknown'
     if (bytes === 0) return '0 Bytes'
     const k = 1024

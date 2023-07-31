@@ -96,58 +96,47 @@
             </v-app-bar>
 
             <!-- 主内容区 -->
-            <v-main>
-                <div v-if="currentFileTableForRender.length > 0">
-                    <!-- <TransitionGroup name="file-item-transition"> -->
-                    <div v-for="(item, index) in currentFileTableForRender" :key="item.key">
-                        <FileItem :displayMode="viewOptions.itemDisplayMode" :singleFileItem="item" :index="index"
-                            @click="handleItemClick(item)" :thumbnail="thumbnails[item.key] || ''">
-                            <ContextMenu :width="200" :menuList="[
-                                {
-                                    text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemClick(item) } }
-                                },
-                                {
-                                    text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile(item.name, item.key) } }
-                                },
-                                {
-                                    text: '重命名', icon: 'mdi-rename-box', actions: { onClick: () => { /* renameFile(item.name)*/ } }
-                                },
-                                {
-                                    type: 'divider'
-                                },
-                                {
-                                    text: '属性', icon: 'mdi-information', actions: { onClick: () => { handlePropertiesClick(item) } }
-                                }]">
-                            </ContextMenu>
-                        </FileItem>
+            <v-main style="display: block; height: 100%;">
+                <div style="height: calc(100% - 63px); overflow-y: scroll;overflow-x: hidden;">
+                    <div v-if="currentFileTableForRender.length > 0">
+                        <!-- <TransitionGroup name="file-item-transition"> -->
+                        <div v-for="(item, index) in currentFileTableForRender" :key="item.key">
+                            <FileItem :displayMode="viewOptions.itemDisplayMode" :singleFileItem="item" :index="index"
+                                @dblclick="handleItemClick(item)" :thumbnail="thumbnails[item.key] || ''"
+                                @selected="handleItemSelection(item)" @unselected="handleItemUnselection(item)"
+                                :isSelected="selectedItems.has(item)">
+                                <ContextMenu :width="200" :menuList="getItemMenuList(item)">
+                                </ContextMenu>
+                            </FileItem>
+                        </div>
+                        <!-- </TransitionGroup> -->
                     </div>
-                    <!-- </TransitionGroup> -->
+                    <div v-else
+                        style="display: flex; justify-content: center; flex-direction: column; align-items: center;">
+                        <img src="./assets/fileMgr/404.png" style="width:270px;" />
+                        当前目录下没有文件
+                    </div>
+                    <BottomTip></BottomTip>
+                    <ContextMenu :width="200" :menuList="[
+                        {
+                            text: '上一级目录', icon: 'mdi-arrow-up', actions: { onClick: () => { up() } }
+                        },
+                        {
+                            text: '后退', icon: 'mdi-arrow-left', actions: { onClick: () => { back() } }
+                        },
+                        {
+                            type: 'divider'
+                        },
+                        {
+                            text: '刷新', icon: 'mdi-refresh', actions: { onClick: () => { refresh() } }
+                        }]">
+                    </ContextMenu>
                 </div>
-                <div v-else style=" display:flex;justify-content: center;flex-direction: column;align-items: center;">
-                    <img src="./assets/fileMgr/404.png" style="width:270px;" />
-                    当前目录下没有文件
-                </div>
-                <BottomTip></BottomTip>
-                <ContextMenu :width="200" :menuList="[
-                    {
-                        text: '上一级目录', icon: 'mdi-arrow-up', actions: { onClick: () => { up() } }
-                    },
-                    {
-                        text: '后退', icon: 'mdi-arrow-left', actions: { onClick: () => { back() } }
-                    },
-                    {
-                        type: 'divider'
-                    },
-                    {
-                        text: '刷新', icon: 'mdi-refresh', actions: { onClick: () => { refresh() } }
-                    }]">
-                </ContextMenu>
+                <!-- 底部栏 -->
+                <BottomBar :currentFileTableForRender="currentFileTableForRender" :selectedItems="selectedItems"
+                    @selectAll="selectAll()" @unSelectAll="unSelectAll()" @reverseSelection="reverseSelection()">
+                </BottomBar>
             </v-main>
-
-            <!-- 底部栏 -->
-            <v-footer>
-                <BottomBar></BottomBar>
-            </v-footer>
         </v-app>
     </div>
     <div v-if="isLoading" style="display: flex;flex-direction: column;align-items: center;margin-top: 20px;">
@@ -170,12 +159,14 @@ import AdapterBase from "@/api/core/types/AdapterBase";
 import File from "@/api/File";
 import getExtName from "@/utils/getExtName";
 import { useTaskStore } from '@/store/task'
+import Task from "@/api/Task";
+import sharedUtils from "@/utils/sharedUtils";
 
 import ContextMenu from "../shared/ContextMenu.vue";
 import FileItem from "./FileItem.vue"
 import DialogMgr from "./DialogMgr.vue";
-import Task from "@/api/Task";
-import sharedUtils from "@/utils/sharedUtils";
+import BottomBar from "./BottomBar.vue"
+import prettyBytes from "@/utils/prettyBytes";
 
 interface Props {
     adapter: AdapterBase
@@ -236,6 +227,8 @@ const refresh = async (arg?: Addr) => {
         await props.adapter.changeCurrentDirectory(arg)
         operationHistory.value.push(lodash.cloneDeep(arg))
     }
+    // 取消选择
+    selectedItems.value.clear()
     // 更改currentFileTable
     currentFileTable.value = await props.adapter.getCurrentFileTable()
     // 加载缩略图
@@ -275,17 +268,31 @@ const importFile = async (filePath: string, taskGroupId: string) => {
     }, `引入文件 ${filePath}`, taskGroupId), { runImmediately: false })
 }
 
-const deleteFile = async (filename, key) => {
-    await props.adapter.deleteFile(filename)
-    await deleteThumbnail(key)
+const deleteFile = async () => {
+    for (let item of selectedItems.value) {
+        await props.adapter.deleteFile(item.name)
+        await deleteThumbnail(item.key)
+    }
     await refresh()
 }
 
-// <UI事件处理>
-const handlePropertiesClick = (item: dirSingleItem) => {
-    itemCache.value = { ...item, ...item.meta }
-    delete itemCache.value.meta
-    models.isPropOpening = true
+// <UI>
+const handlePropertiesClick = (item?: dirSingleItem) => {
+    if (item) {
+        itemCache.value = { ...item, ...item.meta }
+        delete itemCache.value.meta
+        models.isPropOpening = true
+    } else {
+        let totalSize = 0
+        for (let element of selectedItems.value) {
+            totalSize += element.meta.size
+        }
+        itemCache.value = {
+            totalSize,
+            totalSizeFormatted: prettyBytes(totalSize)
+        }
+        models.isPropOpening = true
+    }
 }
 
 const handleItemClick = (item) => {
@@ -296,7 +303,38 @@ const handleItemClick = (item) => {
     }
 }
 
-// TODO 测试复杂目录导入速度
+const getItemMenuList = (item) => {
+    if (selectedItems.value.size === 1) {
+        return [
+            {
+                text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemClick(item) } }
+            },
+            {
+                text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile() } }
+            },
+            {
+                text: '重命名', icon: 'mdi-rename-box', actions: { onClick: () => { console.log(1) } }
+            },
+            {
+                type: 'divider'
+            },
+            {
+                text: '属性', icon: 'mdi-information', actions: { onClick: () => { handlePropertiesClick(item) } }
+            }]
+    } else {
+        return [
+            {
+                text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile() } }
+            },
+            {
+                type: 'divider'
+            },
+            {
+                text: '属性', icon: 'mdi-information', actions: { onClick: () => { handlePropertiesClick() } }
+            }]
+    }
+}
+
 const handleFileImportClick = () => {
     const taskGroupId = sharedUtils.getHash(16)
     let foo: HTMLInputElement = document.querySelector("#file-import")
@@ -404,7 +442,7 @@ const viewOptionsLists = [
 
 ]
 
-const currentFileTableForRender = computed(() => {
+const currentFileTableForRender = computed<fileTable['items']>(() => {
     if (!currentFileTable.value) {
         return []
     }
@@ -480,8 +518,7 @@ const getThumbnail = async (filePath: string): Promise<Buffer> => {
         if (thumbnail) {
             return thumbnail
         } else {
-            // TODO handle exception
-            error("生成缩略图失败")
+            error("生成缩略图失败，缩略图数据无效（falsy）")
         }
     } catch (e) {
         error("生成缩略图失败" + e.message)
@@ -504,6 +541,31 @@ const deleteThumbnail = async (key: string) => {
     await saveThumbnailFile()
 }
 
+// <文件选择>
+const selectedItems = ref<Set<dirSingleItem>>(new Set())
+
+const handleItemSelection = (item: dirSingleItem) => {
+    selectedItems.value.add(item)
+}
+
+const handleItemUnselection = (item: dirSingleItem) => {
+    selectedItems.value.delete(item)
+}
+
+const selectAll = () => {
+    selectedItems.value = new Set(currentFileTableForRender.value)
+}
+
+const unSelectAll = () => {
+    selectedItems.value.clear()
+}
+
+const reverseSelection = () => {
+    const reversed = currentFileTableForRender.value.filter((item) => {
+        return !selectedItems.value.has(item)
+    })
+    selectedItems.value = new Set(reversed)
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -516,6 +578,7 @@ const deleteThumbnail = async (key: string) => {
 #file_mgr_container {
     // css最新的容器查询特性，热乎！
     container-type: inline-size;
+    height: 100%;
 }
 
 .viewSelectorText {

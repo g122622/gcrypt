@@ -48,9 +48,10 @@ const matchedItems = computed(() => {
         return props.items.filter((item) => {
             let flag = false
             // TODO 可以优化：flag一旦为true就立即返回，不继续遍历
-            traverseObj(item, (key, value) => {
+            traverseObj(item, (key, value, abort) => {
                 if (typeof value === "string" && value.includes(searchWord.value)) {
                     flag = true
+                    abort()
                 }
             })
             return flag

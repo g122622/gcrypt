@@ -112,7 +112,6 @@ class File {
      * @param arg 在adapter模式下会自动转为buffer
      */
     public async write(arg) {
-        // TODO 节流
         switch (this.fileType) {
             case FileType.RawData:
                 this.data = arg

@@ -88,12 +88,12 @@ export default defineComponent({
         showAddFileDialog() {
             this.fileDialogIsOpen = true
         },
-        handleSaveFile() {
-            this.adapter.writeFile(this.fileName, Buffer.from(''))
+        async handleSaveFile() {
+            await this.adapter.writeFile(this.fileName, Buffer.from(''))
             this.refresh()
         },
-        handleSaveFolder() {
-            this.adapter.mkdir(this.folderName)
+        async handleSaveFolder() {
+            await this.adapter.mkdir(this.folderName)
             this.refresh()
         }
     }

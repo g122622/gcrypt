@@ -5,13 +5,18 @@ import lodash from "lodash";
  * @param obj
  * @param cb
  */
-function traverseObj(obj, cb: (key: string, value: any) => void) {
+function traverseObj(obj, cb: (key: string, value: any, abort: () => void) => void) {
     lodash.forEach(obj, function (value, key) {
+        let flag = true
         if (lodash.isPlainObject(value)) {
             traverseObj(value, cb);
         } else {
-            cb(key, value)
+            cb(key, value, () => {
+                // 调用abort()，提前退出
+                flag = false
+            })
         }
+        return flag
     });
 }
 

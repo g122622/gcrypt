@@ -2,6 +2,7 @@
     <!-- 顶部工具栏 -->
     <Teleport to="#ActionToolBar">
         <ActionToolBarBase ToolbarTitle="设置">
+            <IconBtn icon="mdi-content-save" @click="settingsStore.saveSettings()" tooltip="手动保存设置（app会自动保存设置，一般情况不用点）" />
             <IconBtn icon="mdi-update" @click="updateSettings" tooltip="升级所有设置（保留数据）" />
             <IconBtn icon="mdi-cog-refresh" @click="resetSettings" tooltip="重置所有设置" />
         </ActionToolBarBase>

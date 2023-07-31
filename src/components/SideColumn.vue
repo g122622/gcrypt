@@ -1,5 +1,5 @@
 <template>
-    <v-navigation-drawer v-model="isSideDrawerOpen" :rail="isSideDrawerRail" permanent @click="isSideDrawerRail = false"
+    <v-navigation-drawer v-model="isSideDrawerOpen" :rail="isSideDrawerRail" permanent
         width="200">
         <v-list-item prepend-avatar="./assets/avatar-ss.jpg" title="g122622" nav
             @click.stop="isSideDrawerRail = !isSideDrawerRail">
@@ -33,6 +33,7 @@ import TabsMgr from '@/components/TabsMgr.vue';
 import TaskMgr from "./TaskMgr.vue";
 import FileStateManager from "@/components/FileStateManager.vue";
 import { useRouter } from 'vue-router';
+import sleep from "@/utils/sleep";
 
 const router = useRouter()
 const isSideDrawerOpen = ref<boolean>(true)
@@ -70,7 +71,7 @@ const sideColumnMainItems =
         },
     ]
 
-const handleNavClick = (value: string) => {
+const handleNavClick = async (value: string) => {
     router.push(`/${value}`)
 }
 

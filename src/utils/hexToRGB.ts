@@ -1,3 +1,8 @@
+/**
+ * hex to rgb
+ * @param hex
+ * @returns `r,g,b`
+ */
 export default function (hex: string) {
     const r = parseInt(hex.substring(1, 3), 16);
     const g = parseInt(hex.substring(3, 5), 16);
