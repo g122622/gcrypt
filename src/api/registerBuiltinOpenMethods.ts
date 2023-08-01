@@ -5,6 +5,7 @@ import File from "@/api/File";
 import Electron from 'electron'
 import FroalaEditor from "@/components/FroalaEditor/FroalaEditor.vue";
 import MonacoEditor from "@/components/MonacoEditor/MonacoEditor.vue";
+import getDigest from "@/api/hash/getDigest"
 
 /**
  * 注册内置方法
@@ -48,7 +49,41 @@ export default async function registerBulitinOpenMethods(mgr) {
         icon: 'mdi-folder-pound',
         fileType: /./,
         async onSelected(file: File) {
-            // TODO const md5 = await getMD5(await file.read())
+            const dialogStore = (await import("@/store/dialog")).useDialogStore()
+            const md5 = await getDigest(await file.read(), 'md5')
+            dialogStore.addDialog({
+                isPersistent: false,
+                isDialogOpen: true,
+                title: 'md5生成结果',
+                destroyAfterClose: true,
+                width: '450px',
+                // height: '250px',
+                HTMLContent: `文件名: ${file.filename}
+                <br/>
+                md5: ${md5}
+            `
+            })
+        }
+    })
+    mgr.registerMethod({
+        name: "生成sha1值",
+        icon: 'mdi-folder-pound',
+        fileType: /./,
+        async onSelected(file: File) {
+            const dialogStore = (await import("@/store/dialog")).useDialogStore()
+            const sha1 = await getDigest(await file.read(), 'sha1')
+            dialogStore.addDialog({
+                isPersistent: false,
+                isDialogOpen: true,
+                title: 'sha1生成结果',
+                destroyAfterClose: true,
+                width: '550px',
+                // height: '250px',
+                HTMLContent: `文件名: ${file.filename}
+                <br/>
+                sha1: ${sha1}
+            `
+            })
         }
     })
     mgr.registerMethod({

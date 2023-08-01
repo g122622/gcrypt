@@ -1,6 +1,6 @@
 <template>
     <v-dialog v-model="isDialogOpen" :persistent="props.isPersistent || false" :width="props.width || 600"
-        :height="props.height || 400">
+        :height="props.height">
         <v-card density="compact">
             <v-card-title>
                 <span class="text-h6">{{ props.title }}</span>
@@ -9,6 +9,7 @@
                 <v-container>
                     <v-row>
                         <slot name="mainContent" />
+                        <span v-if="!!props.HTMLContent" v-html="props.HTMLContent"></span>
                     </v-row>
                 </v-container>
                 <slot name="footer" />
@@ -28,6 +29,7 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import dialogBottomAction from "@/types/dialogBottomAction"
+import { useDialogStore } from "@/store/dialog";
 
 interface Props {
     isDialogOpen: boolean,
@@ -36,15 +38,23 @@ interface Props {
     bottomActions?: Array<dialogBottomAction>,
     isPersistent?: boolean,
     width?: string,
-    height?: string
+    height?: string,
+    guid?: string,
+    destroyAfterClose?: boolean,
+    HTMLContent?: string,
 }
 const props = defineProps<Props>()
 const emit = defineEmits(['update:isDialogOpen'])
+const dialogStore = useDialogStore()
 const isDialogOpen = computed({
     get() {
         return props.isDialogOpen
     },
     set(value) {
+        // 检测到对话框关闭
+        if (!value && props.destroyAfterClose) {
+            dialogStore.remove(props.guid)
+        }
         emit('update:isDialogOpen', value)
     }
 })

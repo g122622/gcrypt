@@ -115,6 +115,8 @@ class Application {
                 vuetify.theme.global.name.value = 'LightTheme'
                 document.querySelector("#app").setAttribute("data-theme-type", "light")
             }
+            // 内容保护
+            Electron.ipcRenderer.send('mainService', { code: "setContentProtectionState", data: this.SettingsStore.getSetting("content_protection") })
         }, 100)
     }
 

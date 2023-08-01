@@ -148,6 +148,8 @@ class ApplicationMain {
                         thisRef.mainWindow.setAlwaysOnTop(false)
                     }
                     break;
+                case "setContentProtectionState":
+                    thisRef.mainWindow.setContentProtection(arg.data)
             }
         });
 

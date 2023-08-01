@@ -1,5 +1,5 @@
 <template>
-    <DialogGenerator :title="'新版本简介 v' + mainStore.appVersion" v-model:isDialogOpen="isShowing" height="350px" width="600px"
+    <DialogGenerator :title="'新版本简介 v' + mainStore.appVersion" v-model:isDialogOpen="isShowing" width="600px"
         :isPersistent="false" :bottomActions="[{ text: '明白', onClick: () => { isShowing = false } }]">
         <template #mainContent>
             <div style="margin-bottom: 25px;">
@@ -30,7 +30,7 @@ const displayNextTime = computed<boolean>({
     }
 })
 
-if (mainStore.appVersion !== mainStore.appVersionOld) {
+if ((mainStore.appVersion !== mainStore.appVersionOld) || settingsStore.getSetting("always_display_update_info")) {
     isShowing.value = true
 }
 

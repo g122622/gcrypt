@@ -9,8 +9,10 @@
     <ContextMenuGlobalRenderArea />
     <!-- 打开方式管理器 -->
     <OpenMethodSelector />
-
+    <!-- 本次更新内容对话框 -->
     <PostUpdateInfo />
+    <!-- 动态对话框 -->
+    <DialogGenerator v-for="item in dialogStore.dialogs" :key="item.guid" v-bind="item"></DialogGenerator>
 
     <div :style="{ opacity: backgroundOpacity }">
         <v-app>
@@ -40,6 +42,7 @@ import { useSettingsStore } from "./store/settings"
 import { useMainStore } from "./store/main"
 import { useRoute } from 'vue-router'
 import hexToRGB from "@/utils/hexToRGB"
+import { useDialogStore } from "@/store/dialog";
 
 // 组件
 import MsgContainer from "./components/Msg/MsgContainer.vue"
@@ -50,9 +53,11 @@ import SystemBar from "./components/SystemBar.vue"
 import OpenMethodSelector from './components/Dialogs/OpenMethodSelector.vue';
 import SideColumn from "./components/SideColumn.vue";
 import PostUpdateInfo from './components/Dialogs/PostUpdateInfo.vue'
+import DialogGenerator from './components/shared/DialogGenerator.vue'
 
 const settingsStore = useSettingsStore()
 const mainStore = useMainStore()
+const dialogStore = useDialogStore()
 const route = useRoute()
 const finishLoading = ref<boolean>(false)
 
@@ -74,7 +79,6 @@ onMounted(async () => {
 <style lang="less">
 @import './styles/globalVariables.less';
 @import './styles/globalVuetifyOverrides.less';
-
 @import './styles/scrollbars.less';
 
 html {

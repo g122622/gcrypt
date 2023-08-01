@@ -5,6 +5,62 @@ const text = "孩提时，我有许多美丽的憧憬，天真的梦。那时，
 
 const defaultSettings = <Array<settingItem>>[
     {
+        name: "is_dark",
+        type: SettingTypes.switcher,
+        value: true,
+        title: "夜间模式",
+        des: "使用黑色元素配色",
+        category: "外观",
+    },
+    {
+        name: "theme_color",
+        type: SettingTypes.color,
+        value: "#3949AB",
+        title: "主题色",
+        des: "选择的颜色将作为界面主色展示",
+        category: "外观"
+    },
+    {
+        name: "background_img",
+        type: SettingTypes.img,
+        value: "",
+        title: "背景图片",
+        des: "从指定本地路径选择背景图片",
+        category: "外观"
+    },
+    {
+        name: "background_img_blur",
+        type: SettingTypes.slider,
+        value: "0",
+        title: "背景图片模糊度",
+        des: "给背景图加上指定半径的高斯模糊filter，并不会修改原文件",
+        category: "外观",
+        extra: {
+            maxLimitation: '100',
+            minLimitation: '0'
+        }
+    },
+    {
+        name: "background_img_transp",
+        type: SettingTypes.slider,
+        value: "85",
+        title: "背景图片透明度",
+        des: "调低调高都不好",
+        category: "外观",
+        extra: {
+            maxLimitation: '100',
+            minLimitation: '30'
+        }
+    },
+    {
+        name: "use_bottom_tip",
+        type: SettingTypes.switcher,
+        value: true,
+        title: "显示底部句子",
+        des: "是否从网络获取并显示列表底部的装饰性句子",
+        category: "外观"
+    },
+    {
         name: "use_shade",
         type: SettingTypes.switcher,
         value: false,
@@ -21,60 +77,12 @@ const defaultSettings = <Array<settingItem>>[
         category: "通用",
     },
     {
-        name: "is_dark",
+        name: "content_protection",
         type: SettingTypes.switcher,
         value: true,
-        title: "夜间模式",
-        des: "使用黑色元素配色",
-        category: "外观",
-    },
-    {
-        name: "theme_color",
-        type: SettingTypes.color,
-        value: "",
-        title: "主题色",
-        des: "选择的颜色将作为界面主色展示",
-        category: "外观"
-    },
-    {
-        name: "background_img",
-        type: SettingTypes.img,
-        value: "",
-        title: "背景图片",
-        des: "从指定本地路径选择背景图片",
-        category: "外观"
-    },
-    {
-        name: "background_img_blur",
-        type: SettingTypes.slider,
-        value: "70",
-        title: "背景图片模糊度",
-        des: "给背景图加上指定半径的高斯模糊filter，并不会修改原文件",
-        category: "外观",
-        extra: {
-            maxLimitation: '100',
-            minLimitation: '0'
-        }
-    },
-    {
-        name: "background_img_transp",
-        type: SettingTypes.slider,
-        value: "80",
-        title: "背景图片透明度",
-        des: "调低调高都不好",
-        category: "外观",
-        extra: {
-            maxLimitation: '100',
-            minLimitation: '30'
-        }
-    },
-    {
-        name: "use_bottom_tip",
-        type: SettingTypes.switcher,
-        value: true,
-        title: "显示底部句子",
-        des: "是否从网络获取并显示列表底部的装饰性句子",
-        category: "外观"
+        title: "窗口捕获保护",
+        des: "阻止外部应用截获窗口",
+        category: "安全",
     },
     {
         name: "appointed_file_open_methods",
