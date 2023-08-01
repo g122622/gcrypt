@@ -49,7 +49,6 @@ export default async function registerBulitinOpenMethods(mgr) {
         fileType: /./,
         async onSelected(file: File) {
             // TODO const md5 = await getMD5(await file.read())
-            // TODO showMsg
         }
     })
     mgr.registerMethod({
