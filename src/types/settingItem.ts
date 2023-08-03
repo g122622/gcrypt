@@ -8,8 +8,9 @@ interface settingItem {
     category: string,
     title: string,
     extra?: {
-        maxLimitation?: string,
-        minLimitation?: string
+        maxLimitation?: number,
+        minLimitation?: number,
+        step?: number
     }
 }
 

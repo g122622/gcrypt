@@ -27,12 +27,16 @@ const diskStore = new ElectronStore({
 export const useEncryptionStore = defineStore("encryption", {
     state() {
         return {
-            storeList: <Array<StoreListItem>>diskStore.get("storeList", [])
+            storeList: <Array<StoreListItem>>diskStore.get("storeList", []),
+            appLockerKeyEncrypted: <string>diskStore.get("appLockerKeyEncrypted", null)
         }
     },
     actions: {
         save() {
             diskStore.set("storeList", this.storeList)
+        },
+        setAppLockerKeyEncrypted(key: string) {
+            diskStore.set("appLockerKeyEncrypted", key)
         },
         async getInitedAdapter(entryFileSrc: string, password: string, entryJSONArg: EntryJson) {
             let adapter = null

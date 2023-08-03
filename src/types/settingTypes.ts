@@ -4,7 +4,7 @@ enum SettingTypes {
     text,
     img,
     button,
-    color
+    color,
 }
 
 export default SettingTypes

@@ -1,5 +1,5 @@
 <template>
-    <DialogGenerator title="选择打开方式" v-model:isDialogOpen="isShowing" height="600px" width="350px" :isPersistent="true"
+    <DialogGenerator title="选择打开方式" v-model:isDialogOpen="isShowing" width="350px" :isPersistent="true"
         :bottomActions="[{ text: '取消', onClick: () => { isShowing = false } }]">
         <template #mainContent>
             <v-list lines="two">

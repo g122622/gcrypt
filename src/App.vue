@@ -7,6 +7,8 @@
     </div>
     <!-- 右键菜单全局绘制区域 -->
     <ContextMenuGlobalRenderArea />
+    <!-- AppLocker -->
+    <AppLocker />
     <!-- 打开方式管理器 -->
     <OpenMethodSelector />
     <!-- 本次更新内容对话框 -->
@@ -54,6 +56,7 @@ import OpenMethodSelector from './components/Dialogs/OpenMethodSelector.vue';
 import SideColumn from "./components/SideColumn.vue";
 import PostUpdateInfo from './components/Dialogs/PostUpdateInfo.vue'
 import DialogGenerator from './components/shared/DialogGenerator.vue'
+import AppLocker from './components/AppLocker.vue'
 
 const settingsStore = useSettingsStore()
 const mainStore = useMainStore()

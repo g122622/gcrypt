@@ -37,7 +37,7 @@
                                 <!-- TS类型限制，只能把v-model展开 -->
                                 <v-slider thumb-label="always" color="primary" :modelValue="item.value.toString()"
                                     @update:modelValue="newValue => { item.value = newValue.toString() }"
-                                    :max="item.extra.maxLimitation" :min="item.extra.minLimitation">
+                                    :max="item.extra.maxLimitation" :min="item.extra.minLimitation" :step="item.extra.step">
                                 </v-slider>
                             </div>
                             <!-- 文本 -->

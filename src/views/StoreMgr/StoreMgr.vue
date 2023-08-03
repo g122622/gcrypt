@@ -15,9 +15,9 @@
     <input type="file" id='store-import' style="display: none;" />
 
     <!-- password对话框 -->
-    <DialogGenerator title="输入密码" v-model:isDialogOpen="models.isPpasswordDialogOpen" height="350px" width="600px"
+    <DialogGenerator title="输入密码" v-model:isDialogOpen="models.isPasswordDialogOpen" height="350px" width="600px"
         :isPersistent="true" :bottomActions="[
-            { text: '取消', onClick: () => { models.isPpasswordDialogOpen = false } },
+            { text: '取消', onClick: () => { models.isPasswordDialogOpen = false } },
             { text: '确定', onClick: () => { onPasswordConfirm() } }
         ]">
         <template #mainContent>
@@ -76,7 +76,7 @@ interface StoreListItem extends EntryJson {
 
 const encryptionStore = useEncryptionStore()
 const models = reactive({
-    isPpasswordDialogOpen: false,
+    isPasswordDialogOpen: false,
 })
 const selectedStore = ref<StoreListItem>(null)
 const password = ref("")
@@ -87,7 +87,7 @@ const showPassword = ref<boolean>(false)
 const handleItemClick = (item) => {
     // NOTE 可能存在引用赋值导致的潜在bug
     selectedStore.value = item
-    models.isPpasswordDialogOpen = true
+    models.isPasswordDialogOpen = true
 }
 const onPasswordConfirm = async () => {
     passwordInputView.value.validate(true)
@@ -97,7 +97,7 @@ const onPasswordConfirm = async () => {
             password.value,
             selectedStore.value)
         await encryptionStore.openStore(selectedStore.value.storeEntryJsonSrc, adapter)
-        models.isPpasswordDialogOpen = false
+        models.isPasswordDialogOpen = false
     }
 }
 

@@ -9,17 +9,28 @@
             <v-icon>mdi-home</v-icon>
             <v-tooltip activator="parent" location="bottom">主页</v-tooltip>
         </v-btn>
-        <v-btn icon>
-            <v-icon>mdi-dots-vertical</v-icon>
-            <v-tooltip activator="parent" location="bottom">更多</v-tooltip>
-        </v-btn>
+        <v-menu v-model="isMoreMenuOpen" :close-on-content-click="false" location="end">
+            <template v-slot:activator="{ props }">
+                <v-btn icon v-bind="props">
+                    <v-icon>mdi-dots-vertical</v-icon>
+                    <v-tooltip activator="parent" location="bottom">更多</v-tooltip>
+                </v-btn>
+            </template>
+            <v-list>
+                <v-list-item @click="() => { }">(empty)</v-list-item>
+            </v-list>
+        </v-menu>
     </v-app-bar>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
+
 const props = defineProps<{
     ToolbarTitle: string
 }>()
+
+const isMoreMenuOpen = ref(false)
 
 </script>
 
