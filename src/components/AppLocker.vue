@@ -63,14 +63,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue"
+import { ref, reactive, onMounted, watchEffect } from "vue"
 import { useSettingsStore } from "@/store/settings"
 import { useEncryptionStore } from "@/store/encryption";
 // import { safeStorage } from "electron";
-import { error } from "@/utils/gyConsole";
 import getDigest from "@/api/hash/getDigest";
 import ASSERT from "@/utils/ASSERT";
 import notification from "@/api/notification";
+import emitter from "@/eventBus";
 
 const settingsStore = useSettingsStore()
 const encryptionStore = useEncryptionStore()
@@ -128,16 +128,25 @@ const onSetPasswordConfirm = () => {
 }
 
 onMounted(() => {
-    if (settingsStore.getSetting("window_lock")) {
-        models.isPasswordDialogOpen = true
-        if (settingsStore.getSetting("window_lock_scheduled")) {
-            interval = setInterval(() => {
-                models.isPasswordDialogOpen = true
-            }, settingsStore.getSetting("window_lock_interval") * 1e3 * 60)
-        } else {
+    watchEffect(() => {
+        if (settingsStore.getSetting("window_lock")) {
+            models.isPasswordDialogOpen = true
             clearInterval(interval)
+            if (settingsStore.getSetting("window_lock_scheduled")) {
+                interval = setInterval(() => {
+                    models.isPasswordDialogOpen = true
+                }, settingsStore.getSetting("window_lock_interval") * 1e3 * 60)
+            }
         }
-    }
+    })
+    emitter.on("Action::toggleAppLocker", (isReset: boolean) => {
+        if (isReset) {
+            encryptionStore.setAppLockerKeyEncrypted('')
+        }
+        if (settingsStore.getSetting("window_lock")) {
+            models.isPasswordDialogOpen = true
+        }
+    })
 })
 
 </script>

@@ -92,14 +92,14 @@ const defaultSettings = Object.freeze(<Array<settingItem>>[
         des: "开启后可通过定时、按钮等锁定窗口，需要密码解锁",
         category: "安全",
     },
-    // {
-    //     name: "window_lock_password",
-    //     type: SettingTypes.text,
-    //     value: '',
-    //     title: "窗口锁定密码",
-    //     des: "窗口锁定时需要输入的解锁密码",
-    //     category: "安全",
-    // },
+    {
+        name: "set_window_lock_password",
+        type: SettingTypes.button,
+        value: 'window.emitter.emit("Action::toggleAppLocker", true)',
+        title: "窗口锁定密码设置/重设",
+        des: "设置/重设窗口锁定时需要输入的解锁密码",
+        category: "安全",
+    },
     {
         name: "window_lock_scheduled",
         type: SettingTypes.switcher,

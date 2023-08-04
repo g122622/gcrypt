@@ -25,6 +25,7 @@ import { ref } from "vue"
 import Electron from "electron"
 import { useMainStore } from "@/store/main"
 import sharedUtils from "@/utils/sharedUtils";
+import emitter from "@/eventBus";
 
 const mainStore = useMainStore()
 
@@ -47,6 +48,15 @@ const itemList = ref([
                 { code: "reload" })
         },
         icon: 'mdi-reload',
+        class: 'system-bar-item-normal'
+    },
+    {
+        name: 'lock',
+        tooltip: '锁定应用',
+        onClick: () => {
+            emitter.emit("Action::toggleAppLocker")
+        },
+        icon: 'mdi-lock-outline',
         class: 'system-bar-item-normal'
     },
     {

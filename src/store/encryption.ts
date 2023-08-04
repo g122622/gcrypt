@@ -36,6 +36,7 @@ export const useEncryptionStore = defineStore("encryption", {
             diskStore.set("storeList", this.storeList)
         },
         setAppLockerKeyEncrypted(key: string) {
+            this.appLockerKeyEncrypted = key
             diskStore.set("appLockerKeyEncrypted", key)
         },
         async getInitedAdapter(entryFileSrc: string, password: string, entryJSONArg: EntryJson) {

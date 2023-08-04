@@ -4,6 +4,7 @@ import defaultSettings from "@/assets/json/defaultSettings";
 import settingItem from '@/types/settingItem';
 import { log } from '@/utils/gyConsole';
 import { cloneDeep } from "lodash"
+import SettingTypes from '@/types/settingTypes';
 
 // 初始化electron-store
 const settingStore = new ElectronStore({
@@ -52,7 +53,10 @@ export const useSettingsStore = defineStore("settings", {
                 temp.push(cloneDeep(item))
                 // 不是新的设置项
                 if (this.hasSetting(item.name)) {
-                    temp[temp.length - 1].value = this.getSetting(item.name)
+                    // 特殊地，按钮的value需要更新
+                    if (item.type !== SettingTypes.button) {
+                        temp[temp.length - 1].value = this.getSetting(item.name)
+                    }
                 }
             });
             this.settings = temp
