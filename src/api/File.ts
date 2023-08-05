@@ -34,6 +34,7 @@ class File {
     private fileguid: string
     private fileType: FileType
     private AdapterCWD: Addr
+    private tmpFilePath: string
 
     constructor(fileguid = sharedUtils.getHash(16)) {
         this.fileguid = fileguid
@@ -64,19 +65,23 @@ class File {
      * 将文件对象转为基于临时文件的文件对象，并返回临时文件的地址
      */
     public async toTempFile() {
+        // 不得重复操作
+        if (this.tmpFilePath) {
+            return;
+        }
         // 创建临时文件
-        const tmpdir = path.join(
+        this.tmpFilePath = path.join(
             os.tmpdir(),
             sharedUtils.getHash(16) + '.' + getExtName(this.filename))
-        await fs.writeFile(tmpdir, await this.read())
+        await fs.writeFile(this.tmpFilePath, await this.read())
 
         // 创建filewatcher，监听临时文件修改
-        this.fileWatcher = new FileWatcher(tmpdir, {
+        this.fileWatcher = new FileWatcher(this.tmpFilePath, {
             minUpdateIntervalMs: Number(settingsStore.getSetting('tmp_file_sync_interval')),
             destroyIfNotOccupied: false
         })
         this.fileWatcher.onChange = async () => {
-            const newTmpFile = await fs.readFile(tmpdir)
+            const newTmpFile = await fs.readFile(this.tmpFilePath)
             await this.write(newTmpFile)
         }
         this.fileWatcher.onDestroyed = () => {
@@ -91,7 +96,7 @@ class File {
             mainStore.setFileActiveState(this.fileguid, 'isUsingTempFile', true)
         }
 
-        return tmpdir
+        return this.tmpFilePath
     }
 
     public async read() {
@@ -127,8 +132,13 @@ class File {
     }
 
     public destroy() {
+        // 先销毁文件watcher，再删除临时文件，
+        // 若顺序颠倒则会在删除的时候触动fileWatcher
         if (this.fileWatcher) {
             this.fileWatcher.destroy()
+        }
+        if (this.tmpFilePath) {
+            fs.unlink(this.tmpFilePath)
         }
     }
 

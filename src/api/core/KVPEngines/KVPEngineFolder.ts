@@ -1,15 +1,16 @@
 import fs from "fs-extra";
 import KVPEngineBase from "../types/KVPEngineBase";
+import EncryptionEngineBase from "../types/EncryptionEngineBase";
 
-const calcDataJsonSrc = (entryJsonSrc, dataJsonFileName: string) => {
+const calcDataFileSrc = (entryJsonSrc, dataFileName: string) => {
     let foo = entryJsonSrc.split("/")
     foo.pop()
-    foo.push(dataJsonFileName)
+    foo.push(dataFileName)
     return foo.join("/")
 }
 
 class KVPEngineFolder extends KVPEngineBase {
-    private encryptionEngine
+    private encryptionEngine: EncryptionEngineBase
     private storeEntryJsonSrc
 
     /**
@@ -22,7 +23,7 @@ class KVPEngineFolder extends KVPEngineBase {
         this.encryptionEngine = encryptionEngine
         this.encryptionEngine.init(pwd)
         try {
-            await fs.access(calcDataJsonSrc(this.storeEntryJsonSrc, "NEW_STORE_FLAG"))
+            await fs.access(calcDataFileSrc(this.storeEntryJsonSrc, "NEW_STORE_FLAG"))
         } catch {
             await this.setData("NEW_STORE_FLAG", Buffer.from(""))
             await onNewStore(this)
@@ -35,10 +36,10 @@ class KVPEngineFolder extends KVPEngineBase {
      */
     public getData = async (hash: string): Promise<Buffer> => {
         try {
-            let dataJsonPath = calcDataJsonSrc(this.storeEntryJsonSrc, hash)
-            await fs.access(dataJsonPath)
-            const data: string = (await fs.readFile(dataJsonPath)).toString()
-            return this.encryptionEngine.decrypt(data)
+            let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, hash)
+            await fs.access(dataFilePath)
+            const data: Buffer = await fs.readFile(dataFilePath)
+            return await this.encryptionEngine.decrypt(data)
         } catch (e) {
             console.error(`这个哈希key不存在`, hash)
             throw e
@@ -51,8 +52,8 @@ class KVPEngineFolder extends KVPEngineBase {
      * @param buf
      */
     public setData = async (hash: string, buf: Buffer) => {
-        let dataJsonPath = calcDataJsonSrc(this.storeEntryJsonSrc, hash)
-        await fs.writeFile(dataJsonPath, this.encryptionEngine.encrypt(buf))
+        let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, hash)
+        await fs.writeFile(dataFilePath, await this.encryptionEngine.encrypt(buf))
     }
 
     /**
@@ -61,8 +62,8 @@ class KVPEngineFolder extends KVPEngineBase {
      * @param buf
      */
     public deleteData = async (hash: string) => {
-        let dataJsonPath = calcDataJsonSrc(this.storeEntryJsonSrc, hash)
-        await fs.unlink(dataJsonPath)
+        let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, hash)
+        await fs.unlink(dataFilePath)
     }
 }
 

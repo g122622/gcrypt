@@ -21,6 +21,13 @@ function error(msg: string) {
     })
 }
 
-const notification = { info, warning, error }
+function success(msg: string) {
+    emitter.emit("showMsg", {
+        level: "success",
+        msg
+    })
+}
+
+const notification = { info, warning, error, success }
 
 export default notification

@@ -17,7 +17,7 @@
         </template>
     </DialogGenerator>
 
-    <div id="file_mgr_container" v-if="!isLoading">
+    <div id="file_mgr_container" v-if="!isLoading" @dragover="e => e.preventDefault()" @drop="e => handleExtDrop(e)">
         <v-app>
             <!-- 顶部工具栏 -->
             <v-app-bar density="compact">
@@ -154,19 +154,19 @@ import lodash from "lodash";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import fileTable from "@/api/core/types/fileTable";
 import emitter from "@/eventBus";
-import { error } from "@/utils/gyConsole";
 import AdapterBase from "@/api/core/types/AdapterBase";
 import File from "@/api/File";
 import getExtName from "@/utils/getExtName";
 import { useTaskStore } from '@/store/task'
 import Task from "@/api/Task";
 import sharedUtils from "@/utils/sharedUtils";
+import prettyBytes from "@/utils/prettyBytes";
 
 import ContextMenu from "../shared/ContextMenu.vue";
 import FileItem from "./FileItem.vue"
 import DialogMgr from "./DialogMgr.vue";
 import BottomBar from "./BottomBar.vue"
-import prettyBytes from "@/utils/prettyBytes";
+import notification from "@/api/notification";
 
 interface Props {
     adapter: AdapterBase
@@ -235,7 +235,7 @@ const refresh = async (arg?: Addr) => {
     await loadThumbnails()
     // 如果是纯刷新，则显示提示
     if (!arg) {
-        emitter.emit("showMsg", { level: 'success', msg: `刷新成功` })
+        notification.success("刷新成功")
     }
     isLoading.value = false
 }
@@ -260,12 +260,31 @@ const openFile = (filename, fileguid) => {
     })
 }
 
-const importFile = async (filePath: string, taskGroupId: string) => {
-    taskStore.addTask(new Task(async () => {
-        const key = await props.adapter.writeFile(getFileName(filePath, true), fs.readFileSync(filePath))
-        const tb = await getThumbnail(filePath)
-        await addThumbnail(key, tb)
-    }, `引入文件 ${filePath}`, taskGroupId), { runImmediately: false })
+const importFile = async (files: FileList) => {
+    if (files.length === 0) {
+        return
+    }
+    const taskGroupId = sharedUtils.getHash(16)
+    for (const file of files) {
+        taskStore.addTask(new Task(async () => {
+            const key = await props.adapter.writeFile(getFileName(file.path, true), await fs.readFile(file.path))
+            const tb = await getThumbnail(file.path)
+            await addThumbnail(key, tb)
+        }, `引入文件 ${file.path}`, taskGroupId), { runImmediately: false })
+    }
+    try {
+        await taskStore.runTaskGroup(taskGroupId)
+    } catch (error) {
+        emitter.emit("showMsg",
+            {
+                level: "error",
+                msg: `导入文件失败 ${error.message}`
+            })
+        return
+    } finally {
+        await refresh()
+    }
+    notification.success(`导入${files.length}个文件成功`)
 }
 
 const deleteFile = async () => {
@@ -336,34 +355,10 @@ const getItemMenuList = (item) => {
 }
 
 const handleFileImportClick = () => {
-    const taskGroupId = sharedUtils.getHash(16)
     let foo: HTMLInputElement = document.querySelector("#file-import")
     foo.click()
     foo.onchange = async () => {
-        if (foo.files.length === 0) {
-            return
-        }
-        try {
-            for (const file of foo.files) {
-                await importFile(file.path, taskGroupId)
-            }
-        } catch (error) {
-            emitter.emit("showMsg",
-                {
-                    level: "error",
-                    msg: `导入文件失败 ${error.message}`
-                })
-            await refresh()
-            return
-        }
-
-        await taskStore.runTaskGroup(taskGroupId)
-        emitter.emit("showMsg",
-            {
-                level: "success",
-                msg: `导入${foo.files.length}个文件成功`
-            })
-        await refresh()
+        await importFile(foo.files)
     }
 }
 
@@ -486,7 +481,7 @@ const currentFileTableForRender = computed<fileTable['items']>(() => {
 // <杂项>
 const copyToClipboard = (arg: string) => {
     navigator.clipboard.writeText(arg)
-    emitter.emit("showMsg", { level: 'success', msg: '复制成功' })
+    notification.success("复制成功")
 }
 
 const DialogMgrRef = ref(null)
@@ -517,12 +512,8 @@ const getThumbnail = async (filePath: string): Promise<Buffer> => {
 
         if (thumbnail) {
             return thumbnail
-        } else {
-            error("生成缩略图失败，缩略图数据无效（falsy）")
         }
-    } catch (e) {
-        error("生成缩略图失败" + e.message)
-    }
+    } catch (e) { }
 }
 
 const saveThumbnailFile = async () => {
@@ -565,6 +556,12 @@ const reverseSelection = () => {
         return !selectedItems.value.has(item)
     })
     selectedItems.value = new Set(reversed)
+}
+
+// <文件拖放>
+const handleExtDrop = async (event) => {
+    event.preventDefault()
+    await importFile(event.dataTransfer.files)
 }
 </script>
 

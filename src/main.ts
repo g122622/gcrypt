@@ -10,6 +10,7 @@ import Electron from "electron";
 import utils from "./utils/utils";
 import lodash, { debounce } from "lodash";
 import { nextTick } from 'process';
+import notification from './api/notification';
 
 // 全局组件
 import VueApp from './App.vue';
@@ -186,10 +187,7 @@ class Application {
     }
 
     private showFinishInitMsg(e, s) {
-        emitter.emit("showMsg", {
-            level: "info",
-            msg: `App启动成功<br>启动耗时${e - s}ms`,
-        })
+        notification.info(`App启动成功<br>启动耗时${e - s}ms`)
     }
 
     private initSettingsObserver() {

@@ -19,8 +19,8 @@
                         v-model="currentKVPEngine"></v-autocomplete>
                     <v-autocomplete :items="['gcryptV1']" label="adapter" density="compact"
                         v-model="currentAdapter"></v-autocomplete>
-                    <v-autocomplete :items="['encryptionEngineAES192']" label="加密引擎" density="compact"
-                        v-model="currentEncryptionEngine"></v-autocomplete>
+                    <v-autocomplete :items="['encryptionEngineAES192']" label="加密引擎"
+                        density="compact" v-model="currentEncryptionEngine"></v-autocomplete>
                 </v-col>
                 <v-btn variant="tonal" @click="isEngineConfirmed = true">
                     确定

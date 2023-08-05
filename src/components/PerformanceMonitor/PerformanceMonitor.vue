@@ -53,6 +53,7 @@ import { ref, onMounted, nextTick } from "vue";
 import CanvasChart from "./CanvasChart.vue"
 import { webFrame } from "electron";
 import emitter from "@/eventBus";
+import notification from "@/api/notification";
 
 const isMenuOpen = ref(false)
 let memDatas: Array<memoryUsage> = []
@@ -110,7 +111,7 @@ const downLoadImage = (canvas: HTMLCanvasElement = document.querySelector("#perf
  */
 function clearMem() {
     webFrame.clearCache()
-    emitter.emit("showMsg", { level: "success", msg: "内存清理成功" })
+    notification.success("内存清理成功")
 }
 
 </script>

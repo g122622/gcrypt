@@ -1,5 +1,6 @@
 import fs from "fs-extra";
 import KVPEngineBase from "../types/KVPEngineBase";
+import EncryptionEngineBase from "../types/EncryptionEngineBase";
 
 const calcDataJsonSrc = (entryJsonSrc, dataJsonFileName: string) => {
     let foo = entryJsonSrc.split("/")
@@ -11,7 +12,7 @@ const calcDataJsonSrc = (entryJsonSrc, dataJsonFileName: string) => {
 class KVPEngineJson extends KVPEngineBase {
     private currentJson = null
     private currentDataJsonSrc: string = null
-    private encryptionEngine
+    private encryptionEngine: EncryptionEngineBase
 
     /**
      * 初始化jsonStorage
@@ -70,7 +71,7 @@ class KVPEngineJson extends KVPEngineBase {
         // eslint-disable-next-line dot-notation
         if (Object['hasOwn'](this.currentJson.data, hash)) {
             const data: string = this.currentJson.data[hash]
-            return this.encryptionEngine.decrypt(data)
+            return await this.encryptionEngine.decrypt(Buffer.from(data, 'base64'))
         } else {
             console.error(`这个哈希key不存在`, hash, this.currentJson)
         }
@@ -82,7 +83,7 @@ class KVPEngineJson extends KVPEngineBase {
      * @param buf
      */
     public setData = async (hash: string, buf: Buffer) => {
-        this.currentJson.data[hash] = this.encryptionEngine.encrypt(buf)
+        this.currentJson.data[hash] = (await this.encryptionEngine.encrypt(buf)).toString("base64")
         await this.sync()
     }
 

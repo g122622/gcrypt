@@ -24,6 +24,7 @@
 import { ref, watchEffect, onMounted, nextTick } from "vue"
 import emitter from "@/eventBus"
 import sharedUtils from "@/utils/sharedUtils";
+import notification from "@/api/notification";
 
 interface Props {
     src: string,
@@ -67,7 +68,7 @@ onMounted(async () => {
 
 const refresh = () => {
     webviewElement.reload()
-    emitter.emit("showMsg", { level: "success", msg: "页面刷新成功" })
+    notification.success("页面刷新成功")
 }
 
 const back = () => {

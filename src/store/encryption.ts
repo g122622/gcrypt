@@ -72,6 +72,10 @@ export const useEncryptionStore = defineStore("encryption", {
                     encryptionEngine = new EncryptionEngineAES192()
                     break;
 
+                case "EncryptionEngineAES192":
+                    encryptionEngine = new EncryptionEngineAES192()
+                    break;
+
                 default:
                     break;
             }
@@ -115,7 +119,7 @@ export const useEncryptionStore = defineStore("encryption", {
                         onClick: () => {
                             this.storeList = this.storeList.filter(item => { return item.storeEntryJsonSrc !== storeEntryJsonSrc })
                             this.save()
-                            emitter.emit("showMsg", { level: "success", msg: "store移除成功，这并不会删除源文件！" })
+                            emitter.emit("showMsg", { level: "success", msg: "store移除成功，这并不会删除原文件！" })
                         },
                     },
                     {
