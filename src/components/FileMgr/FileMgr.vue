@@ -509,10 +509,7 @@ const getThumbnail = async (filePath: string): Promise<Buffer> => {
             .nativeImage
             .createThumbnailFromPath(filePath, { height: 128, width: 128 }))
             .toJPEG(quality)
-
-        if (thumbnail) {
-            return thumbnail
-        }
+        return thumbnail
     } catch (e) { }
 }
 
