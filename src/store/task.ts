@@ -23,10 +23,18 @@ export const useTaskStore = defineStore("task", {
                 await this.taskPool[i].run()
             }
         },
-        async runTaskGroup(groupId: string) {
-            for (let i = 0; i < this.taskPool.length; i++) {
-                if (this.taskPool[i].groupId === groupId) {
-                    await this.taskPool[i].run()
+        /**
+         * 运行任务组
+         * @param groupId 任务组id
+         * @param parallel 是否并行执行Promise
+         */
+        async runTaskGroup(groupId: string, parallel = false) {
+            const matchedTasks = this.taskPool.filter((item) => item.groupId === groupId)
+            if (parallel) {
+                await Promise.all(matchedTasks.map(item => item.run()))
+            } else {
+                for (let i = 0; i < matchedTasks.length; i++) {
+                    await matchedTasks[i].run()
                 }
             }
         },

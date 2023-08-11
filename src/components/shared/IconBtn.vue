@@ -1,5 +1,7 @@
 <template>
-    <v-btn icon :size="props.size || 'default'" :variant="props.variant || 'flat'" :disabled="disabled">
+    <v-btn icon :size="props.size || 'default'" :variant="props.variant || (disabled ? 'plain' : 'flat')"
+        :disabled="disabled">
+        <slot></slot>
         <v-icon>{{ props.icon }}</v-icon>
         <v-tooltip activator="parent" location="bottom" v-if="props.tooltip">
             {{ props.tooltip }}

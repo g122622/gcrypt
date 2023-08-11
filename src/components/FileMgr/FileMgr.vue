@@ -22,14 +22,8 @@
             <!-- 顶部工具栏 -->
             <v-app-bar density="compact">
                 <!-- 导航按钮组 -->
-                <v-btn icon @click="back()">
-                    <v-icon>mdi-arrow-left</v-icon>
-                    <v-tooltip activator="parent" location="bottom">后退</v-tooltip>
-                </v-btn>
-                <v-btn icon @click="up()">
-                    <v-icon>mdi-arrow-up</v-icon>
-                    <v-tooltip activator="parent" location="bottom">上一级目录</v-tooltip>
-                </v-btn>
+                <IconBtn icon="mdi-arrow-left" tooltip="后退" @click="back()"></IconBtn>
+                <IconBtn icon="mdi-arrow-up" tooltip="上一级目录" @click="up()"></IconBtn>
                 <!-- 布局按钮组 -->
                 <v-menu>
                     <template v-slot:activator="{ props }">
@@ -75,11 +69,12 @@
                     </v-list>
                 </v-menu>
                 <!-- 引入按钮 -->
-                <v-btn icon @click="handleFileImportClick()">
+                <IconBtn icon="mdi-import" tooltip="从外部引入文件" @click="handleFileImportClick()">
                     <input type="file" id='file-import' style="display: none;" multiple />
-                    <v-icon>mdi-import</v-icon>
-                    <v-tooltip activator="parent" location="bottom">从外部引入文件</v-tooltip>
-                </v-btn>
+                </IconBtn>
+                <!-- 导出按钮 -->
+                <IconBtn icon="mdi-export-variant" tooltip="导出文件" @click="handleFileExport()"
+                    :disabled="!selectedItems.size"></IconBtn>
                 <!-- 地址栏 -->
                 <div style="margin-left: 15px;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;">
                     <v-icon>mdi-map-marker</v-icon>
@@ -89,10 +84,7 @@
                 </div>
                 <v-spacer></v-spacer>
                 <!-- 刷新按钮 -->
-                <v-btn icon @click="refresh()">
-                    <v-icon>mdi-refresh</v-icon>
-                    <v-tooltip activator="parent" location="bottom">刷新内容</v-tooltip>
-                </v-btn>
+                <IconBtn icon="mdi-refresh" tooltip="刷新内容" @click="refresh()"></IconBtn>
             </v-app-bar>
 
             <!-- 主内容区 -->
@@ -146,9 +138,10 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, reactive, onMounted } from "vue";
-import Addr from "@/api/core/common/Addr"
+import Addr from "@/api/core/common/Addr";
 import getFileName from "@/utils/getFileName";
 import fs from "fs-extra";
+import path from 'path';
 import Electron from "electron";
 import lodash from "lodash";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
@@ -161,12 +154,13 @@ import { useTaskStore } from '@/store/task'
 import Task from "@/api/Task";
 import sharedUtils from "@/utils/sharedUtils";
 import prettyBytes from "@/utils/prettyBytes";
+import notification from "@/api/notification";
+import selectFile from "@/utils/shell/selectFile";
 
 import ContextMenu from "../shared/ContextMenu.vue";
-import FileItem from "./FileItem.vue"
+import FileItem from "./FileItem.vue";
 import DialogMgr from "./DialogMgr.vue";
-import BottomBar from "./BottomBar.vue"
-import notification from "@/api/notification";
+import BottomBar from "./BottomBar.vue";
 
 interface Props {
     adapter: AdapterBase
@@ -288,11 +282,29 @@ const importFile = async (files: FileList) => {
 }
 
 const deleteFile = async () => {
-    for (let item of selectedItems.value) {
-        await props.adapter.deleteFile(item.name)
-        await deleteThumbnail(item.key)
+    if (selectedItems.value.size === 0) {
+        return
     }
-    await refresh()
+    const taskGroupId = sharedUtils.getHash(16)
+    for (const item of selectedItems.value) {
+        taskStore.addTask(new Task(async () => {
+            await props.adapter.deleteFile(item.name)
+            await deleteThumbnail(item.key)
+        }, `删除文件 ${item.name}`, taskGroupId), { runImmediately: false })
+    }
+    try {
+        await taskStore.runTaskGroup(taskGroupId)
+    } catch (error) {
+        emitter.emit("showMsg",
+            {
+                level: "error",
+                msg: `删除文件失败 ${error.message}`
+            })
+        return
+    } finally {
+        await refresh()
+    }
+    notification.success(`删除文件成功`)
 }
 
 // <UI>
@@ -514,9 +526,19 @@ const getThumbnail = async (filePath: string): Promise<Buffer> => {
 }
 
 const saveThumbnailFile = async () => {
-    await props.adapter.writeFile(".thumbnails", JSON.stringify(thumbnails.value))
+    const str = JSON.stringify(thumbnails.value)
+    if (str === '{}') {
+        await props.adapter.deleteFile(".thumbnails")
+    } else {
+        await props.adapter.writeFile(".thumbnails", str)
+    }
 }
 
+/**
+ * add缩略图。支持新增/更新
+ * @param key
+ * @param thumbnail
+ */
 const addThumbnail = async (key: string, thumbnail: Buffer) => {
     if (thumbnail) {
         thumbnails.value[key] = thumbnail.toString('base64')
@@ -559,6 +581,16 @@ const reverseSelection = () => {
 const handleExtDrop = async (event) => {
     event.preventDefault()
     await importFile(event.dataTransfer.files)
+}
+
+// <文件导出>
+const handleFileExport = async () => {
+    const directory = path.dirname((await selectFile(true))[0].path)
+    selectedItems.value.forEach(item => {
+        const file = new File()
+        file.fromAdapter(props.adapter, item.name)
+        file.exportToExt(directory)
+    })
 }
 </script>
 

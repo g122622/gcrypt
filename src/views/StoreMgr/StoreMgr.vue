@@ -1,14 +1,8 @@
 <template>
     <Teleport to="#ActionToolBar">
         <ActionToolBarBase ToolbarTitle="加密库">
-            <v-btn icon @click="handleAddStoreClick();">
-                <v-icon>mdi-plus</v-icon>
-                <v-tooltip activator="parent" location="bottom">新建加密库</v-tooltip>
-            </v-btn>
-            <v-btn icon @click="handleImportStoreClick();">
-                <v-icon>mdi-import</v-icon>
-                <v-tooltip activator="parent" location="bottom">导入加密库</v-tooltip>
-            </v-btn>
+            <IconBtn icon="mdi-plus" tooltip="新建加密库" @click="handleAddStoreClick();"></IconBtn>
+            <IconBtn icon="mdi-import" tooltip="导入加密库" @click="handleImportStoreClick();"></IconBtn>
         </ActionToolBarBase>
     </Teleport>
 
@@ -41,7 +35,7 @@
 
     <AdvancedList lines="two" subheader="加密库列表" :items="encryptionStore.storeList" useBottomTip useSearch
         v-slot="{ matchedItems }">
-        <v-list-item v-for="item in matchedItems" :key="item.storageName + Math.random()" :title="item.storageName"
+        <v-list-item v-for="item in matchedItems" :key="item.storeEntryJsonSrc" :title="item.storageName"
             :subtitle="new Date(item.createdTime).toLocaleString()" @click=" handleItemClick(item)">
             <template v-slot:prepend>
                 <v-avatar color="grey-lighten-1">
@@ -50,14 +44,10 @@
             </template>
 
             <template v-slot:append>
-                <v-btn icon @click.stop=" encryptionStore.removeStore(item.storeEntryJsonSrc)">
-                    <v-icon>mdi-delete</v-icon>
-                    <v-tooltip activator="parent" location="left">移除</v-tooltip>
-                </v-btn>
-                <v-btn icon>
-                    <v-icon>mdi-information</v-icon>
-                    <v-tooltip activator="parent" location="left">{{ JSON.stringify(item) }}</v-tooltip>
-                </v-btn>
+                <IconBtn icon="mdi-folder" tooltip="打开所在文件夹" @click.stop="Electron.shell.openPath(path.dirname(item.storeEntryJsonSrc))"></IconBtn>
+                <IconBtn icon="mdi-delete" tooltip="移除" @click.stop="encryptionStore.removeStore(item.storeEntryJsonSrc)">
+                </IconBtn>
+                <IconBtn icon="mdi-information" :tooltip="JSON.stringify(item)"></IconBtn>
             </template>
         </v-list-item>
     </AdvancedList>
@@ -69,6 +59,8 @@ import { useEncryptionStore } from "@/store/encryption";
 import EntryJson from "@/api/core/types/EntryJson";
 import NewStoreWizard from "@/views/NewStoreWizard/NewStoreWizard.vue";
 import emitter from "@/eventBus";
+import Electron from 'electron'
+import path from 'path'
 
 interface StoreListItem extends EntryJson {
     storeEntryJsonSrc: string
@@ -99,6 +91,7 @@ const onPasswordConfirm = async () => {
         await encryptionStore.openStore(selectedStore.value.storeEntryJsonSrc, adapter)
         models.isPasswordDialogOpen = false
     }
+    password.value = ''
 }
 
 /* 顶部工具栏相关 */

@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- 顶部工具栏 -->
-        <ToolBarBase :ToolbarTitle="subheader ?? ''" width="100%">
+        <ToolBarBase :ToolbarTitle="subheader ?? ''">
             <template #prepend>
                 <!-- 搜索框 -->
                 <v-text-field label="搜索..." prepend-inner-icon="mdi-magnify" v-model="searchWord"></v-text-field>
@@ -47,7 +47,7 @@ const matchedItems = computed(() => {
     if (props.useSearch) {
         return props.items.filter((item) => {
             let flag = false
-            // TODO 可以优化：flag一旦为true就立即返回，不继续遍历
+            // 优化：flag一旦为true就立即返回（abort），不继续遍历
             traverseObj(item, (key, value, abort) => {
                 if (typeof value === "string" && value.includes(searchWord.value)) {
                     flag = true

@@ -6,6 +6,8 @@ import Electron from 'electron'
 import FroalaEditor from "@/components/FroalaEditor/FroalaEditor.vue";
 import MonacoEditor from "@/components/MonacoEditor/MonacoEditor.vue";
 import getDigest from "@/api/hash/getDigest"
+import selectFile from "@/utils/shell/selectFile";
+import path from 'path'
 
 /**
  * 注册内置方法
@@ -125,6 +127,15 @@ export default async function registerBulitinOpenMethods(mgr) {
                     props: { file }
                 }
             )
+        }
+    })
+    mgr.registerMethod({
+        name: "导出文件到外部",
+        icon: 'mdi-export-variant',
+        fileType: /./,
+        async onSelected(file: File) {
+            const directory = path.dirname((await selectFile(true))[0].path)
+            await file.exportToExt(directory)
         }
     })
 }

@@ -1,8 +1,8 @@
 interface EntryJson {
-    modifiedTime:number,
+    modifiedTime: number,
     createdTime: number,
     accessedTime: number,
-    storageName:string,
+    storageName: string,
     comment: string,
     storeType: string,
     config: {

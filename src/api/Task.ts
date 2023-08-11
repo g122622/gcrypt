@@ -26,6 +26,7 @@ class Task {
             this.state = 'succeed'
         } catch (err) {
             this.state = 'failed'
+            this.lastError = err
         }
     }
 

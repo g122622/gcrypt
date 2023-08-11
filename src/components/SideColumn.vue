@@ -33,7 +33,6 @@ import TabsMgr from '@/components/TabsMgr.vue';
 import TaskMgr from "./TaskMgr.vue";
 import FileStateManager from "@/components/FileStateManager.vue";
 import { useRouter } from 'vue-router';
-import sleep from "@/utils/sleep";
 
 const router = useRouter()
 const isSideDrawerOpen = ref<boolean>(true)

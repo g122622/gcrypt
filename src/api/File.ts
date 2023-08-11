@@ -10,7 +10,10 @@ import { useSettingsStore } from "@/store/settings"
 import { useMainStore } from "@/store/main"
 import emitter from "@/eventBus";
 import Addr from "./core/common/Addr";
+import { useTaskStore } from '@/store/task'
+import Task from "./Task";
 
+let taskStore = null
 let settingsStore = null
 let mainStore = null
 
@@ -24,6 +27,7 @@ enum FileType {
 emitter.on('LifeCycle::finishedLoadingApp', () => {
     settingsStore = useSettingsStore(window['pinia'])
     mainStore = useMainStore(window['pinia'])
+    taskStore = useTaskStore(window['pinia'])
 })
 
 class File {
@@ -129,6 +133,17 @@ class File {
                 this.data.value = arg
                 break
         }
+    }
+
+    /**
+     * 导出文件到外部
+     * @param path 不包含文件名称！
+     */
+    public async exportToExt(folderPath: string) {
+        const destPath = path.join(folderPath, this.filename ?? sharedUtils.getHash(7))
+        taskStore.addTask(new Task(async () => {
+            await fs.writeFile(destPath, await this.read())
+        }, `导出文件 ${destPath}`), { runImmediately: true })
     }
 
     public destroy() {
