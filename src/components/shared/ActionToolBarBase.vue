@@ -5,7 +5,7 @@
         <v-spacer></v-spacer>
         <!-- 默认插槽，默认append到末尾 -->
         <slot></slot>
-        <v-btn icon @click="this.$router.push('./home')">
+        <v-btn icon @click="this.$router.push('./')">
             <v-icon>mdi-home</v-icon>
             <v-tooltip activator="parent" location="bottom">主页</v-tooltip>
         </v-btn>

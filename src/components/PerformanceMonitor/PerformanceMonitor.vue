@@ -52,7 +52,6 @@ import { memoryUsage } from "memoryUsage";
 import { ref, onMounted, nextTick } from "vue";
 import CanvasChart from "./CanvasChart.vue"
 import { webFrame } from "electron";
-import emitter from "@/eventBus";
 import notification from "@/api/notification";
 
 const isMenuOpen = ref(false)

@@ -41,13 +41,6 @@ const isSideDrawerRail = ref<boolean>(true)
 const sideColumnMainItems =
     [
         {
-            title: '主页',
-            props: {
-                prependIcon: 'mdi-home',
-            },
-            value: "home"
-        },
-        {
             title: '加密库',
             props: {
                 prependIcon: 'mdi-lock',

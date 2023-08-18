@@ -11,8 +11,12 @@ import { error, warn } from "../../../utils/gyConsole";
 class Addr {
     tokens: Array<string>
 
-    toPathStr = function (): string {
-        return "/" + this.tokens.join("/")
+    toPathStr(): string {
+        if (this.tokens.length && this.tokens[0].length && this.tokens[0][this.tokens[0].length - 1] === ":") {
+            return this.tokens.join("/")
+        } else {
+            return "/" + this.tokens.join("/")
+        }
     }
 
     compareWith = function (arg): boolean {
@@ -48,6 +52,9 @@ class Addr {
         if (this.tokens.length === 0) {
             return true
         } else {
+            if (this.tokens.length === 1 && this.tokens[0].length && this.tokens[0][this.tokens[0].length - 1] === ":") {
+                return true
+            }
             return false
         }
     }

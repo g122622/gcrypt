@@ -6,7 +6,7 @@ import Electron from 'electron'
 import FroalaEditor from "@/components/FroalaEditor/FroalaEditor.vue";
 import MonacoEditor from "@/components/MonacoEditor/MonacoEditor.vue";
 import getDigest from "@/api/hash/getDigest"
-import selectFile from "@/utils/shell/selectFile";
+import pickFile from "@/utils/shell/pickFile";
 import path from 'path'
 
 /**
@@ -22,11 +22,11 @@ export default async function registerBulitinOpenMethods(mgr) {
         async onSelected(file: File) {
             emitter.emit("Action::addTab",
                 {
-                    name: `浏览器-${await file.read()}`,
+                    name: `浏览器-${await file.filename}`,
                     component: WebBrowser,
                     icon: 'mdi-earth',
                     onClick: () => null,
-                    props: { src: await file.read() }
+                    props: { content: (await file.read()).toString() }
                 })
         }
     })
@@ -134,7 +134,7 @@ export default async function registerBulitinOpenMethods(mgr) {
         icon: 'mdi-export-variant',
         fileType: /./,
         async onSelected(file: File) {
-            const directory = path.dirname((await selectFile(true))[0].path)
+            const directory = (await pickFile("G:/", true, false, true))[0]
             await file.exportToExt(directory)
         }
     })

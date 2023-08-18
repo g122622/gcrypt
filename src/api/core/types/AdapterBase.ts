@@ -8,7 +8,7 @@ import fileTable from "./fileTable"
 abstract class AdapterBase {
     public abstract adapterGuid: string
     public abstract initAdapter
-    public abstract changeCurrentDirectory
+    public abstract changeCurrentDirectory(newDir: Addr): Promise<void>
     public abstract readFile(filename, dir?: Addr): Promise<Buffer>
     public abstract writeFile(filename: string, data: Buffer | string, dir?: Addr): Promise<string>
     public abstract exists(filename: string, dir?: Addr): Promise<boolean>

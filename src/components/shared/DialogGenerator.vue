@@ -2,10 +2,11 @@
     <v-dialog v-model="isDialogOpen" :persistent="props.isPersistent || false" :width="props.width || 600"
         :height="props.height">
         <v-card density="compact">
-            <v-card-title>
+            <v-card-title style="display: flex; align-items: center;">
                 <span class="text-h6">{{ props.title }}</span>
+                <slot name="title"></slot>
             </v-card-title>
-            <v-card-text>
+            <v-card-text :style="{ padding: props.useCompactContentOuterMargin ? '0px' : 'inherit' }">
                 <v-container>
                     <v-row>
                         <slot name="mainContent" />
@@ -42,6 +43,7 @@ interface Props {
     guid?: string,
     destroyAfterClose?: boolean,
     HTMLContent?: string,
+    useCompactContentOuterMargin?: boolean
 }
 const props = defineProps<Props>()
 const emit = defineEmits(['update:isDialogOpen'])

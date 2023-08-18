@@ -89,7 +89,8 @@
 
             <!-- 主内容区 -->
             <v-main style="display: block; height: 100%;">
-                <div style="height: calc(100% - 63px); overflow-y: scroll;overflow-x: hidden;">
+                <div style="overflow-y: scroll;overflow-x: hidden;"
+                    :style="{ height: props.height ?? 'calc(100% - 63px)' }">
                     <div v-if="currentFileTableForRender.length > 0">
                         <!-- <TransitionGroup name="file-item-transition"> -->
                         <div v-for="(item, index) in currentFileTableForRender" :key="item.key">
@@ -97,7 +98,7 @@
                                 @dblclick="handleItemClick(item)" :thumbnail="thumbnails[item.key] || ''"
                                 @selected="handleItemSelection(item)" @unselected="handleItemUnselection(item)"
                                 :isSelected="selectedItems.has(item)">
-                                <ContextMenu :width="200" :menuList="getItemMenuList(item)">
+                                <ContextMenu :width="200" :menuList="getItemMenuList(item)" v-if="options.useCtxMenu">
                                 </ContextMenu>
                             </FileItem>
                         </div>
@@ -109,7 +110,7 @@
                         当前目录下没有文件
                     </div>
                     <BottomTip></BottomTip>
-                    <ContextMenu :width="200" :menuList="[
+                    <ContextMenu :width="200" v-if="options.useCtxMenu" :menuList="[
                         {
                             text: '上一级目录', icon: 'mdi-arrow-up', actions: { onClick: () => { up() } }
                         },
@@ -141,7 +142,6 @@ import { ref, computed, watch, reactive, onMounted } from "vue";
 import Addr from "@/api/core/common/Addr";
 import getFileName from "@/utils/getFileName";
 import fs from "fs-extra";
-import path from 'path';
 import Electron from "electron";
 import lodash from "lodash";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
@@ -155,7 +155,8 @@ import Task from "@/api/Task";
 import sharedUtils from "@/utils/sharedUtils";
 import prettyBytes from "@/utils/prettyBytes";
 import notification from "@/api/notification";
-import selectFile from "@/utils/shell/selectFile";
+import pickFile from "@/utils/shell/pickFile";
+import { FileMgrOptions } from "./types/FileMgrOptions"
 
 import ContextMenu from "../shared/ContextMenu.vue";
 import FileItem from "./FileItem.vue";
@@ -163,9 +164,13 @@ import DialogMgr from "./DialogMgr.vue";
 import BottomBar from "./BottomBar.vue";
 
 interface Props {
-    adapter: AdapterBase
+    adapter: AdapterBase,
+    height?: string,
+    options?: FileMgrOptions,
+    selectedItems?: Set<dirSingleItem>
 }
 const props = defineProps<Props>()
+const emit = defineEmits(['update:selectedItems'])
 const taskStore = useTaskStore()
 const isLoading = ref<boolean>(true)
 const currentFileTable = ref<fileTable>(null)
@@ -195,9 +200,22 @@ const addList = [
 // <生命周期&初始化>
 const initAll = () => {
     isLoading.value = true
-    currentDir.value = new Addr("")
+    currentDir.value = props.adapter.getCurrentDirectory()
     isLoading.value = false
 }
+
+const mergeOptions = () => {
+    const defaultOptions = {
+        useCtxMenu: true,
+        useThumbnailFile: true,
+        onlyAllowFolderSelection: false,
+        allowMultipleSelection: true,
+        exposeSelection: false
+    } as FileMgrOptions
+    return { ...defaultOptions, ...props.options }
+}
+
+const options = reactive(mergeOptions())
 
 onMounted(async () => {
     initAll()
@@ -335,7 +353,7 @@ const handleItemClick = (item) => {
 }
 
 const getItemMenuList = (item) => {
-    if (selectedItems.value.size === 1) {
+    if (selectedItems.value.size <= 1) {
         return [
             {
                 text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemClick(item) } }
@@ -506,26 +524,42 @@ const loadThumbnails = async () => {
         thumbnails.value = {}
         return
     }
-    if (await props.adapter.exists(".thumbnails")) {
-        const foo = await props.adapter.readFile(".thumbnails")
-        thumbnails.value = JSON.parse(foo.toString())
+    if (options.useThumbnailFile) {
+        if (await props.adapter.exists(".thumbnails")) {
+            const foo = await props.adapter.readFile(".thumbnails")
+            thumbnails.value = JSON.parse(foo.toString())
+        } else {
+            thumbnails.value = {}
+        }
+    } else {
+        // // 若不使用缩略图文件，则现场生成缩略图(非常耗费性能，现在已经废弃)
+        // let temp = {}
+        // currentFileTableForRender.value.forEach(async item => {
+        //     temp[item.key] = (await getThumbnail(path.join(currentDir.value.toPathStr(), item.name))).toString('base64')
+        // })
+        // thumbnails.value = temp
+        thumbnails.value = {}
     }
 }
 
+/**
+ * 从本地系统COM Surrogate获取给定文件的缩略图，JPEG压缩处理后返回图像Buffer
+ * @param filePath 文件在本地文件系统上的路径
+ */
 const getThumbnail = async (filePath: string): Promise<Buffer> => {
-    let thumbnail = null
     const quality = 50
-
     try {
-        thumbnail = await (await Electron
+        return await (await Electron
             .nativeImage
             .createThumbnailFromPath(filePath, { height: 128, width: 128 }))
             .toJPEG(quality)
-        return thumbnail
-    } catch (e) { }
+    } catch (e) { /* 获取缩略图不是关键任务，如果失败了，可以忽略它 */ }
 }
 
 const saveThumbnailFile = async () => {
+    if (!options.useThumbnailFile) {
+        return
+    }
     const str = JSON.stringify(thumbnails.value)
     if (str === '{}') {
         await props.adapter.deleteFile(".thumbnails")
@@ -552,9 +586,23 @@ const deleteThumbnail = async (key: string) => {
 }
 
 // <文件选择>
-const selectedItems = ref<Set<dirSingleItem>>(new Set())
+let selectedItems = null
+if (options.exposeSelection) {
+    selectedItems = computed<Set<dirSingleItem>>({
+        get() {
+            return props.selectedItems
+        },
+        set(value) {
+            emit("update:selectedItems", value)
+        }
+    })
+} else {
+    selectedItems = ref<Set<dirSingleItem>>(new Set())
+}
 
 const handleItemSelection = (item: dirSingleItem) => {
+    if (!options.allowMultipleSelection && selectedItems.value.size > 0) return
+    if (options.onlyAllowFolderSelection && item.type !== "folder") return
     selectedItems.value.add(item)
 }
 
@@ -585,7 +633,7 @@ const handleExtDrop = async (event) => {
 
 // <文件导出>
 const handleFileExport = async () => {
-    const directory = path.dirname((await selectFile(true))[0].path)
+    const directory = (await pickFile("G:/", true, false, true))[0]
     selectedItems.value.forEach(item => {
         const file = new File()
         file.fromAdapter(props.adapter, item.name)
@@ -605,6 +653,7 @@ const handleFileExport = async () => {
     // css最新的容器查询特性，热乎！
     container-type: inline-size;
     height: 100%;
+    width: 100%;
 }
 
 .viewSelectorText {
@@ -625,5 +674,9 @@ const handleFileExport = async () => {
 .file-item-transition-leave-to {
     transform: translateY(10px);
     opacity: 0;
+}
+
+#file_mgr_container .v-application__wrap {
+    min-height: v-bind("props.height ? 'unset' : '100vh'");
 }
 </style>

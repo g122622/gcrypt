@@ -15,6 +15,8 @@
     <PostUpdateInfo />
     <!-- 动态对话框 -->
     <DialogGenerator v-for="item in dialogStore.dialogs" :key="item.guid" v-bind="item"></DialogGenerator>
+    <!-- 内置文件选择器 -->
+    <BuiltinFilePicker></BuiltinFilePicker>
 
     <div :style="{ opacity: backgroundOpacity }">
         <v-app>
@@ -57,6 +59,7 @@ import SideColumn from "./components/SideColumn.vue";
 import PostUpdateInfo from './components/Dialogs/PostUpdateInfo.vue'
 import DialogGenerator from './components/shared/DialogGenerator.vue'
 import AppLocker from './components/AppLocker.vue'
+import BuiltinFilePicker from './components/BuiltinFilePicker.vue'
 
 const settingsStore = useSettingsStore()
 const mainStore = useMainStore()
@@ -88,6 +91,7 @@ html {
     width: 100%;
     overflow: hidden !important;
     scroll-behavior: smooth;
+    user-select: none;
 }
 
 .v-theme--DarkTheme {

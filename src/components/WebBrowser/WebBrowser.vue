@@ -3,48 +3,47 @@
     <Teleport to="#ActionToolBar">
         <ActionToolBarBase ToolbarTitle="网页浏览器">
             <template #prepend>
-                <v-text-field :modelValue="currentSrc" placeholder="输入网址或本地路径" />
+                <v-text-field :modelValue="currentSrc" placeholder="输入网址或本地路径" v-if="!content" />
             </template>
-
-            <IconBtn icon="mdi-refresh" @click="refresh()" tooltip="刷新页面" />
-            <IconBtn icon="mdi-arrow-left" @click="back()" tooltip="后退" />
-            <IconBtn icon="mdi-arrow-right" @click="forward()" tooltip="前进" />
-            <IconBtn icon="mdi-TODO" @click="toggleDevTools()" tooltip="开发者工具" />
+            <IconBtn icon="mdi-refresh" @click="refresh()" tooltip="刷新页面" v-if="!content" />
+            <IconBtn icon="mdi-arrow-left" @click="back()" tooltip="后退" v-if="!content" />
+            <IconBtn icon="mdi-arrow-right" @click="forward()" tooltip="前进" v-if="!content" />
+            <!-- <IconBtn icon="mdi-TODO" @click="toggleDevTools()" tooltip="开发者工具" /> -->
             <!-- TODO <v-radio> -->
         </ActionToolBarBase>
     </Teleport>
 
     <div id="web-browser-container">
-        <!-- <webview :id="'webview' + guid" ref="webviewElement" /> -->
-        <iframe :id="'mainFrame'+guid" class="mainFrame"/>
+        <iframe ref="webIframe" class="mainFrame" />
     </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watchEffect, onMounted, nextTick } from "vue"
+import { ref, watchEffect, onMounted } from "vue"
 import emitter from "@/eventBus"
-import sharedUtils from "@/utils/sharedUtils";
 import notification from "@/api/notification";
 
 interface Props {
-    src: string,
+    src?: string,
+    content?: string
 }
 const props = defineProps<Props>()
 const currentSrc = ref<string>(props.src || "")
-const guid = sharedUtils.getHash(16)
-let webviewElement = null
+const webIframe = ref<HTMLIFrameElement>()
 const currentZoomFactor = ref(null)
 
 onMounted(async () => {
-    webviewElement = document.querySelector("#web-browser-container").appendChild(document.createElement('webview'))
-    await nextTick()
-    webviewElement.addEventListener("dom-ready", () => {
-        watchEffect(() => {
-            webviewElement.loadURL(currentSrc.value)
-        })
-        currentZoomFactor.value = webviewElement.getZoomFactor()
+    watchEffect(() => {
+        if (props.src) {
+            webIframe.value.contentWindow.location.href = currentSrc.value
+        } else if (props.content) {
+            webIframe.value.contentWindow.document.write(props.content)
+        }
     })
-    webviewElement.addEventListener("error", (error) => {
+    webIframe.value.addEventListener("dom-ready", () => {
+        currentZoomFactor.value = webIframe.value.contentWindow.devicePixelRatio
+    })
+    webIframe.value.addEventListener("error", (error) => {
         emitter.emit("showMsg", {
             level: "error",
             msg: "页面出现错误: " + error.message,
@@ -54,12 +53,6 @@ onMounted(async () => {
                     onClick: () => {
                         refresh()
                     },
-                },
-                {
-                    title: '打开开发者工具查看和调试异常',
-                    onClick: () => {
-                        toggleDevTools()
-                    },
                 }
             ]
         })
@@ -67,25 +60,23 @@ onMounted(async () => {
 })
 
 const refresh = () => {
-    webviewElement.reload()
+    webIframe.value.contentWindow.location.reload()
     notification.success("页面刷新成功")
 }
 
 const back = () => {
-    webviewElement.goBack()
+    webIframe.value.contentWindow.history.back()
 }
 
 const forward = () => {
-    webviewElement.goForward()
-}
-
-const toggleDevTools = () => {
-    webviewElement.openDevTools()
+    webIframe.value.contentWindow.history.forward()
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
-.mainFrame{
+.mainFrame {
+    width: 100%;
+    height: calc(100%-30px);
 }
 </style>
