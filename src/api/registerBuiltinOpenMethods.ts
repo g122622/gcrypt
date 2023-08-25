@@ -91,7 +91,7 @@ export default async function registerBulitinOpenMethods(mgr) {
         icon: 'mdi-export-variant',
         fileType: /./,
         async onSelected(file: File) {
-            const directory = (await pickFile("G:/", true, false, true))[0]
+            const directory = (await pickFile(null, true, false, true))[0]
             await file.exportToExt(directory)
         }
     })

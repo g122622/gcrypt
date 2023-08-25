@@ -16,7 +16,9 @@
     <!-- 动态对话框 -->
     <DialogGenerator v-for="item in dialogStore.dialogs" :key="item.guid" v-bind="item"></DialogGenerator>
     <!-- 内置文件选择器 -->
-    <BuiltinFilePicker></BuiltinFilePicker>
+    <Suspense>
+        <BuiltinFilePicker></BuiltinFilePicker>
+    </Suspense>
 
     <div :style="{ opacity: backgroundOpacity }">
         <v-app>

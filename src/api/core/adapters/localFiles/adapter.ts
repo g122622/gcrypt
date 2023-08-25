@@ -8,7 +8,14 @@ import AdapterBase from "@/api/core/types/AdapterBase"
 import fs from "fs-extra";
 import path from 'path'
 
-const forbiddenDirents = ["System Volume Information", "$RECYCLE.BIN", "desktop.ini"]
+const forbiddenDirents = ["System Volume Information",
+    "$RECYCLE.BIN",
+    "desktop.ini",
+    "DumpStack.log.tmp",
+    "Config.Msi",
+    "DumpStack.log",
+    "WindowsApps",
+    "pagefile.sys"]
 
 class LocalFileAdapter extends AdapterBase {
     private currentDirectory: Addr
@@ -40,29 +47,29 @@ class LocalFileAdapter extends AdapterBase {
         this.currentFileTable = await this._getFileTable(newDir)
     }
 
-    /**
-     * 核心函数: 根据传入的dir递归遍历文件系统，将找到的filetable传回
-     */
     private async _getFileTable(dir: Addr): Promise<fileTable> {
         const res: fileTable = { items: [] as dirSingleItem[], selfKey: '' }
         const pathBase = dir.toPathStr()
         try {
             let dirs = await fs.readdir(pathBase);
             for (const dirent of dirs) {
-                if (!forbiddenDirents.includes(dirent)) {
-                    const stats = await fs.stat(path.join(pathBase, dirent))
-                    res.items.push({
-                        name: dirent,
-                        type: stats.isDirectory() ? 'folder' : 'file',
-                        key: dirent,
-                        meta: {
-                            accessedTime: stats.atime.getTime(),
-                            createdTime: stats.ctime.getTime(),
-                            modifiedTime: stats.mtime.getTime(),
-                            size: stats.size
-                        }
-                    })
-                }
+                try {
+                    if (!forbiddenDirents.includes(dirent)) {
+                        // console.log(pathBase, dirent, path.join(pathBase, dirent))
+                        const stats = await fs.stat(path.join(pathBase, dirent))
+                        res.items.push({
+                            name: dirent,
+                            type: stats.isDirectory() ? 'folder' : 'file',
+                            key: dirent,
+                            meta: {
+                                accessedTime: stats.atime.getTime(),
+                                createdTime: stats.ctime.getTime(),
+                                modifiedTime: stats.mtime.getTime(),
+                                size: stats.size
+                            }
+                        })
+                    }
+                } catch (e) { }
             }
             return res
         } catch (err) {

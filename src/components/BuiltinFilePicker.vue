@@ -3,13 +3,18 @@
         :title="item.fileMgrOptions.onlyAllowFolderSelection ? '选择文件夹' : '选择文件'" :isPersistent="true"
         useCompactContentOuterMargin v-for="item in filePickers" :key="item.taskId">
         <template #title>
+            <div style="margin-left: 7px; width: 150px;">
+                <v-select density="compact" label="选择盘符" clearable :items="allDrive.map(i => i.drive).sort()"
+                    v-model="currentDrive"></v-select>
+            </div>
             <v-spacer></v-spacer>
             <v-btn color="primary" style="margin-right: 10px;" @click="item.cancellHandler()">取消</v-btn>
             <v-btn color="primary" @click="item.confirmHandler(item.selectedItems, item.adapter)">确定</v-btn>
         </template>
         <template #mainContent>
             <FileMgr :adapter="item.adapter" height="300px" :options="item.fileMgrOptions"
-                v-model:selectedItems="item.selectedItems"></FileMgr>
+                v-model:selectedItems="item.selectedItems" :directory="currentDrive ? new Addr(`${currentDrive}:/`) : null">
+            </FileMgr>
         </template>
     </DialogGenerator>
 </template>
@@ -23,6 +28,8 @@ import { FileMgrOptions } from '@/components/FileMgr/types/FileMgrOptions';
 import dirSingleItem from '@/api/core/types/dirSingleItem';
 import path from 'path'
 import notification from '@/api/notification';
+import getAllDrive from '@/utils/file/getAllDrive'
+import Addr from '@/api/core/common/Addr';
 
 const filePickers = ref<{
     isDialogOpen: boolean,
@@ -33,6 +40,8 @@ const filePickers = ref<{
     confirmHandler(selectedItems: Set<dirSingleItem>, adapter: Adapter): void,
     cancellHandler(): void
 }[]>([])
+const currentDrive = ref("")
+const allDrive = await getAllDrive()
 
 emitter.on("Action::openFilePicker", async ({ directory, taskId, onlyAllowFolderSelection, allowMultipleSelection }) => {
     const adapter = new Adapter()
@@ -74,3 +83,5 @@ onUnmounted(() => {
     emitter.off("Action::openFilePicker")
 })
 </script>
+
+<style lang="less" scoped></style>

@@ -169,7 +169,8 @@ interface Props {
     adapter: AdapterBase,
     height?: string,
     options?: FileMgrOptions,
-    selectedItems?: Set<dirSingleItem>
+    selectedItems?: Set<dirSingleItem>,
+    directory?: Addr
 }
 const props = defineProps<Props>()
 const emit = defineEmits(['update:selectedItems'])
@@ -224,11 +225,6 @@ onMounted(async () => {
 })
 
 // <核心功能-文件相关>
-watch(currentDir, async (newVal) => {
-    await refresh(newVal)
-},
-    { deep: true })
-
 const refresh = async (arg?: Addr) => {
     isLoading.value = true
     if (arg) {
@@ -253,6 +249,18 @@ const refresh = async (arg?: Addr) => {
     }
     isLoading.value = false
 }
+
+watch(currentDir, async (newVal) => {
+    await refresh(newVal)
+},
+    { deep: true })
+
+watch(() => props.directory, async (newVal) => {
+    if (newVal) {
+        currentDir.value = newVal
+        await refresh(newVal)
+    }
+}, { immediate: true })
 
 const up = () => {
     currentDir.value.up()

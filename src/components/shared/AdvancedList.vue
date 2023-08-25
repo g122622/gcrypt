@@ -44,7 +44,7 @@ const props = defineProps<Props>()
 const guid = sharedUtils.getHash(16)
 const searchWord = ref("")
 const matchedItems = computed(() => {
-    if (props.useSearch) {
+    if (props.useSearch && searchWord.value) {
         return props.items.filter((item) => {
             let flag = false
             // 优化：flag一旦为true就立即返回（abort），不继续遍历
