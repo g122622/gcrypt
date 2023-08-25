@@ -6,3 +6,4 @@ declare const COMPILE_ENV: string
 declare const COMPILE_CPU: string
 declare const COMPILE_MEM: string
 declare const FroalaEditor: any
+declare const ace: any

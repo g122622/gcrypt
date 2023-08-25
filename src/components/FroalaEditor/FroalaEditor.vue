@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue"
+import { onMounted, onBeforeUnmount } from "vue"
 import sharedUtils from "@/utils/sharedUtils"
 import File from "@/api/File";
 import { useSettingsStore } from "@/store/settings";

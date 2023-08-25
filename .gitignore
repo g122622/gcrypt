@@ -24,3 +24,12 @@ pnpm-debug.log*
 
 #Electron-builder output
 /dist_electron
+.VSCodeCounter/2023-08-18_16-41-55/details.md
+.VSCodeCounter/2023-08-18_16-41-55/diff-details.md
+.VSCodeCounter/2023-08-18_16-41-55/diff.csv
+.VSCodeCounter/2023-08-18_16-41-55/diff.md
+.VSCodeCounter/2023-08-18_16-41-55/diff.txt
+.VSCodeCounter/2023-08-18_16-41-55/results.csv
+.VSCodeCounter/2023-08-18_16-41-55/results.json
+.VSCodeCounter/2023-08-18_16-41-55/results.md
+.VSCodeCounter/2023-08-18_16-41-55/results.txt

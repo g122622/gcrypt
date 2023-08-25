@@ -11,6 +11,10 @@
                         </v-avatar>
                     </template>
                 </v-list-item>
+                <a class="text-blue text-decoration-none" v-if="!isShowingAllMethods" @click="isShowingAllMethods = true">
+                    显示所有
+                    <v-icon icon="mdi-chevron-down"></v-icon>
+                </a>
             </v-list>
         </template>
         <template #footer>
@@ -32,6 +36,7 @@ const store = useSettingsStore()
 const fileType = ref<string>('')
 const isShowing = ref<boolean>(false)
 const isRememberMethod = ref<boolean>(false)
+const isShowingAllMethods = ref<boolean>(false)
 const openMethodMgr = new OpenMethodMgr()
 let currentFile: File = null
 let currentExtra = null
@@ -42,7 +47,11 @@ const appointedFileOpenMethods = computed(() => {
 
 // 用于显示的列表
 const methodsList = computed(() => {
-    return openMethodMgr.getMatchedMethod(fileType.value)
+    if (isShowingAllMethods.value) {
+        return openMethodMgr.getMatchedMethod("")
+    } else {
+        return openMethodMgr.getMatchedMethod(fileType.value)
+    }
 })
 
 // 设置记住的打开方式
@@ -68,6 +77,8 @@ onMounted(() => {
         currentFile = fileArg
         currentExtra = extraArg
         fileType.value = fileTypeArg
+        isRememberMethod.value = false
+        isShowingAllMethods.value = false
         if (Object.hasOwn(appointedFileOpenMethods.value, fileTypeArg)) {
             const name = appointedFileOpenMethods.value[fileTypeArg]
             openMethodMgr.getMethodByName(name).onSelected(currentFile, currentExtra)

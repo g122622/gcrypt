@@ -4,10 +4,9 @@ import ImageViewer from "@/components/ImageViewer/ImageViewer.vue"
 import File from "@/api/File";
 import Electron from 'electron'
 import FroalaEditor from "@/components/FroalaEditor/FroalaEditor.vue";
-import MonacoEditor from "@/components/MonacoEditor/MonacoEditor.vue";
 import getDigest from "@/api/hash/getDigest"
 import pickFile from "@/utils/shell/pickFile";
-import path from 'path'
+import AceEditor from "@/components/AceEditor/AceEditor.vue";
 
 /**
  * 注册内置方法
@@ -44,6 +43,56 @@ export default async function registerBulitinOpenMethods(mgr) {
                     props: { images: [{ src: await file.read() }] }
                 }
             )
+        }
+    })
+    mgr.registerMethod({
+        name: "外部打开(写入本地文件系统缓存,并监听写入以同步)",
+        icon: 'mdi-open-in-new',
+        fileType: /./,
+        async onSelected(file: File) {
+            const tmpdir = await file.toTempFile()
+            Electron.shell.openExternal(tmpdir)
+        }
+    })
+    mgr.registerMethod({
+        name: "FroalaEditor",
+        icon: 'mdi-file-edit',
+        fileType: ['txt', 'html'],
+        async onSelected(file: File) {
+            emitter.emit("Action::addTab",
+                {
+                    name: 'FroalaEditor-' + file.filename,
+                    component: FroalaEditor,
+                    icon: "mdi-file-edit",
+                    onClick: () => null,
+                    props: { file }
+                }
+            )
+        }
+    })
+    mgr.registerMethod({
+        name: "AceEditor",
+        icon: 'mdi-microsoft-visual-studio-code',
+        fileType: ['txt', 'html', 'js', 'json', 'vue', 'ts'],
+        async onSelected(file: File) {
+            emitter.emit("Action::addTab",
+                {
+                    name: 'AceEditor-' + file.filename,
+                    component: AceEditor,
+                    icon: "mdi-microsoft-visual-studio-code",
+                    onClick: () => null,
+                    props: { file }
+                }
+            )
+        }
+    })
+    mgr.registerMethod({
+        name: "导出文件到外部",
+        icon: 'mdi-export-variant',
+        fileType: /./,
+        async onSelected(file: File) {
+            const directory = (await pickFile("G:/", true, false, true))[0]
+            await file.exportToExt(directory)
         }
     })
     mgr.registerMethod({
@@ -86,56 +135,6 @@ export default async function registerBulitinOpenMethods(mgr) {
                 sha1: ${sha1}
             `
             })
-        }
-    })
-    mgr.registerMethod({
-        name: "外部打开(写入本地文件系统缓存,并监听写入以同步)",
-        icon: 'mdi-open-in-new',
-        fileType: /./,
-        async onSelected(file: File) {
-            const tmpdir = await file.toTempFile()
-            Electron.shell.openExternal(tmpdir)
-        }
-    })
-    mgr.registerMethod({
-        name: "FroalaEditor",
-        icon: 'mdi-file-edit',
-        fileType: ['txt', 'html'],
-        async onSelected(file: File) {
-            emitter.emit("Action::addTab",
-                {
-                    name: 'FroalaEditor-' + file.filename,
-                    component: FroalaEditor,
-                    icon: "mdi-file-edit",
-                    onClick: () => null,
-                    props: { file }
-                }
-            )
-        }
-    })
-    mgr.registerMethod({
-        name: "MonacoEditor",
-        icon: 'mdi-microsoft-visual-studio-code',
-        fileType: ['txt', 'html', 'js', 'json', 'vue', 'ts'],
-        async onSelected(file: File) {
-            emitter.emit("Action::addTab",
-                {
-                    name: 'MonacoEditor-' + file.filename,
-                    component: MonacoEditor,
-                    icon: "mdi-microsoft-visual-studio-code",
-                    onClick: () => null,
-                    props: { file }
-                }
-            )
-        }
-    })
-    mgr.registerMethod({
-        name: "导出文件到外部",
-        icon: 'mdi-export-variant',
-        fileType: /./,
-        async onSelected(file: File) {
-            const directory = (await pickFile("G:/", true, false, true))[0]
-            await file.exportToExt(directory)
         }
     })
 }

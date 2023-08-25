@@ -157,6 +157,8 @@ import prettyBytes from "@/utils/prettyBytes";
 import notification from "@/api/notification";
 import pickFile from "@/utils/shell/pickFile";
 import { FileMgrOptions } from "./types/FileMgrOptions"
+import getWindowsShortcutProperties from 'get-windows-shortcut-properties'
+import path from 'path'
 
 import ContextMenu from "../shared/ContextMenu.vue";
 import FileItem from "./FileItem.vue";
@@ -263,6 +265,15 @@ const back = () => {
 }
 
 const openFile = (filename, fileguid) => {
+    // 先判断是否为快捷方式，是的话则跳转
+    if (process.platform === 'win32' && getExtName(filename) === 'lnk') {
+        const output = getWindowsShortcutProperties.sync(path.join(currentDir.value.toPathStr(), filename));
+        if (output) {
+            currentDir.value = new Addr(output[0].TargetPath)
+            return
+        }
+    }
+
     const fileArg = new File(fileguid)
     fileArg.fromAdapter(props.adapter, filename)
 
@@ -633,12 +644,14 @@ const handleExtDrop = async (event) => {
 
 // <文件导出>
 const handleFileExport = async () => {
-    const directory = (await pickFile("G:/", true, false, true))[0]
-    selectedItems.value.forEach(item => {
-        const file = new File()
-        file.fromAdapter(props.adapter, item.name)
-        file.exportToExt(directory)
-    })
+    try {
+        const directory = (await pickFile(null, true, false, true))[0]
+        selectedItems.value.forEach(item => {
+            const file = new File()
+            file.fromAdapter(props.adapter, item.name)
+            file.exportToExt(directory)
+        })
+    } catch (e) { }
 }
 </script>
 

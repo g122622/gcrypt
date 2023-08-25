@@ -36,7 +36,7 @@ const filePickers = ref<{
 
 emitter.on("Action::openFilePicker", async ({ directory, taskId, onlyAllowFolderSelection, allowMultipleSelection }) => {
     const adapter = new Adapter()
-    await adapter.initAdapter(directory)
+    await adapter.initAdapter(directory ?? "/")
     filePickers.value.push({
         isDialogOpen: true,
         adapter,
@@ -63,6 +63,8 @@ emitter.on("Action::openFilePicker", async ({ directory, taskId, onlyAllowFolder
             filePickers.value.find(item => item.taskId === taskId).isDialogOpen = false
         },
         cancellHandler: () => {
+            emitter.emit("Action::filePickerCancelled" + taskId)
+            emitter.off("Action::filePickerCancelled" + taskId)
             filePickers.value.find(item => item.taskId === taskId).isDialogOpen = false
         }
     })

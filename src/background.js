@@ -60,6 +60,7 @@ class ApplicationMain {
                 nodeIntegration: true,
                 contextIsolation: false,
                 devTools: true,
+                webSecurity: false
             }
         })
 

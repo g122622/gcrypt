@@ -19,7 +19,8 @@
 
                     </v-list>
                     <!-- 只有子list数大于等于1时才显示分割线 -->
-                    <v-divider v-if="computedMenuLists.length >= 1 && indexi !== computedMenuLists.length - 1" />
+                    <v-divider v-if="computedMenuLists.length >= 1 && indexi !== computedMenuLists.length - 1"
+                        class="border-opacity-100" color="rgb(100,100,100)" />
                 </div>
             </div>
         </Transition>
