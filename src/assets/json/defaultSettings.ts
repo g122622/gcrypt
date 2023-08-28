@@ -61,6 +61,14 @@ const defaultSettings = Object.freeze(<Array<settingItem>>[
         category: "外观"
     },
     {
+        name: "use_single_instance_lock",
+        type: SettingTypes.switcher,
+        value: true,
+        title: "开启单例锁",
+        des: "阻止用户开启多个相同的Gcrypt窗口，避免冲突",
+        category: "通用",
+    },
+    {
         name: "use_shade",
         type: SettingTypes.switcher,
         value: false,

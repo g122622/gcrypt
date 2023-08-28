@@ -13,7 +13,7 @@
         </template>
         <template #mainContent>
             <FileMgr :adapter="item.adapter" height="300px" :options="item.fileMgrOptions"
-                v-model:selectedItems="item.selectedItems" :directory="currentDrive ? new Addr(`${currentDrive}:/`) : null">
+                v-model:selectedItems="item.selectedItems" :directory="currentDrive ? newAddr(currentDrive) : null">
             </FileMgr>
         </template>
     </DialogGenerator>
@@ -42,6 +42,11 @@ const filePickers = ref<{
 }[]>([])
 const currentDrive = ref("")
 const allDrive = await getAllDrive()
+
+// vue有一个在template内使用new关键字的bug，see https://github.com/vuejs/core/issues/6483
+const newAddr = (drive: string) => {
+    return new Addr(`${drive}:/`)
+}
 
 emitter.on("Action::openFilePicker", async ({ directory, taskId, onlyAllowFolderSelection, allowMultipleSelection }) => {
     const adapter = new Adapter()

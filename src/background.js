@@ -30,6 +30,18 @@ class ApplicationMain {
             fileExtension: "json",
             clearInvalidConfig: true,
         })
+        this.settingsStore = new Store({
+            name: "settings",
+            fileExtension: "json",
+            clearInvalidConfig: true,
+        })
+    }
+
+    initSingleInstanceLock() {
+        if (!app.requestSingleInstanceLock() &&
+            this.settingsStore.get("settings").find(item => item.name === 'use_single_instance_lock').value) {
+            app.quit()
+        }
     }
 
     initAppVersion() {

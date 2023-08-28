@@ -7,7 +7,7 @@
         <!-- 动态标签页 -->
         <v-list density="compact" nav>
             <v-list-item v-for="item in dynamicTabs" :title="item.name" @click="item.handleClick()" :key="item.name"
-                :active="item.name === activeTab">
+                :active="`/${item.legalPath}` === route.fullPath">
                 <template #prepend>
                     <v-icon>
                         {{ item.icon }}
@@ -28,7 +28,9 @@
 import { ref, onMounted } from "vue"
 import TabsMgr from "@/api/TabsMgr";
 import emitter from "@/eventBus";
+import { useRoute } from 'vue-router'
 
+const route = useRoute()
 const dynamicTabs = ref<Array<any>>([])
 let tabsMgr = null
 const activeTab = ref<string>('')
@@ -51,10 +53,11 @@ onMounted(() => {
         dynamicTabs.value.push({
             name,
             icon,
-            handleClick: () => {
+            legalPath,
+            handleClick: async () => {
                 tabsMgr.switchToTab(legalPath)
                 activeTab.value = name
-                onClick()
+                await onClick()
             },
 
             handleClose: async () => {

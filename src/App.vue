@@ -46,7 +46,7 @@ import emitter from './eventBus'
 import { ref, computed, onMounted, nextTick } from "vue"
 import { useSettingsStore } from "./store/settings"
 import { useMainStore } from "./store/main"
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import hexToRGB from "@/utils/hexToRGB"
 import { useDialogStore } from "@/store/dialog";
 
@@ -67,6 +67,7 @@ const settingsStore = useSettingsStore()
 const mainStore = useMainStore()
 const dialogStore = useDialogStore()
 const route = useRoute()
+const router = useRouter()
 const finishLoading = ref<boolean>(false)
 
 const backgroundOpacity = computed(() => {
@@ -75,6 +76,7 @@ const backgroundOpacity = computed(() => {
 })
 
 onMounted(async () => {
+    router.push("./")
     // 是否显示主内容区滚动条
     mainStore.mainContentScrollable = true
     await nextTick()

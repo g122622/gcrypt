@@ -1,6 +1,5 @@
 <template>
-    <v-navigation-drawer v-model="isSideDrawerOpen" :rail="isSideDrawerRail" permanent
-        width="200">
+    <v-navigation-drawer v-model="isSideDrawerOpen" :rail="isSideDrawerRail" permanent width="200">
         <v-list-item prepend-avatar="./assets/avatar-ss.jpg" title="g122622" nav
             @click.stop="isSideDrawerRail = !isSideDrawerRail">
         </v-list-item>
@@ -8,7 +7,7 @@
         <!-- 静态标签页 -->
         <v-list density="compact" nav :items="sideColumnMainItems" @click:select="(value) => {
             handleNavClick(value.id as string);
-        }">
+        }" :selected="[route.name]">
         </v-list>
         <v-divider></v-divider>
         <!-- 标签页管理器 -->
@@ -32,9 +31,10 @@ import PerformanceMonitor from "@/components/PerformanceMonitor/PerformanceMonit
 import TabsMgr from '@/components/TabsMgr.vue';
 import TaskMgr from "./TaskMgr.vue";
 import FileStateManager from "@/components/FileStateManager.vue";
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const router = useRouter()
+const route = useRoute()
 const isSideDrawerOpen = ref<boolean>(true)
 const isSideDrawerRail = ref<boolean>(true)
 
