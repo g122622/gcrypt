@@ -216,6 +216,7 @@ class ApplicationMain {
     async initAll() {
         this.initProperties()
         this.initElectronStore()
+        this.initSingleInstanceLock()
         this.initAppVersion()
         this.registerSchemes()
         app.on('ready', async () => {
