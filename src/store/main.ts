@@ -11,7 +11,6 @@ const mainStore = new ElectronStore({
 
 export const useMainStore = defineStore("main", {
     state() {
-        console.log(mainStore.get("appVersion"))
         return {
             COMPILE_DATE: COMPILE_DATE,
             COMPILE_NUMBER: COMPILE_NUMBER,

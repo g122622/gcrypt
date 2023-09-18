@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import getFileType from "@/utils/getFileType";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import { useMainStore } from "@/store/main"
 import prettyBytes from "@/utils/prettyBytes";
 
@@ -77,11 +77,12 @@ const fileItemClassList = computed(() => {
 })
 
 const markerColor = computed(() => {
-    if (mainStore.activeFiles.get(props.singleFileItem.key)) {
-        if (mainStore.activeFiles.get(props.singleFileItem.key).isUsingTempFile) {
+    const fileActiveState = mainStore.activeFiles.get(props.singleFileItem.key)
+    if (fileActiveState) {
+        if (fileActiveState.isUsingTempFile) {
             return '#FFC300'
         }
-        if (mainStore.activeFiles.get(props.singleFileItem.key).isOpen) {
+        if (fileActiveState.isOpen) {
             return '#23B6FC'
         }
     }

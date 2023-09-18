@@ -48,7 +48,6 @@ class EncryptionEngineAES192 extends EncryptionEngineBase {
      * @param rawBufData 被加密的原始数据
      */
     public decrypt = function (rawBufData: Buffer): Promise<Buffer> {
-        ASSERT(!!this.currentPwd)
         return new Promise((resolve) => {
             ASSERT(!!this.currentPwd)
             try {

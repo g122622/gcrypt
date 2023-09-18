@@ -353,7 +353,9 @@ const handlePropertiesClick = (item?: dirSingleItem) => {
     } else {
         let totalSize = 0
         for (let element of selectedItems.value) {
-            totalSize += element.meta.size
+            if (element.meta.size > 0) {
+                totalSize += element.meta.size
+            }
         }
         itemCache.value = {
             totalSize,
