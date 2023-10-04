@@ -9,7 +9,9 @@
                 <v-container>
                     <v-row>
                         <v-col cols="12">
-                            <v-text-field label="文件夹名称*" required density="compact" v-model="folderName"></v-text-field>
+                            <AdvancedTextField label="文件夹名称*" prepend-inner-icon="mdi-magnify"
+                                v-model:currentInput="folderName" density="compact" required>
+                            </AdvancedTextField>
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-autocomplete :items="['读r--', '写-w-', '执行--x']" label="操作权限" multiple
@@ -41,7 +43,9 @@
                 <v-container>
                     <v-row>
                         <v-col cols="12">
-                            <v-text-field label="文件名称*" required density="compact" v-model="fileName"></v-text-field>
+                            <AdvancedTextField label="文件名称*" prepend-inner-icon="mdi-magnify"
+                                v-model:currentInput="fileName" density="compact" required>
+                            </AdvancedTextField>
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-autocomplete :items="['读r--', '写-w-', '执行--x']" label="操作权限" multiple

@@ -46,6 +46,8 @@
                         1.这个密码仅用来防止未授权人员访问隐域的界面、阻止其对这个应用进行操作，并不会参与数据加密。
                         <br />
                         2.密码以私有方式加密，外部应用无法解密你的密码，且密码全程不会以明文形式参与解锁判定。
+                        <br />
+                        <span style="color: rgb(242,158,116);">3.忘记密码之后将无法恢复。</span>
                     </v-card-text>
                 </v-card>
                 <v-btn block class="mb-8" color="blue" size="large" variant="tonal" @click="onSetPasswordConfirm">
@@ -71,6 +73,7 @@ import getDigest from "@/api/hash/getDigest";
 import ASSERT from "@/utils/ASSERT";
 import notification from "@/api/notification";
 import emitter from "@/eventBus";
+import { ipcRenderer } from "electron";
 
 const settingsStore = useSettingsStore()
 const encryptionStore = useEncryptionStore()
@@ -89,6 +92,11 @@ let interval = null
 //     error("未检测到安全环境，App拒绝运行")
 //     throw new Error()
 // }
+
+const lockApp = () => {
+    models.isPasswordDialogOpen = true
+    ipcRenderer.send('mainService', { code: 'closeDT' })
+}
 
 const isPasswordAvailable = () => {
     return !!encryptionStore.appLockerKeyEncrypted
@@ -119,22 +127,30 @@ const onPasswordConfirm = () => {
 }
 
 const onSetPasswordConfirm = () => {
-    if (!!models.password1 && !!models.password2 && models.password1 === models.password2) {
-        setPassword(models.password1)
-        models.password1 = ''
-        models.password2 = ''
-        models.isPasswordDialogOpen = false
+    if (models.password1 !== models.password2) {
+        notification.error("上下密码不一致")
+        return
     }
+    if (!models.password1 || !models.password2) {
+        notification.error("密码无效")
+        return
+    }
+
+    setPassword(models.password1)
+    models.password1 = ''
+    models.password2 = ''
+    models.isPasswordDialogOpen = false
+    notification.success("密码设置成功")
 }
 
 onMounted(() => {
     watchEffect(() => {
         if (settingsStore.getSetting("window_lock")) {
-            models.isPasswordDialogOpen = true
+            lockApp()
             clearInterval(interval)
             if (settingsStore.getSetting("window_lock_scheduled")) {
                 interval = setInterval(() => {
-                    models.isPasswordDialogOpen = true
+                    lockApp()
                 }, settingsStore.getSetting("window_lock_interval") * 1e3 * 60)
             }
         }
@@ -144,7 +160,7 @@ onMounted(() => {
             encryptionStore.setAppLockerKeyEncrypted('')
         }
         if (settingsStore.getSetting("window_lock")) {
-            models.isPasswordDialogOpen = true
+            lockApp()
         }
     })
 })

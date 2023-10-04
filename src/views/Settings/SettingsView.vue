@@ -8,7 +8,7 @@
         </ActionToolBarBase>
     </Teleport>
 
-    <v-col id="container">
+    <v-col id="settings-container">
         <div v-for="category in cats" :key="category">
             <v-card class="rounded-lg">
                 <v-list lines="two">
@@ -136,8 +136,8 @@ const cats = computed(() => {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
-#container {
+<style lang="less">
+#settings-container {
     display: flex;
     flex-wrap: wrap;
 
@@ -145,6 +145,10 @@ const cats = computed(() => {
         min-width: 300px;
         margin: 5px;
         flex-grow: 1;
+    }
+
+    .v-input__details {
+        display: none !important;
     }
 }
 </style>

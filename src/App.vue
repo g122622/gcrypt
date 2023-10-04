@@ -19,6 +19,7 @@
     <Suspense>
         <BuiltinFilePicker></BuiltinFilePicker>
     </Suspense>
+    <DatePicker></DatePicker>
 
     <div :style="{ opacity: backgroundOpacity }">
         <v-app>
@@ -62,6 +63,7 @@ import PostUpdateInfo from './components/Dialogs/PostUpdateInfo.vue'
 import DialogGenerator from './components/shared/DialogGenerator.vue'
 import AppLocker from './components/AppLocker.vue'
 import BuiltinFilePicker from './components/BuiltinFilePicker.vue'
+import DatePicker from './components/DatePicker.vue'
 
 const settingsStore = useSettingsStore()
 const mainStore = useMainStore()

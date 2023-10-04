@@ -19,10 +19,10 @@
                         v-model="currentKVPEngine"></v-autocomplete>
                     <v-autocomplete :items="['gcryptV1']" label="adapter" density="compact"
                         v-model="currentAdapter"></v-autocomplete>
-                    <v-autocomplete :items="['encryptionEngineAES192']" label="加密引擎"
-                        density="compact" v-model="currentEncryptionEngine"></v-autocomplete>
+                    <v-autocomplete :items="['encryptionEngineAES192']" label="加密引擎" density="compact"
+                        v-model="currentEncryptionEngine"></v-autocomplete>
                 </v-col>
-                <v-btn variant="tonal" @click="isEngineConfirmed = true">
+                <v-btn variant="tonal" @click="isEngineConfirmed = true" prepend-icon="mdi-check">
                     确定
                 </v-btn>
             </v-container>
@@ -39,7 +39,7 @@
                     <small>加密库密码</small>
                     <v-text-field label="加密库密码" required density="compact" v-model="password"></v-text-field>
                 </v-col>
-                <v-btn variant="tonal" @click="isInfoConfirmed = true">
+                <v-btn variant="tonal" @click="isInfoConfirmed = true" prepend-icon="mdi-check">
                     确定
                 </v-btn>
             </v-container>

@@ -34,17 +34,18 @@
     </DialogGenerator>
 
     <AdvancedList lines="two" subheader="加密库列表" :items="encryptionStore.storeList" useBottomTip useSearch
-        v-slot="{ matchedItems }">
+        v-slot="{ matchedItems }" emptyTip="请点击右上角的“+”新建一个加密库，或导入一个加密库">
         <v-list-item v-for="item in matchedItems" :key="item.storeEntryJsonSrc" :title="item.storageName"
             :subtitle="new Date(item.createdTime).toLocaleString()" @click=" handleItemClick(item)">
             <template v-slot:prepend>
-                <v-avatar color="grey-lighten-1">
+                <v-avatar color="primary">
                     <v-icon color="white">mdi-lock</v-icon>
                 </v-avatar>
             </template>
 
             <template v-slot:append>
-                <IconBtn icon="mdi-folder" tooltip="打开所在文件夹" @click.stop="Electron.shell.openPath(path.dirname(item.storeEntryJsonSrc))"></IconBtn>
+                <IconBtn icon="mdi-folder" tooltip="打开所在文件夹"
+                    @click.stop="Electron.shell.openPath(path.dirname(item.storeEntryJsonSrc))"></IconBtn>
                 <IconBtn icon="mdi-delete" tooltip="移除" @click.stop="encryptionStore.removeStore(item.storeEntryJsonSrc)">
                 </IconBtn>
                 <IconBtn icon="mdi-information" :tooltip="JSON.stringify(item)"></IconBtn>

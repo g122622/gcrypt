@@ -224,7 +224,7 @@ export default {
 .notification__item__content {
     display: grid;
     grid-template-columns: 1fr;
-    padding: 12px 16px 0px 16px;
+    padding: 12px 16px 12px 16px;
 }
 
 .notification__item__content__main__header {

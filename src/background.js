@@ -115,7 +115,6 @@ class ApplicationMain {
                     break;
                 case 'reload':
                     thisRef.mainWindow.reload();
-
                     break;
                 case 'relaunch':
                     app.relaunch();
@@ -123,6 +122,9 @@ class ApplicationMain {
                     break;
                 case 'toggleDT':
                     thisRef.mainWindow.webContents.toggleDevTools();
+                    break;
+                case 'closeDT':
+                    thisRef.mainWindow.webContents.closeDevTools()
                     break;
                 case "showShade":
                     if (!thisRef.hasShade) {

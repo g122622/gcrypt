@@ -5,15 +5,17 @@
         <template #title>
             <div style="margin-left: 7px; width: 150px;">
                 <v-select density="compact" label="选择盘符" clearable :items="allDrive.map(i => i.drive).sort()"
-                    v-model="currentDrive"></v-select>
+                    v-model="item.currentDrive"></v-select>
             </div>
             <v-spacer></v-spacer>
             <v-btn color="primary" style="margin-right: 10px;" @click="item.cancellHandler()">取消</v-btn>
-            <v-btn color="primary" @click="item.confirmHandler(item.selectedItems, item.adapter)">确定</v-btn>
+            <v-btn color="primary" @click="item.confirmHandler(item.selectedItems, item.adapter)"
+                prepend-icon="mdi-check">确定</v-btn>
         </template>
         <template #mainContent>
             <FileMgr :adapter="item.adapter" height="300px" :options="item.fileMgrOptions"
-                v-model:selectedItems="item.selectedItems" :directory="currentDrive ? newAddr(currentDrive) : null">
+                v-model:selectedItems="item.selectedItems"
+                :directory="item.currentDrive ? newAddr(item.currentDrive) : null">
             </FileMgr>
         </template>
     </DialogGenerator>
@@ -33,6 +35,7 @@ import Addr from '@/api/core/common/Addr';
 
 const filePickers = ref<{
     isDialogOpen: boolean,
+    currentDrive: string
     adapter: Adapter,
     selectedItems: Set<dirSingleItem>,
     fileMgrOptions: FileMgrOptions,
@@ -40,7 +43,6 @@ const filePickers = ref<{
     confirmHandler(selectedItems: Set<dirSingleItem>, adapter: Adapter): void,
     cancellHandler(): void
 }[]>([])
-const currentDrive = ref("")
 const allDrive = await getAllDrive()
 
 // vue有一个在template内使用new关键字的bug，see https://github.com/vuejs/core/issues/6483
@@ -54,6 +56,7 @@ emitter.on("Action::openFilePicker", async ({ directory, taskId, onlyAllowFolder
     filePickers.value.push({
         isDialogOpen: true,
         adapter,
+        currentDrive: null,
         selectedItems: new Set(),
         fileMgrOptions: {
             useCtxMenu: true,

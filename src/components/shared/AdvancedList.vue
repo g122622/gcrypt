@@ -4,7 +4,9 @@
         <ToolBarBase :ToolbarTitle="subheader ?? ''">
             <template #prepend>
                 <!-- 搜索框 -->
-                <v-text-field label="搜索..." prepend-inner-icon="mdi-magnify" v-model="searchWord"></v-text-field>
+                <AdvancedTextField label="搜索..." prepend-inner-icon="mdi-magnify" v-model:currentInput="searchWord"
+                    density="compact">
+                </AdvancedTextField>
             </template>
             <IconBtn icon="mdi-arrow-up" @click="handleBackToTop()" tooltip="回到顶部" v-if="matchedItems.length >= 1" />
         </ToolBarBase>
@@ -21,6 +23,7 @@
             style=" display:flex;justify-content: center;flex-direction: column;align-items: center;margin-bottom: 20px;">
             <img src="./assets/fileMgr/404.png" style="width:200px;" />
             暂无内容
+            <div v-if="props.emptyTip">{{ props.emptyTip }}</div>
         </div>
     </div>
 </template>
@@ -29,6 +32,7 @@
 import sharedUtils from "@/utils/sharedUtils";
 import traverseObj from "@/utils/traverseObj";
 import { ref, computed } from "vue"
+import AdvancedTextField from "@/components/shared/AdvancedTextField.vue";
 
 interface Props {
     density?: 'default' | 'comfortable' | 'compact',
@@ -38,7 +42,8 @@ interface Props {
     items: any[],
     subheader?: string,
     lines?: false | 'one' | 'two' | 'three',
-    width?: string
+    width?: string,
+    emptyTip?: string
 }
 const props = defineProps<Props>()
 const guid = sharedUtils.getHash(16)
@@ -71,7 +76,6 @@ const handleBackToTop = () => {
 .v-input {
     border-radius: 15px;
     overflow: hidden;
-    height: 56px;
     margin: 5px;
 }
 </style>
