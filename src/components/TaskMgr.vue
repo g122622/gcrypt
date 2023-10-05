@@ -11,8 +11,8 @@
 
             <v-card width="600" height='400'>
                 <!-- 主内容 -->
-                <AdvancedList lines="two" subheader="任务管理器" :items="taskStore.taskPool" useBottomTip useSearch
-                    v-slot="{ matchedItems }" width="590px" height="230px">
+                <AdvancedList lines="two" :subheader="`任务管理器(${taskStore.taskPool.length})`" :items="taskStore.taskPool"
+                    useBottomTip useSearch v-slot="{ matchedItems }" width="590px" height="230px">
                     <v-list-item v-for="item in matchedItems" :key="item.guid" :title="item.name">
                         <template #append>
                             <v-icon color="success" v-if="item.state === 'succeed'">mdi-check-circle</v-icon>

@@ -42,6 +42,15 @@ export const useTaskStore = defineStore("task", {
             this.taskPool = this.taskPool.filter(item => {
                 return (item.state !== 'cancelled') && (item.state !== 'succeed')
             })
+        },
+        getPendingOrRunningTaskAmount(): number {
+            return this.taskPool.reduce((ans, val) => {
+                if (val.state === 'pending' || val.state === 'running') {
+                    return ans + 1
+                } else {
+                    return ans
+                }
+            }, 0)
         }
     }
 }

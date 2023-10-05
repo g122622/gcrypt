@@ -1,6 +1,7 @@
 <template>
     <v-system-bar window style="-webkit-app-region: drag;padding-right: 0px;" height="32">
         <span class="ml-2">隐域-Gcrypt v{{ mainStore.appVersion }}</span>
+        <span v-if="pendingOrRunningTaskAmount" style="margin-left: 5px;"> · {{ pendingOrRunningTaskAmount }} 任务</span>
         <v-chip class="ma-2" color="red" size="x-small" v-if="sharedUtils.env === 'development'">
             dev
         </v-chip>
@@ -8,7 +9,7 @@
             prod
         </v-chip>
         <v-spacer />
-        <div v-ripple class="system-bar-item" v-for="item in itemList.filter(i => !i.hide)" :key="item.name"
+        <div v-ripple class="system-bar-item" v-for=" item  in  itemList.filter(i => !i.hide) " :key="item.name"
             @click="item.onClick" :class="item.class">
             <v-icon>
                 {{ item.icon }}
@@ -28,10 +29,13 @@ import { useMainStore } from "@/store/main"
 import { useSettingsStore } from "@/store/settings"
 import sharedUtils from "@/utils/sharedUtils";
 import emitter from "@/eventBus";
+import { useTaskStore } from "@/store/task";
 
 const mainStore = useMainStore()
 const settingsStore = useSettingsStore()
+const taskStore = useTaskStore()
 
+const pendingOrRunningTaskAmount = computed<number>(() => taskStore.getPendingOrRunningTaskAmount())
 const itemList = computed(() => {
     return [
         {
@@ -92,8 +96,27 @@ const itemList = computed(() => {
             name: 'close',
             tooltip: '关闭应用',
             onClick: () => {
-                Electron.ipcRenderer.send('mainService',
-                    { code: "close" })
+                if (pendingOrRunningTaskAmount.value > 0) {
+                    emitter.emit("showMsg", {
+                        level: "warning",
+                        msg: "目前仍有任务在等待或运行，确定要关闭应用吗",
+                        actionButtons: [
+                            {
+                                title: '确定',
+                                onClick: () => {
+                                    Electron.ipcRenderer.send('mainService',
+                                        { code: "close" })
+                                },
+                            },
+                            {
+                                title: '取消'
+                            },
+                        ]
+                    })
+                } else {
+                    Electron.ipcRenderer.send('mainService',
+                        { code: "close" })
+                }
             },
             icon: 'mdi-close',
             class: 'system-bar-item-danger',

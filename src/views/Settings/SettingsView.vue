@@ -8,6 +8,11 @@
         </ActionToolBarBase>
     </Teleport>
 
+    <!-- 搜索框 -->
+    <AdvancedTextField v-model:current-input="searchWord" label="搜索..." prepend-inner-icon="mdi-magnify" density="compact"
+        style="border-radius: 15px;overflow: hidden;margin: 15px;margin-bottom: 0px;">
+    </AdvancedTextField>
+
     <v-col id="settings-container">
         <div v-for="category in cats" :key="category">
             <v-card class="rounded-lg">
@@ -76,14 +81,20 @@
 </template>
 
 <script setup lang="ts">
-import emitter from "../../eventBus";
+import emitter from "@/eventBus";
 import ActionToolBarBase from "@/components/shared/ActionToolBarBase.vue";
-import { computed, toRefs } from "vue";
+import { computed, toRefs, ref } from "vue";
 import SettingTypes from "@/types/settingTypes"
 import { useSettingsStore } from "@/store/settings"
 import settingItem from "@/types/settingItem";
 import File from "@/api/File";
+import AdvancedTextField from "@/components/shared/AdvancedTextField.vue";
 const settingsStore = useSettingsStore()
+
+const searchWord = ref("")
+const filteredSettings = computed(() => {
+    return searchWord.value ? settingsStore.settings.filter(item => item.title.includes(searchWord.value) || item.des.includes(searchWord.value)) : settingsStore.settings
+})
 
 const resetSettings = () => {
     emitter.emit("resetSettings")
@@ -94,7 +105,7 @@ const updateSettings = () => {
 }
 
 const extractByCat = (category) => {
-    return settingsStore.settings.filter((item) => { return item.category === category })
+    return filteredSettings.value.filter((item) => { return item.category === category })
 }
 
 const handleFile = (file, targetSettingName) => {
@@ -124,8 +135,7 @@ const handleText = (item: settingItem) => {
 }
 
 const cats = computed(() => {
-    const settings = settingsStore.settings
-    const res = settings.map(item => {
+    const res = filteredSettings.value.map(item => {
         return item.category
     }).filter(function (item, index, arr) {
         return arr.indexOf(item) === index; // 数组去重

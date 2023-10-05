@@ -1,5 +1,5 @@
 <template>
-    <div style="container-type: inline-size;">
+    <div style="container-type: inline-size;" id="tabsmgr-container">
         <div class="v-list-item-title" style="text-align: center;font-size: small;margin-top: 10px;" id="tabs-counter">
             标签页({{ dynamicTabs.length }})
         </div>
@@ -79,14 +79,20 @@ onMounted(() => {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
-.v-list-item__prepend>.v-icon {
-    margin-inline-end: 10px;
-}
+<style lang="less">
+#tabsmgr-container {
+    .v-list-item__prepend>.v-icon {
+        margin-inline-end: 10px;
+    }
 
-@container (width < 70px) {
-    #tabs-counter {
-        display: none;
+    @container (width < 70px) {
+        #tabs-counter {
+            display: none;
+        }
+    }
+
+    .v-list-item__spacer {
+        width: 5px !important;
     }
 }
 </style>
