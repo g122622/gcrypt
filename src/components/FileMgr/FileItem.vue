@@ -139,6 +139,11 @@ const handleClick = (isRightClick = false) => {
     .file-thumbnail-img {
         max-height: 30px;
     }
+
+    .file-name {
+        margin-left: 5px;
+        margin-right: 5px;
+    }
 }
 
 .file-item-item {
@@ -156,6 +161,10 @@ const handleClick = (isRightClick = false) => {
 
     .file-thumbnail-img {
         height: 60px;
+    }
+
+    .file-name {
+        max-width: 100px;
     }
 }
 
@@ -176,7 +185,6 @@ const handleClick = (isRightClick = false) => {
     display: list-item;
     list-style-position: inside;
 
-    max-width: 100px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

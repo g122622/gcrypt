@@ -1,5 +1,5 @@
 <template>
-    <DialogGenerator height="490px" width="720px" v-model:isDialogOpen="item.isDialogOpen"
+    <DialogGenerator height="500px" width="720px" v-model:isDialogOpen="item.isDialogOpen"
         :title="item.fileMgrOptions.onlyAllowFolderSelection ? '选择文件夹' : '选择文件'" :isPersistent="true"
         useCompactContentOuterMargin v-for="item in filePickers" :key="item.taskId">
         <template #title>

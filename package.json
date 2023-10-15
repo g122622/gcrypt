@@ -1,6 +1,6 @@
 {
     "name": "gcrypt",
-    "version": "2.5.0",
+    "version": "2.6.0",
     "private": false,
     "author": "g122622",
     "repository": "https://github.com/g122622/gcrypt",
@@ -59,16 +59,5 @@
         "vue-cli-plugin-electron-builder": "^2.1.1",
         "vue-cli-plugin-vuetify": "~2.5.8",
         "webpack-plugin-vuetify": "^2.0.0-alpha.0"
-    },
-    "binary": {
-        "module_name": "node_sqlite3",
-        "module_path": "./lib/binding/napi-v{napi_build_version}-{platform}-{libc}-{arch}",
-        "host": "https://github.com/TryGhost/node-sqlite3/releases/download/",
-        "remote_path": "v{version}",
-        "package_name": "napi-v{napi_build_version}-{platform}-{libc}-{arch}.tar.gz",
-        "napi_versions": [
-            3,
-            6
-        ]
     }
 }

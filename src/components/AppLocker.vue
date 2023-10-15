@@ -163,6 +163,14 @@ onMounted(() => {
             lockApp()
         }
     })
+
+    document.addEventListener("keydown", event => {
+        if (event.key === 'l' && event.ctrlKey === true) {
+            if (settingsStore.getSetting("window_lock")) {
+                lockApp()
+            }
+        }
+    })
 })
 
 </script>

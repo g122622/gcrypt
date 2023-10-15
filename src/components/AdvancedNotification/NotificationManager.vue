@@ -7,7 +7,7 @@ Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
     <div class="notification__container">
         <transition-group name="msg-transition">
             <notification-card v-for="notification in nonHiddenNotifications"
-                :key="'notification-' + notification.cardHashID" :notification="notification"
+                :key="notification.cardHashID" :notification="notification"
                 :scheduleNotificationForRemoval="scheduleNotificationForRemoval" location="screen"></notification-card>
         </transition-group>
     </div>

@@ -13,6 +13,7 @@ class TabsMgr {
     public removeTab = ({ name }) => {
         router.back()
         router.removeRoute(name)
+
         emitter.emit('showMsg',
             {
                 level: "success",

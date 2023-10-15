@@ -21,7 +21,7 @@ export default async function registerBulitinOpenMethods(mgr) {
         async onSelected(file: File) {
             emitter.emit("Action::addTab",
                 {
-                    name: `浏览器-${await file.filename}`,
+                    name: `${await file.filename} -浏览器`,
                     component: WebBrowser,
                     icon: 'mdi-earth',
                     onClick: () => null,
@@ -61,7 +61,7 @@ export default async function registerBulitinOpenMethods(mgr) {
         async onSelected(file: File) {
             emitter.emit("Action::addTab",
                 {
-                    name: 'FroalaEditor-' + file.filename,
+                    name: file.filename + '-FroalaEditor',
                     component: FroalaEditor,
                     icon: "mdi-file-edit",
                     onClick: () => null,
@@ -77,7 +77,7 @@ export default async function registerBulitinOpenMethods(mgr) {
         async onSelected(file: File) {
             emitter.emit("Action::addTab",
                 {
-                    name: 'AceEditor-' + file.filename,
+                    name: file.filename + "-AceEditor",
                     component: AceEditor,
                     icon: "mdi-microsoft-visual-studio-code",
                     onClick: () => null,

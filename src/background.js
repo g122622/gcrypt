@@ -63,6 +63,7 @@ class ApplicationMain {
             backgroundColor: "#000000",
             title: "隐域-Gcrypt",
             titleBarStyle: 'hidden',
+            icon: 'app://./favicon.png',
             webPreferences: {
                 // Use pluginOptions.nodeIntegration, leave this alone
                 // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
