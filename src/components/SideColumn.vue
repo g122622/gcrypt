@@ -48,6 +48,13 @@ const sideColumnMainItems =
             value: "store"
         },
         {
+            title: '文件管理',
+            props: {
+                prependIcon: 'mdi-file',
+            },
+            value: "side_column_local_file"
+        },
+        {
             title: '设置',
             props: {
                 prependIcon: 'mdi-cog',

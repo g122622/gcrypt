@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watchEffect } from "vue"
+import { ref, reactive, onMounted, watchEffect, watch } from "vue"
 import { useSettingsStore } from "@/store/settings"
 import { useEncryptionStore } from "@/store/encryption";
 // import { safeStorage } from "electron";
@@ -74,6 +74,7 @@ import ASSERT from "@/utils/ASSERT";
 import notification from "@/api/notification";
 import emitter from "@/eventBus";
 import { ipcRenderer } from "electron";
+import { log } from "@/utils/gyConsole";
 
 const settingsStore = useSettingsStore()
 const encryptionStore = useEncryptionStore()
@@ -144,17 +145,39 @@ const onSetPasswordConfirm = () => {
 }
 
 onMounted(() => {
-    watchEffect(() => {
-        if (settingsStore.getSetting("window_lock")) {
+    // 开启app的时候锁定窗口
+    if (settingsStore.getSetting("window_lock")) {
+        lockApp()
+    }
+
+    // 设置里关闭窗口锁定的时候锁定窗口
+    watch(() => settingsStore.getSetting("window_lock"), (newval, oldval) => {
+        if (!newval && oldval) {
             lockApp()
-            clearInterval(interval)
-            if (settingsStore.getSetting("window_lock_scheduled")) {
-                interval = setInterval(() => {
-                    lockApp()
-                }, settingsStore.getSetting("window_lock_interval") * 1e3 * 60)
-            }
         }
     })
+
+    // 设置里关闭定时窗口锁定的时候锁定窗口
+    watch(() => settingsStore.getSetting("window_lock_scheduled"), (newval, oldval) => {
+        if (!newval && oldval) {
+            lockApp()
+        }
+    })
+
+    // 定时窗口锁定控制逻辑
+    watchEffect(() => {
+        clearInterval(interval)
+        log("窗口锁定定时任务成功清除")
+        if (settingsStore.getSetting("window_lock") &&
+            settingsStore.getSetting("window_lock_scheduled") &&
+            settingsStore.getSetting("window_lock_interval")) {
+            interval = setInterval(() => {
+                lockApp()
+            }, settingsStore.getSetting("window_lock_interval") * 1e3 * 60)
+            log("窗口锁定定时任务成功设置")
+        }
+    })
+
     emitter.on("Action::toggleAppLocker", (isReset: boolean) => {
         if (isReset) {
             encryptionStore.setAppLockerKeyEncrypted('')

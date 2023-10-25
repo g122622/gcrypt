@@ -181,7 +181,7 @@ const currentDir = ref(new Addr(""))
 const operationHistory = ref([])
 const itemCache = ref(null)
 const models = reactive({
-    isPropOpening: false
+    isPropOpening: false,
 })
 const addList = [
     {
@@ -344,6 +344,13 @@ const deleteFile = async () => {
     notification.success(`删除文件成功`)
 }
 
+const renameFile = async (oldname, newname) => {
+    if (props.adapter.renameFile) {
+        await props.adapter.renameFile(oldname, newname)
+        notification.success("重命名成功")
+    }
+}
+
 // <UI>
 const handlePropertiesClick = (item?: dirSingleItem) => {
     if (item) {
@@ -383,7 +390,7 @@ const getItemMenuList = (item) => {
                 text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile() } }
             },
             {
-                text: '重命名', icon: 'mdi-rename-box', actions: { onClick: () => { console.log(1) } }
+                text: '重命名', icon: 'mdi-rename-box', actions: { onClick: () => { DialogMgrRef.value.showRenameFileDialog(item.name) } }
             },
             {
                 type: 'divider'

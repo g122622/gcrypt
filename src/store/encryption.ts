@@ -90,7 +90,7 @@ export const useEncryptionStore = defineStore("encryption", {
             emitter.emit("Action::addTab", {
                 name: storeSrc,
                 component: FileMgr,
-                icon: "mdi-folder",
+                icon: "mdi-folder-lock",
                 onClick: () => null,
                 props: { adapter }
             })

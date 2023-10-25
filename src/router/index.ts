@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 
 const routes: Array<RouteRecordRaw> = [
@@ -26,20 +27,12 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import(/* webpackChunkName: "settings" */ '../views/Settings/SettingsView.vue')
     },
     {
-        path: '/files',
-        name: 'files',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "files" */ '../components/FileMgr/FileMgr.vue')
-    },
-    {
         path: '/store',
         name: 'store',
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "store" */ '../views/StoreMgr/StoreMgr.vue')
+        component: () => import(/* webpackChunkName: "store" */ '../views/StoreMgr/StoreMgr.vue'),
     }
 ]
 

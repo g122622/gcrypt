@@ -1,3 +1,4 @@
+/* eslint-disable dot-notation */
 import { createApp } from 'vue';
 import router from './router';
 import { useMainStore } from "./store/main";
@@ -22,6 +23,7 @@ import AdvancedList from "./components/shared/AdvancedList.vue";
 import AdvancedTextField from "./components/shared/AdvancedTextField.vue";
 import ToolBarBase from './components/shared/ToolBarBase.vue';
 import { VDatePicker } from 'vuetify/labs/VDatePicker'
+import LocalFileAdapter from './api/core/adapters/localFiles/adapter';
 
 let pinia;
 
@@ -123,9 +125,23 @@ class Application {
         }, 100)
     }
 
+    private async initGlobalAdapters() {
+        window['LocalFileAdapter'] = new LocalFileAdapter()
+        await window['LocalFileAdapter'].initAdapter("C:/")
+
+        router.addRoute({
+            path: '/side_column_local_file',
+            name: 'side_column_local_file',
+            // route level code-splitting
+            // this generates a separate chunk (about.[hash].js) for this route
+            // which is lazy-loaded when the route is visited.
+            component: () => import(/* webpackChunkName: "files" */ './components/FileMgr/FileMgr.vue'),
+            props: { adapter: window['LocalFileAdapter'] }
+        })
+    }
+
     private initPinia() {
         pinia = createPinia()
-        // eslint-disable-next-line dot-notation
         window['pinia'] = pinia
     }
 
@@ -201,10 +217,11 @@ class Application {
         }, 500))
     }
 
-    public initAll() {
+    public async initAll() {
         const startTime = Date.now()
         loadFonts()
         this.initEvents()
+        await this.initGlobalAdapters()
         this.initPinia()
         this.initVue()
         if (this.MainStore.appVersion !== this.MainStore.appVersionOld) {

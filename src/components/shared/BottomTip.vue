@@ -74,6 +74,9 @@ const handleMouseLeave = () => {
     align-items: center;
     justify-content: center;
 
+    // 为了全局contextmenu的右键点击激发区域在元素之下
+    z-index: 1;
+    position: relative;
 }
 
 .from-where {

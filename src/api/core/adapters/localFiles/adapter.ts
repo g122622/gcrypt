@@ -17,7 +17,7 @@ const forbiddenDirents = ["System Volume Information",
     "WindowsApps",
     "pagefile.sys"]
 
-class LocalFileAdapter extends AdapterBase {
+class LocalFileAdapter implements AdapterBase {
     private currentDirectory: Addr
     private currentFileTable: fileTable
     public adapterGuid: string

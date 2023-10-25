@@ -41,7 +41,7 @@ const isTransparent = ref(false)
 // const offsetY = 0
 interface Props {
     menuList: Array<contextMenuItem>,
-    width: number
+    width: number,
 }
 const props = defineProps<Props>()
 

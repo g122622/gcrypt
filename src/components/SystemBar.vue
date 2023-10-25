@@ -1,12 +1,15 @@
 <template>
-    <v-system-bar window style="-webkit-app-region: drag;padding-right: 0px;" height="32">
+    <v-system-bar window style="-webkit-app-region: drag;padding-right: 0px;overflow: hidden;" height="32">
         <span class="ml-2">隐域-Gcrypt v{{ mainStore.appVersion }}</span>
-        <span v-if="pendingOrRunningTaskAmount" style="margin-left: 5px;"> · {{ pendingOrRunningTaskAmount }} 任务</span>
+        <!-- <span v-if="pendingOrRunningTaskAmount" style="margin-left: 5px;"> · {{ pendingOrRunningTaskAmount }} 任务</span> -->
         <v-chip class="ma-2" color="red" size="x-small" v-if="sharedUtils.env === 'development'">
             dev
         </v-chip>
         <v-chip class="ma-2" color="green" size="x-small" v-if="sharedUtils.env === 'production'">
             prod
+        </v-chip>
+        <v-chip class="ma-2" color="blue" size="x-small" style="margin-left: -5px !important;">
+            等待任务数：{{ pendingOrRunningTaskAmount }}
         </v-chip>
         <v-spacer />
         <div v-ripple class="system-bar-item" v-for=" item  in  itemList.filter(i => !i.hide) " :key="item.name"

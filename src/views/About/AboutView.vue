@@ -1,7 +1,17 @@
 <template>
+    <!-- 顶部工具栏 -->
+    <Teleport to="#ActionToolBar">
+        <ActionToolBarBase ToolbarTitle="关于">
+            <IconBtn icon="mdi-gift" tooltip="捐赠作者" />
+        </ActionToolBarBase>
+    </Teleport>
+
     <v-col>
         <v-alert border="start" color="blue-gray" density="compact" variant="elevated" class="about-msg"
             style="font-size: 15px;">
+            <template #prepend>
+                <img src="./favicon.png" style="width: 150px;">
+            </template>
             <div>
                 Gcrypt（中文名：隐域）是一个基于crypto和openSSL开发的一个数据加密软件，它利用AES加密算法保护你存储在.gcrypt文件中的数据。
             </div>
@@ -18,7 +28,7 @@
                 与VMWare虚拟机的虚拟磁盘文件类似，一个加密库对应物理硬盘上一个.gcrypt文件，但在这个文件中可以包含上万数量的加密文件。这极大方便了网盘传输和数据的搬迁。为此，我专门实现了一个基于链式文件分配树技术的内建文件系统，用于操作加密库。核心代码位于/src/api/core下。为了应对可能出现的复杂文件树结构，我还为文件系统实现了一个粗陋的LRU缓存。
             </div>
             <div>
-                该项目使用electron+vue3全家桶开发，为了复用一些我以前在vue2上的代码，这个项目大概60%的vue组件使用了刻板的选项式API，这是一个大大的遗憾，目前整个项目正在逐渐向组合式API过渡。
+                该项目使用electron+vue3全家桶开发。
             </div>
         </v-alert>
     </v-col>
@@ -112,6 +122,8 @@ const depLibsTableData = [
     { key: `网络请求库`, value: `Axios`, img: "axios.png" },
     { key: `canvas图表绘制`, value: `Chart.js`, img: "chartjs.ico" },
     { key: `轻量级electron数据存储`, value: `electron-store`, img: "nodejs.png" },
+    { key: `齐全美观的图标库`, value: `iconfont`, img: "iconfont.png" },
+    { key: `时间、日期操作库`, value: `dayjs`, img: "nodejs.png" },
 ]
 </script>
 

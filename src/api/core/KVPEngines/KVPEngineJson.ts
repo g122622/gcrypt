@@ -9,7 +9,7 @@ const calcDataJsonSrc = (entryJsonSrc, dataJsonFileName: string) => {
     return foo.join("/")
 }
 
-class KVPEngineJson extends KVPEngineBase {
+class KVPEngineJson implements KVPEngineBase {
     private currentJson = null
     private currentDataJsonSrc: string = null
     private encryptionEngine: EncryptionEngineBase

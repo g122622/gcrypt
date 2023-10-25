@@ -9,8 +9,7 @@
                 <v-container>
                     <v-row>
                         <v-col cols="12">
-                            <AdvancedTextField label="文件夹名称*" prepend-inner-icon="mdi-magnify"
-                                v-model:currentInput="folderName" density="compact" required>
+                            <AdvancedTextField label="文件夹名称*" v-model:currentInput="folderName" density="compact" required>
                             </AdvancedTextField>
                         </v-col>
                         <v-col cols="12" sm="6">
@@ -43,8 +42,7 @@
                 <v-container>
                     <v-row>
                         <v-col cols="12">
-                            <AdvancedTextField label="文件名称*" prepend-inner-icon="mdi-magnify"
-                                v-model:currentInput="fileName" density="compact" required>
+                            <AdvancedTextField label="文件名称*" v-model:currentInput="fileName" density="compact" required>
                             </AdvancedTextField>
                         </v-col>
                         <v-col cols="12" sm="6">
@@ -66,6 +64,35 @@
             </v-card-actions>
         </v-card>
     </v-dialog>
+
+    <!-- 重命名 -->
+    <v-dialog v-model="renameDialogIsOpen" persistent>
+        <v-card density="compact">
+            <v-card-title>
+                <span class="text-h6">重命名</span>
+            </v-card-title>
+            <v-card-text>
+                <v-container>
+                    <v-row>
+                        <v-col cols="12">
+                            <AdvancedTextField label="新的文件名*" v-model:currentInput="newFileName" density="compact" required>
+                            </AdvancedTextField>
+                        </v-col>
+                    </v-row>
+                </v-container>
+                <small>*新的文件名为必填项</small>
+            </v-card-text>
+            <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="blue-darken-1" variant="text" @click="renameDialogIsOpen = false">
+                    关闭，不保存
+                </v-btn>
+                <v-btn color="blue-darken-1" variant="text" @click="handleRenameFile(); renameDialogIsOpen = false">
+                    保存
+                </v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
 <script lang="ts">
@@ -81,8 +108,11 @@ export default defineComponent({
         return {
             fileDialogIsOpen: false,
             folderDialogIsOpen: false,
+            renameDialogIsOpen: false,
             fileName: "new file",
-            folderName: "new folder"
+            folderName: "new folder",
+            oldFileName: "",
+            newFileName: ""
         }
     },
     methods: {
@@ -92,12 +122,20 @@ export default defineComponent({
         showAddFileDialog() {
             this.fileDialogIsOpen = true
         },
+        showRenameFileDialog(oldFileName) {
+            this.oldFileName = oldFileName
+            this.renameDialogIsOpen = true
+        },
         async handleSaveFile() {
             await this.adapter.writeFile(this.fileName, Buffer.from(''))
             this.refresh()
         },
         async handleSaveFolder() {
             await this.adapter.mkdir(this.folderName)
+            this.refresh()
+        },
+        async handleRenameFile() {
+            await this.adapter.renameFile(this.oldFileName, this.newFileName)
             this.refresh()
         }
     }

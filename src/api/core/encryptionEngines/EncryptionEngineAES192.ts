@@ -8,7 +8,7 @@ const EncryptConfig = {
     iv: new Uint8Array([86, 215, 125, 103, 83, 172, 176, 47, 18, 209, 131, 206, 48, 61, 70, 196])
 }
 
-class EncryptionEngineAES192 extends EncryptionEngineBase {
+class EncryptionEngineAES192 implements EncryptionEngineBase {
     private currentPwd: string = null
 
     public init(pwd) {
