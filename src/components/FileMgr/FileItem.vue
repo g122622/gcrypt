@@ -1,18 +1,25 @@
 <template>
     <div class="file-item" :class="fileItemClassList" v-ripple ref="fileItemElement" @click="handleClick()"
-        @click.right="handleClick(true)">
-        <v-tooltip activator="parent" location="right" open-delay="500">
+        @click.right="handleClick(true)" v-intersect="{
+            handler: onIntersect,
+            options: {
+                threshold: 0
+            }
+        }" :style="{ opacity: isIntersecting ? 1 : 0 }">
+        <!-- 若在视口范围内，则渲染以下组件 -->
+        <v-tooltip activator="parent" location="right" open-delay="500" v-if="isIntersecting">
             {{ singleFileItem.name }}
         </v-tooltip>
         <!-- 前置内容 -->
         <div style="display: flex;justify-content: flex-start;align-items: center;"
-            :style="{ flexDirection: (displayMode === 1 ? 'column' : 'row') }">
+            :style="{ flexDirection: (displayMode === 1 ? 'column' : 'row') }" v-if="isIntersecting">
             <div v-if="singleFileItem.type === `folder`">
-                <img :src="`./assets/fileTypes/folder.png`" class="file-types-image" />
+                <img :src="`./assets/fileTypes/folder.png`" class="file-types-image" loading="lazy" />
             </div>
             <div v-if="singleFileItem.type === `file`">
-                <img v-if="thumbnail" :src="toDataURL(thumbnail)" class="file-thumbnail-img" />
-                <img v-else :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`" class="file-types-image" />
+                <img v-if="thumbnail" :src="toDataURL(thumbnail)" class="file-thumbnail-img" loading="lazy" />
+                <img v-else :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`" class="file-types-image"
+                    loading="lazy" />
             </div>
             <div class="file-name">
                 {{ singleFileItem.name }}
@@ -20,10 +27,10 @@
         </div>
 
         <!-- 自定义内容插槽 -->
-        <slot></slot>
+        <slot v-if="isIntersecting"></slot>
 
         <!-- 尾置内容 -->
-        <div>
+        <div v-if="isIntersecting">
             <!-- <IconBtn tooltip="更多" icon="mdi-dots-vertical" :onClick="handleClickMore" /> -->
             <div class="file-meta">
                 <div v-if="displayMode === 0">
@@ -36,14 +43,13 @@
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
 <script setup lang="ts">
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import getFileType from "@/utils/getFileType";
-import { computed } from "vue";
+import { computed, ref, nextTick } from "vue";
 import { useMainStore } from "@/store/main"
 import prettyBytes from "@/utils/prettyBytes";
 
@@ -57,6 +63,7 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['selected', 'unselected'])
 const mainStore = useMainStore()
+const isIntersecting = ref<boolean>(false)
 
 const toDataURL = (str: string) => {
     const prefix = 'data:image/jpg;base64,'
@@ -98,6 +105,14 @@ const handleClick = (isRightClick = false) => {
         emit("selected")
     }
 }
+
+const onIntersect = (isIntersectingArg /* , entries, observer */) => {
+    // setTimeout是很重要的优化，降低并发
+    setTimeout(() => {
+        isIntersecting.value = isIntersectingArg
+    }, 0)
+}
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

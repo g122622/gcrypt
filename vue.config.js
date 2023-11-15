@@ -4,6 +4,7 @@ const webpack = require('webpack');
 const path = require('path');
 const process = require("process")
 const os = require('os');
+const BytenodeWebpackPlugin = require('./src/plugins/electron-bytenode-webpack-plugin')
 
 // 生成从minNum到maxNum的随机数
 const randomRange = function (minNum, maxNum) {
@@ -75,7 +76,7 @@ module.exports = defineConfig({
             'https': 'require("https")',
             'http': 'require("http")',
             'path': 'require("path")',
-            'F:/gcrypt/gcrypt/lib/binding/napi-v6-win32-unknown-x64/node_sqlite3.node': 'require("F:/gcrypt/gcrypt/lib/binding/napi-v6-win32-unknown-x64/node_sqlite3.node")'
+            'bytenode': 'require("bytenode")',
         }
         config.resolve = {
             extensions: ['.js', '.vue', '.json', '.ts'],
@@ -96,6 +97,8 @@ module.exports = defineConfig({
             COMPILE_CPU: JSON.stringify(JSON.stringify(os.cpus(), undefined, 4)),
             COMPILE_MEM: JSON.stringify(`total: ${prettyBytes(totalMem)}, free: ${prettyBytes(freeMem)}`)
         }))
+
+        config.plugins.push(new BytenodeWebpackPlugin())
     },
     chainWebpack: config => {
         function resolvePath(...dir) {

@@ -1,0 +1,25 @@
+{
+  "name": "electron-bytenode-webpack-plugin",
+  "version": "1.1.2",
+  "description": "Compiles electron JS files to V8 bytecode",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bytenode": "^1.1.1"
+  },
+  "keywords": [
+    "electron",
+    "compile",
+    "bytecode",
+    "webpack",
+    "webpack-plugin",
+    "bytenode"
+  ],
+  "__npminstall_done": true,
+  "_from": "electron-bytenode-webpack-plugin@1.1.2",
+  "_resolved": "https://registry.npmmirror.com/electron-bytenode-webpack-plugin/-/electron-bytenode-webpack-plugin-1.1.2.tgz"
+}
