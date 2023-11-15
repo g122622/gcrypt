@@ -40,7 +40,7 @@ class BytenodeWebpackPlugin {
                             // 检测到该bundle采取懒加载策略
                             const launcherSource = `
                                   try {
-                                    require(path.join(process.resourcesPath, 'app', '${filename.replace('.js', '.jsc')}'))
+                                    require(path.join(process.resourcesPath, 'app.asar', '${filename.replace('.js', '.jsc')}'))
                                 } catch (error) {
                                     alert("require jsc error:" + error.stack)
                                 }`
