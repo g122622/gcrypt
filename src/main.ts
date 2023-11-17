@@ -25,6 +25,14 @@ import ToolBarBase from './components/shared/ToolBarBase.vue';
 import LocalFileAdapter from './api/core/adapters/localFiles/adapter';
 
 let pinia;
+/**
+ * 因为 node.js V17版本中最近发布的OpenSSL3.0,
+ * 而OpenSSL3.0对允许算法和密钥大小增加了严格的限制，
+ * 可能会对生态系统造成一些影响。
+ * 故此以前的项目在升级 nodejs 版本后会报错。
+ * 因此gcrypt项目坚持使用nodejs v16，不再更新nodejs版本和electron版本。
+ * 这样做同时还可以确保编译出来的v8字节码在electron上node版本一致。
+ */
 
 /**
  * 常见BUG合集
@@ -33,6 +41,7 @@ let pinia;
  * 3.async函数调用时没有加await
  * 4.await后的括号
  */
+
 /*
 一.事件命名规范:
     1.UI事件 只传达某个UI状态改变的信息
