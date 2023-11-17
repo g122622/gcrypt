@@ -22,7 +22,6 @@ import DialogGenerator from "./components/shared/DialogGenerator.vue";
 import AdvancedList from "./components/shared/AdvancedList.vue";
 import AdvancedTextField from "./components/shared/AdvancedTextField.vue";
 import ToolBarBase from './components/shared/ToolBarBase.vue';
-import { VDatePicker } from 'vuetify/labs/VDatePicker'
 import LocalFileAdapter from './api/core/adapters/localFiles/adapter';
 
 let pinia;
@@ -46,7 +45,7 @@ let pinia;
         LifeCycle::clearMem
 */
 
-class Application {
+class ApplicationRenderer {
     private AppInstance
     private MainStore
     private SettingsStore
@@ -158,7 +157,6 @@ class Application {
             .component("DialogGenerator", DialogGenerator)
             .component("AdvancedList", AdvancedList)
             .component("ToolBarBase", ToolBarBase)
-            .component("VDatePicker", VDatePicker)
             .component("AdvancedTextField", AdvancedTextField)
 
         // 使用插件
@@ -246,5 +244,5 @@ class Application {
 }
 
 (function () {
-    const GcryptApp = new Application()
+    const GcryptApp = new ApplicationRenderer()
 })()
