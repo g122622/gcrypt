@@ -43,7 +43,7 @@ class BytenodeWebpackPlugin {
                             // 检测到该bundle采取懒加载策略
                             const launcherSource = `
                                   try {
-                                    require(path.join(process.resourcesPath, 'app', '${filename.replace('.js', '.jsc')}'))
+                                    require(path.join(process.resourcesPath, 'app.asar', '${filename.replace('.js', '.jsc')}'))
                                 } catch (error) {
                                     alert("require jsc error:" + error.stack)
                                 }`
@@ -83,7 +83,7 @@ class BytenodeWebpackPlugin {
                                 prefix += "const path=require('path');let bytenode=require('bytenode');"
                             }
 
-                            let jscpath = "path.join(process.resourcesPath,'app', '" + jsc + "')"
+                            let jscpath = "path.join(process.resourcesPath,'app.asar', '" + jsc + "')"
                             let replace = prefix + "try{require(" + jscpath + ")}catch(error){alert(\"require jsc error:\"+error.stack)}</script>"
                             source = source.replace(rs_exec[0], replace)
                             i++
