@@ -17,7 +17,9 @@
     "bytecode",
     "webpack",
     "webpack-plugin",
-    "bytenode"
+    "bytenode",
+    "vue",
+    "vue-cli"
   ],
   "__npminstall_done": true,
   "_from": "electron-bytenode-webpack-plugin@1.1.2",
