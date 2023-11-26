@@ -15,7 +15,7 @@
 
     <v-col id="settings-container">
         <div v-for="category in cats" :key="category">
-            <v-card class="rounded-lg">
+            <v-card style="border-radius: 15px !important;">
                 <v-list lines="two">
                     <v-list-subheader v-if="category">{{ category }}</v-list-subheader>
                     <v-list-subheader v-else>未分组</v-list-subheader>

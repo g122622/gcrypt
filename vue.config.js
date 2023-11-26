@@ -5,6 +5,7 @@ const path = require('path');
 const process = require("process")
 const os = require('os');
 const BytenodeWebpackPlugin = require('./src/plugins/electron-bytenode-webpack-plugin')
+const fs = require("fs-extra")
 
 // 生成从minNum到maxNum的随机数
 const randomRange = function (minNum, maxNum) {
@@ -62,6 +63,13 @@ module.exports = defineConfig({
                     oneClick: false,
                     allowToChangeInstallationDirectory: true,
                     displayLanguageSelector: true,
+                },
+                async afterPack(context) {
+                    console.warn("即将开始")
+                    const outputMoudlePath = path.join(context.appOutDir, 'resources', 'app.asar', 'node_modules', "bytenode")
+                    const srcModulePath = path.join(context.packager.info._buildResourcesDir, 'node_modules', "bytenode")
+                    console.warn(srcModulePath, outputMoudlePath)
+                    await fs.copy(srcModulePath, outputMoudlePath, { overwrite: true })
                 }
             },
         },

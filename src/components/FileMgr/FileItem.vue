@@ -7,49 +7,51 @@
             }
         }" :style="{ opacity: isIntersecting ? 1 : 0 }">
         <!-- 若在视口范围内，则渲染以下组件 -->
-        <v-tooltip activator="parent" location="right" open-delay="500" v-if="isIntersecting">
-            {{ singleFileItem.name }}
-        </v-tooltip>
-        <!-- 前置内容 -->
-        <div style="display: flex;justify-content: flex-start;align-items: center;"
-            :style="{ flexDirection: (displayMode === 1 ? 'column' : 'row') }" v-if="isIntersecting">
-            <div v-if="singleFileItem.type === `folder`">
-                <img :src="`./assets/fileTypes/folder.png`" class="file-types-image" loading="lazy" />
-            </div>
-            <div v-if="singleFileItem.type === `file`">
-                <img v-if="thumbnail" :src="toDataURL(thumbnail)" class="file-thumbnail-img" loading="lazy" />
-                <img v-else :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`" class="file-types-image"
-                    loading="lazy" />
-            </div>
-            <div class="file-name">
+        <template v-if="isIntersecting">
+            <v-tooltip activator="parent" location="right" open-delay="500">
                 {{ singleFileItem.name }}
-            </div>
-        </div>
-
-        <!-- 自定义内容插槽 -->
-        <slot v-if="isIntersecting"></slot>
-
-        <!-- 尾置内容 -->
-        <div v-if="isIntersecting">
-            <!-- <IconBtn tooltip="更多" icon="mdi-dots-vertical" :onClick="handleClickMore" /> -->
-            <div class="file-meta">
-                <div v-if="displayMode === 0">
-                    created: {{ new Date(singleFileItem.meta.createdTime).toLocaleString() }}
-                    <br />
-                    modified: {{ new Date(singleFileItem.meta.modifiedTime).toLocaleString() }}
+            </v-tooltip>
+            <!-- 前置内容 -->
+            <div style="display: flex;justify-content: flex-start;align-items: center;"
+                :style="{ flexDirection: (displayMode === 1 ? 'column' : 'row') }">
+                <div v-if="singleFileItem.type === `folder`">
+                    <img :src="`./assets/fileTypes/folder.png`" class="file-types-image" loading="lazy" />
                 </div>
-                <div v-else-if="displayMode === 1 && props.singleFileItem.type === 'file'">
-                    {{ prettyBytes(props.singleFileItem.meta.size, 2) }}
+                <div v-if="singleFileItem.type === `file`">
+                    <img v-if="thumbnail" :src="toDataURL(thumbnail)" class="file-thumbnail-img" loading="lazy" />
+                    <img v-else :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`" class="file-types-image"
+                        loading="lazy" />
+                </div>
+                <div class="file-name">
+                    {{ singleFileItem.name }}
                 </div>
             </div>
-        </div>
+
+            <!-- 自定义内容插槽 -->
+            <slot></slot>
+
+            <!-- 尾置内容 -->
+            <div>
+                <!-- <IconBtn tooltip="更多" icon="mdi-dots-vertical" :onClick="handleClickMore" /> -->
+                <div class="file-meta">
+                    <div v-if="displayMode === 0">
+                        created: {{ new Date(singleFileItem.meta.createdTime).toLocaleString() }}
+                        <br />
+                        modified: {{ new Date(singleFileItem.meta.modifiedTime).toLocaleString() }}
+                    </div>
+                    <div v-else-if="displayMode === 1 && props.singleFileItem.type === 'file'">
+                        {{ prettyBytes(props.singleFileItem.meta.size, 2) }}
+                    </div>
+                </div>
+            </div>
+        </template>
     </div>
 </template>
 
 <script setup lang="ts">
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import getFileType from "@/utils/getFileType";
-import { computed, ref, nextTick } from "vue";
+import { computed, ref } from "vue";
 import { useMainStore } from "@/store/main"
 import prettyBytes from "@/utils/prettyBytes";
 

@@ -82,16 +82,16 @@ class BytenodeWebpackPlugin {
                             if (i == 0) {
                                 prefix += `
                                 const path=require('path')
-                                const Module = require('module')
-                                const PATH_APP_NODE_MODULES = path.join(__dirname, '..', 'extra', 'node_modules')
+                                // const Module = require('module')
+                                // const PATH_APP_NODE_MODULES = path.join(__dirname, '..', 'extra', 'node_modules')
 
-                                // for electron 16 or lower
-                                Module.globalPaths.push(PATH_APP_NODE_MODULES)
+                                // // for electron 16 or lower
+                                // Module.globalPaths.push(PATH_APP_NODE_MODULES)
 
-                                // for electron 17 or higher
-                                const nodeModulePaths = Module._nodeModulePaths
-                                Module._nodeModulePaths = (from) =>
-                                    nodeModulePaths(from).concat([PATH_APP_NODE_MODULES])
+                                // // for electron 17 or higher
+                                // const nodeModulePaths = Module._nodeModulePaths
+                                // Module._nodeModulePaths = (from) =>
+                                //     nodeModulePaths(from).concat([PATH_APP_NODE_MODULES])
                                 
                                 const bytenode=require('bytenode');
                                 `

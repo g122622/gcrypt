@@ -1,6 +1,6 @@
 <template>
     <v-text-field v-model="currentInput" clear-icon="mdi-close-circle" clearable :required="required"
-        :type="models.showText ? 'text' : 'password'" style="height: 45px;">
+        :type="models.showText ? 'text' : 'password'" variant="solo">
         <template #append-inner>
             <IconBtn icon="mdi-auto-fix" tooltip="自动填充" size="small" varient="plain">
                 <!-- 自动填充选择菜单 -->
@@ -70,4 +70,14 @@ const clearPickDate = async () => {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less"></style>
+<style scoped lang="less">
+@inputHeight: 45px;
+
+:deep(.v-field) {
+    height: @inputHeight;
+}
+
+:deep(.v-input__details) {
+    display: none;
+}
+</style>
