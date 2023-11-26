@@ -33,7 +33,7 @@ const defaultSettings = Object.freeze(<Array<settingItem>>[
         type: SettingTypes.slider,
         value: "0",
         title: "背景图片模糊度",
-        des: "给背景图加上指定半径的高斯模糊filter，并不会修改原文件",
+        des: "给背景图加上模糊filter，不会修改原文件",
         category: "外观",
         extra: {
             maxLimitation: 100,
@@ -61,6 +61,14 @@ const defaultSettings = Object.freeze(<Array<settingItem>>[
         category: "外观"
     },
     {
+        name: "side_column_open_by_default",
+        type: SettingTypes.switcher,
+        value: true,
+        title: "侧栏默认展开",
+        des: "设置启动应用的时候，侧边栏的默认展开状态",
+        category: "外观"
+    },
+    {
         name: "use_single_instance_lock",
         type: SettingTypes.switcher,
         value: true,
@@ -79,7 +87,7 @@ const defaultSettings = Object.freeze(<Array<settingItem>>[
     {
         name: "on_top",
         type: SettingTypes.switcher,
-        value: true,
+        value: false,
         title: "窗口悬浮顶层",
         des: "没什么好说的",
         category: "通用",

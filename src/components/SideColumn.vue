@@ -1,7 +1,10 @@
 <template>
-    <v-navigation-drawer v-model="isSideDrawerOpen" :rail="isSideDrawerRail" permanent width="200">
-        <v-list-item prepend-avatar="./assets/avatar-ss.jpg" title="g122622" nav
-            @click.stop="isSideDrawerRail = !isSideDrawerRail">
+    <v-navigation-drawer :rail="isSideDrawerRail" permanent width="200">
+        <v-list-item nav @click.stop="isSideDrawerRail = !isSideDrawerRail">
+            <template #prepend>
+                <IconBtn icon="mdi-chevron-right" size="small"
+                    :style="{ transform: isSideDrawerRail ? 'rotate(0turn)' : 'rotate(0.5turn)' }"></IconBtn>
+            </template>
         </v-list-item>
         <v-divider></v-divider>
         <!-- 静态标签页 -->
@@ -32,11 +35,12 @@ import TabsMgr from '@/components/TabsMgr.vue';
 import TaskMgr from "./TaskMgr.vue";
 import FileStateManager from "@/components/FileStateManager.vue";
 import { useRouter, useRoute } from 'vue-router';
+import { useSettingsStore } from "@/store/settings"
 
+const settingsStore = useSettingsStore()
 const router = useRouter()
 const route = useRoute()
-const isSideDrawerOpen = ref<boolean>(true)
-const isSideDrawerRail = ref<boolean>(true)
+const isSideDrawerRail = ref<boolean>(!settingsStore.getSetting("side_column_open_by_default"))
 
 const sideColumnMainItems =
     [

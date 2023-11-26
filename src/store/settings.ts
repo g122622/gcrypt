@@ -41,7 +41,7 @@ export const useSettingsStore = defineStore("settings", {
             try {
                 return this.settings.find(item => item.name === name).value
             } catch (e) {
-                this.resetSettings()
+                this.updateSettings()
             }
         },
         hasSetting(name: string) {
