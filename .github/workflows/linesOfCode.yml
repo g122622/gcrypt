@@ -1,16 +1,23 @@
-on: [push]
-name: Run Test
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '25 18 * * 1'
+    
+name: Lines Of Code
 
 jobs:
-  hello_world_job:
+  loc_job:
     runs-on: ubuntu-latest
-    name: Test Run
+    name: Lines Of Code
     steps:
       - name: Checkout
         uses: actions/checkout@v1
 
       - name: Launch the local action
-        uses: ./ # Uses an action in the root directory
+        uses: shadowmoose/GHA-LoC-Badge@1.0.0
         id: badge
         with:
           debug: true
