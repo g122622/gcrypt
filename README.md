@@ -1,3 +1,5 @@
+![](https://github.com/g122622/gcrypt/blob/image-data/badge.svg)
+
 # gcrypt
 
 这是我高中时期做的项目。总的来说，隐域是一个基于OpenSSL的数据加密软件，用来加密和存放那些你觉得应该加密的文件。
