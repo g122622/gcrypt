@@ -17,8 +17,8 @@ abstract class AdapterBase {
     public abstract getCurrentFileTable(): Promise<fileTable>
     public abstract getCurrentDirectory(): Addr
     public abstract renameFile?: (oldname: string, newname: string, dir?: Addr) => Promise<void>
-    public abstract copyFile?: (src: Addr, dst: Addr) => Promise<void>
-    public abstract cutFile?: (src: Addr, dst: Addr) => Promise<void>
+    public abstract copyFile?: (filename: string, srcdir: Addr, dstdir: Addr) => Promise<void>
+    public abstract moveFile?: (filename: string, srcdir: Addr, dstdir: Addr) => Promise<void>
 }
 
 export default AdapterBase

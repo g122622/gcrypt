@@ -1,4 +1,5 @@
 import Task from '@/api/Task'
+import notification from '@/api/notification'
 import { defineStore } from 'pinia'
 
 export const useTaskStore = defineStore("task", {
@@ -15,7 +16,15 @@ export const useTaskStore = defineStore("task", {
                 this.taskPool.push(task)
             }
             if (options?.runImmediately) {
-                task.run() // do not await
+                task.run().then(() => {
+                    if (options.runImmediately) {
+                        notification.success(`任务 ${task.name}，ID ${task.guid} 运行成功`)
+                    }
+                }).catch((reason) => {
+                    if (options.runImmediately) {
+                        notification.error(`任务 ${task.name}，ID ${task.guid} 运行失败:` + JSON.stringify(reason))
+                    }
+                })
             }
         },
         async runTasks(count?: number) {

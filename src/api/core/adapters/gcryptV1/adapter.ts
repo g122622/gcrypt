@@ -277,6 +277,12 @@ class GcryptV1Adapter implements AdapterBase {
         await this.changeCurrentDirectory(oldDir)
     }
 
+    /**
+     * 重命名文件
+     * @param oldname
+     * @param newname
+     * @param dir
+     */
     public async renameFile(oldname: string, newname: string, dir?: Addr) {
         let oldDir = this.currentDirectory
         await this.changeCurrentDirectory(dir)
@@ -290,6 +296,61 @@ class GcryptV1Adapter implements AdapterBase {
             newDirItem.meta.modifiedTime = Date.now()
             this.currentFileTable.items.push(newDirItem)
             // 更新缓存
+            this._updateCache()
+            // [本地]保存更新后的文件列表到本地
+            await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
+        }
+
+        await this.changeCurrentDirectory(oldDir)
+    }
+
+    /**
+     * 复制文件
+     * @param filename
+     * @param srcdir
+     * @param dstdir
+     */
+    public async copyFile(filename: string, srcdir: Addr, dstdir: Addr) {
+        let oldDir = this.currentDirectory
+        await this.changeCurrentDirectory(srcdir)
+
+        if (await this.exists(filename)) {
+            // [内存]获取文件名对应的src目录项
+            const srcFileItem = this.currentFileTable.items.find(item => item.name === filename)
+            // [内存]修改dst文件表
+            await this.changeCurrentDirectory(dstdir)
+            this.currentFileTable.items.push(srcFileItem)
+            // 更新缓存
+            this._updateCache()
+            // [本地]保存更新后的文件列表到本地
+            await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
+        }
+
+        await this.changeCurrentDirectory(oldDir)
+    }
+
+    /**
+    * 移动文件
+    * warning：涉及到两个目录的改写，需要先后两次更新缓存！
+    * @param filename
+    * @param srcdir
+    * @param dstdir
+    */
+    public async moveFile(filename: string, srcdir: Addr, dstdir: Addr) {
+        let oldDir = this.currentDirectory
+        await this.changeCurrentDirectory(srcdir)
+
+        if (await this.exists(filename)) {
+            // [内存]获取文件名对应的src目录项，并且删除
+            const idx = this.currentFileTable.items.findIndex(item => item.name === filename)
+            this.currentFileTable.items.splice(idx, 1)
+            const srcFileItem = this.currentFileTable.items[idx]
+            // 第一次更新缓存
+            this._updateCache()
+            // [内存]修改dst文件表
+            await this.changeCurrentDirectory(dstdir)
+            this.currentFileTable.items.push(srcFileItem)
+            // 第二次更新缓存
             this._updateCache()
             // [本地]保存更新后的文件列表到本地
             await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))

@@ -128,6 +128,8 @@
                 <!-- 底部栏 -->
                 <BottomBar :currentFileTableForRender="currentFileTableForRender" :selectedItems="selectedItems"
                     @selectAll="selectAll()" @unSelectAll="unSelectAll()" @reverseSelection="reverseSelection()">
+                    <ClipBoard ref="ClipBoardRef" :adapter="adapter" :current-dir="currentDir"
+                        :selected-items="selectedItems"></ClipBoard>
                 </BottomBar>
             </v-main>
         </v-app>
@@ -164,6 +166,7 @@ import ContextMenu from "../shared/ContextMenu.vue";
 import FileItem from "./FileItem.vue";
 import DialogMgr from "./DialogMgr.vue";
 import BottomBar from "./BottomBar.vue";
+import ClipBoard from "./ClipBoard.vue";
 
 interface Props {
     adapter: AdapterBase,
@@ -199,6 +202,7 @@ const addList = [
         icon: "mdi-file"
     }
 ]
+const ClipBoardRef = ref()
 
 // <生命周期&初始化>
 const initAll = () => {
@@ -346,8 +350,9 @@ const deleteFile = async () => {
 
 const renameFile = async (oldname, newname) => {
     if (props.adapter.renameFile) {
-        await props.adapter.renameFile(oldname, newname)
-        notification.success("重命名成功")
+        taskStore.addTask(new Task(async () => {
+            await props.adapter.renameFile(oldname, newname)
+        }, `重命名文件 ${oldname} -> ${newname}`), { runImmediately: true })
     }
 }
 
@@ -387,6 +392,15 @@ const getItemMenuList = (item) => {
                 text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemClick(item) } }
             },
             {
+                type: 'divider'
+            },
+            {
+                text: '复制', icon: 'mdi-content-copy', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('copy') } }
+            },
+            {
+                text: '移动', icon: 'mdi-file-move-outline', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('move') } }
+            },
+            {
                 text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile() } }
             },
             {
@@ -400,6 +414,12 @@ const getItemMenuList = (item) => {
             }]
     } else {
         return [
+            {
+                text: '复制', icon: 'mdi-content-copy', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('copy') } }
+            },
+            {
+                text: '移动', icon: 'mdi-file-move-outline', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('move') } }
+            },
             {
                 text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile() } }
             },

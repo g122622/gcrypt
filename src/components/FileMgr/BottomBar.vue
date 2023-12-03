@@ -5,8 +5,11 @@
             ，已选中 {{ props.selectedItems.size }} 项
         </div>
         <v-spacer></v-spacer>
-        <IconBtn variant="plain" size="x-small" icon="mdi-select-all" tooltip="全选" @click="emit('selectAll')"></IconBtn>
-        <IconBtn variant="plain" size="x-small" icon="mdi-selection-off" tooltip="全不选" @click="emit('unSelectAll')">
+        <slot></slot>
+        <IconBtn variant="plain" size="x-small" icon="mdi-select-all" tooltip="全选" @click="emit('selectAll')"
+            v-if="props.selectedItems.size < props.currentFileTableForRender.length"></IconBtn>
+        <IconBtn variant="plain" size="x-small" icon="mdi-selection-off" tooltip="全不选" @click="emit('unSelectAll')"
+            v-if="props.selectedItems.size > 0">
         </IconBtn>
         <IconBtn variant="plain" size="x-small" icon="mdi-select-compare" tooltip="反选" @click="emit('reverseSelection')">
         </IconBtn>
