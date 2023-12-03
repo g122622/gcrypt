@@ -21,7 +21,7 @@ on:
 jobs:
   eslint:
     name: Run eslint scanning
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       security-events: write
@@ -29,10 +29,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+        
+      # step2: install node env
+      - name: Install Node.js
+        uses: actions/setup-node@v2.5.2
+        with:
+          node-version: 16
+          
       - name: Install ESLint
         run: |
-          npm install eslint
+          npm install eslint --legacy-peer-deps
 
       - name: Run ESLint
         run: npm run lint .
