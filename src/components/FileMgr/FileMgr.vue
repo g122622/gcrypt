@@ -17,7 +17,7 @@
         </template>
     </DialogGenerator>
 
-    <div id="file_mgr_container" v-if="!isLoading" @dragover="e => e.preventDefault()" @drop="e => handleExtDrop(e)">
+    <div id="file_mgr_container" @dragover="e => e.preventDefault()" @drop="e => handleExtDrop(e)">
         <v-app>
             <!-- 顶部工具栏 -->
             <v-app-bar density="compact">
@@ -91,7 +91,7 @@
             <v-main style="display: block; height: 100%;">
                 <div style="overflow-y: scroll;overflow-x: hidden;"
                     :style="{ height: props.height ?? 'calc(100% - 63px)' }">
-                    <div v-if="currentFileTableForRender.length > 0">
+                    <div v-if="currentFileTableForRender.length > 0 && !isLoading">
                         <!-- <TransitionGroup name="file-item-transition"> -->
                         <div v-for="(item, index) in currentFileTableForRender" :key="item.key">
                             <FileItem :displayMode="viewOptions.itemDisplayMode" :singleFileItem="item" :index="index"
@@ -104,10 +104,13 @@
                         </div>
                         <!-- </TransitionGroup> -->
                     </div>
-                    <div v-else
+                    <div v-else-if="currentFileTableForRender.length === 0 && !isLoading"
                         style="display: flex; justify-content: center; flex-direction: column; align-items: center;">
                         <img src="./assets/fileMgr/404.png" style="width:270px;" />
                         当前目录下没有文件
+                    </div>
+                    <div v-else style="display: flex;flex-direction: column;align-items: center;margin-top: 20px;">
+                        <v-progress-circular indeterminate color="primary" bg-color="rgba(0,0,0,0)"></v-progress-circular>
                     </div>
                     <BottomTip></BottomTip>
                     <ContextMenu :width="200" v-if="options.useCtxMenu" :menuList="[
@@ -133,9 +136,6 @@
                 </BottomBar>
             </v-main>
         </v-app>
-    </div>
-    <div v-if="isLoading" style="display: flex;flex-direction: column;align-items: center;margin-top: 20px;">
-        <v-progress-circular indeterminate color="primary" bg-color="rgba(0,0,0,0)"></v-progress-circular>
     </div>
 </template>
 
