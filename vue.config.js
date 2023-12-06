@@ -98,7 +98,7 @@ module.exports = defineConfig({
             COMPILE_CPU: JSON.stringify(JSON.stringify(os.cpus(), undefined, 4)),
             COMPILE_MEM: JSON.stringify(`total: ${prettyBytes(totalMem)}, free: ${prettyBytes(freeMem)}`)
         }))
-
+        console.log(JSON.stringify(os.cpus(), undefined, 4))
         config.plugins.push(new BytenodeWebpackPlugin())
     },
     chainWebpack: config => {
