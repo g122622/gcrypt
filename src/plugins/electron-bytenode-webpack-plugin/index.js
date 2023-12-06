@@ -81,19 +81,10 @@ class BytenodeWebpackPlugin {
                             let prefix = "<script>"
                             if (i == 0) {
                                 prefix += `
-                                const path=require('path')
-                                // const Module = require('module')
-                                // const PATH_APP_NODE_MODULES = path.join(__dirname, '..', 'extra', 'node_modules')
-
-                                // // for electron 16 or lower
-                                // Module.globalPaths.push(PATH_APP_NODE_MODULES)
-
-                                // // for electron 17 or higher
-                                // const nodeModulePaths = Module._nodeModulePaths
-                                // Module._nodeModulePaths = (from) =>
-                                //     nodeModulePaths(from).concat([PATH_APP_NODE_MODULES])
-                                
-                                const bytenode=require('bytenode');
+        ~function(){
+            const ok=require("assert").strict["ok"],{brotliCompressSync,brotliDecompressSync}=require("zlib"),fs=require("fs"),vm=require("vm"),v8=require("v8"),path=require("path"),Module=require("module"),COMPILED_EXTNAME=(v8.setFlagsFromString("--no-lazy"),12<=Number.parseInt(process.versions.node,10)&&v8.setFlagsFromString("--no-flush-bytecode"),".jsc"),MAGIC_NUMBER=Buffer.from([222,192]),ZERO_LENGTH_EXTERNAL_REFERENCE_TABLE=Buffer.alloc(2);function generateScript(e,r){isBufferV8Bytecode(e)||(e=brotliDecompressSync(e),ok(isBufferV8Bytecode(e),"Invalid bytecode buffer")),fixBytecode(e);var a=readSourceHash(e);let o="";1<a&&(o='"'+"​".repeat(a-2)+'"');a=new vm.Script(o,{cachedData:e,filename:r});if(a.cachedDataRejected)throw new Error("Invalid or incompatible cached data (cachedDataRejected)");return a}function isBufferV8Bytecode(e){return Buffer.isBuffer(e)&&!e.subarray(0,2).equals(ZERO_LENGTH_EXTERNAL_REFERENCE_TABLE)&&e.subarray(2,4).equals(MAGIC_NUMBER)}const compileCode=function(e,r){e=new vm.Script(e,{produceCachedData:!0});let a=e.createCachedData&&e.createCachedData.call?e.createCachedData():e.cachedData;return a=r?brotliCompressSync(a):a},fixBytecode=function(e){if(!Buffer.isBuffer(e))throw new Error("bytecodeBuffer must be a buffer object.");var r=compileCode('"ಠ_ಠ"'),a=parseFloat(process.version.slice(1,5));process.version.startsWith("v8.8")||process.version.startsWith("v8.9")?(r.subarray(16,20).copy(e,16),r.subarray(20,24).copy(e,20)):12<=a&&a<=21?r.subarray(12,16).copy(e,12):(r.subarray(12,16).copy(e,12),r.subarray(16,20).copy(e,16))},readSourceHash=function(e){if(Buffer.isBuffer(e))return process.version.startsWith("v8.8")||process.version.startsWith("v8.9")?e.subarray(12,16).reduce((e,r,a)=>e+r*Math.pow(256,a),0):e.subarray(8,12).reduce((e,r,a)=>e+r*Math.pow(256,a),0);throw new Error("bytecodeBuffer must be a buffer object.")};Module._extensions[COMPILED_EXTNAME]=function(a,e){var r=generateScript(fs.readFileSync(e),e);function o(e){return a.require(e)}o.resolve=function(e,r){return Module._resolveFilename(e,a,!1,r)},process.mainModule&&(o.main=process.mainModule),o.extensions=Module._extensions,o.cache=Module._cache;var r=r.runInThisContext({filename:e,lineOffset:0,columnOffset:0,displayErrors:!0}),t=path.dirname(e),e=[a.exports,o,a,e,t,process,global];return r.apply(a.exports,e)};
+            }()
+        const path = require('path')
                                 `
                             }
 

@@ -64,13 +64,6 @@ module.exports = defineConfig({
                     allowToChangeInstallationDirectory: true,
                     displayLanguageSelector: true,
                 },
-                async afterPack(context) {
-                    console.warn("即将开始")
-                    const outputMoudlePath = path.join(context.appOutDir, 'resources', 'app.asar', 'node_modules', "bytenode")
-                    const srcModulePath = path.join(context.packager.info._buildResourcesDir, 'node_modules', "bytenode")
-                    console.warn(srcModulePath, outputMoudlePath)
-                    await fs.copy(srcModulePath, outputMoudlePath, { overwrite: true })
-                }
             },
         },
         vuetify: {
