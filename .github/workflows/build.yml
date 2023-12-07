@@ -17,7 +17,7 @@ jobs:
     name: build and release electron app
 
     # the type of machine to run the job on
-    runs-on: [xeon, "${{ matrix.os }}"]
+    runs-on: ["${{ matrix.os }}"]
 
     # create a build matrix for jobs
     strategy:
