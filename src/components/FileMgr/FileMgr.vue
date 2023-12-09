@@ -33,7 +33,7 @@
                         </v-btn>
                     </template>
                     <v-card>
-                        <v-list lines="one" width="300px">
+                        <v-list lines="one" width="400px">
                             <v-list-subheader>布局选项</v-list-subheader>
                             <v-list-item v-for="item in viewOptionsLists" :key="item.name" :title="item.name">
                                 <template #append>
@@ -302,9 +302,17 @@ const importFile = async (files: FileList) => {
     const taskGroupId = sharedUtils.getHash(16)
     for (const file of files) {
         taskStore.addTask(new Task(async () => {
-            const key = await props.adapter.writeFile(getFileName(file.path, true), await fs.readFile(file.path))
-            const tb = await getThumbnail(file.path)
-            await addThumbnail(key, tb)
+            let key: string
+            // 读文件
+            const reader = new FileReader();
+            reader.onload = async function (evt) {
+                const dataBuf: Buffer = Buffer.from(evt.target.result as ArrayBuffer)
+                key = await props.adapter.writeFile(getFileName(file.path, true), dataBuf)
+                // 处理缩略图
+                const tb = await getThumbnail(file.path)
+                await addThumbnail(key, tb)
+            }
+            reader.readAsArrayBuffer(file);
         }, `引入文件 ${file.path}`, taskGroupId), { runImmediately: false })
     }
     try {
@@ -509,6 +517,34 @@ const viewOptionsLists = [
             {
                 title: '启用',
                 icon: "mdi-folder"
+            }
+        ]
+    },
+    {
+        name: '显示缩略图',
+        modelName: 'showThumbnails',
+        list: [
+            {
+                title: '禁用',
+                icon: "mdi-image-off"
+            },
+            {
+                title: '启用',
+                icon: "mdi-image"
+            }
+        ]
+    },
+    {
+        name: '显示隐藏文件',
+        modelName: 'showHiddenItem',
+        list: [
+            {
+                title: '禁用',
+                icon: "mdi-eye-off"
+            },
+            {
+                title: '启用',
+                icon: "mdi-eye"
             }
         ]
     }

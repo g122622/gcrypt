@@ -5,7 +5,6 @@ const path = require('path');
 const process = require("process")
 const os = require('os');
 const BytenodeWebpackPlugin = require('./src/plugins/electron-bytenode-webpack-plugin')
-const fs = require("fs-extra")
 
 // 生成从minNum到maxNum的随机数
 const randomRange = function (minNum, maxNum) {
@@ -37,6 +36,8 @@ function prettyBytes(bytes, decimals) {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
+
+console.log(JSON.stringify(os.cpus(), undefined, 4))
 
 module.exports = defineConfig({
     transpileDependencies: true,
@@ -77,7 +78,6 @@ module.exports = defineConfig({
             'https': 'require("https")',
             'http': 'require("http")',
             'path': 'require("path")',
-            'bytenode': 'require("bytenode")',
         }
         config.resolve = {
             extensions: ['.js', '.vue', '.json', '.ts'],
@@ -98,7 +98,6 @@ module.exports = defineConfig({
             COMPILE_CPU: JSON.stringify(JSON.stringify(os.cpus(), undefined, 4)),
             COMPILE_MEM: JSON.stringify(`total: ${prettyBytes(totalMem)}, free: ${prettyBytes(freeMem)}`)
         }))
-        console.log(JSON.stringify(os.cpus(), undefined, 4))
         config.plugins.push(new BytenodeWebpackPlugin())
     },
     chainWebpack: config => {
