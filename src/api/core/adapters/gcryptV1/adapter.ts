@@ -10,11 +10,9 @@ import calcBufSize from "@/utils/calcBufSize";
 
 class GcryptV1Adapter implements AdapterBase {
     private KVPEngine: KVPEngineBase
-    private encryptionEngine
     private currentDirectory: Addr
     private currentFileTable: fileTable
     private cachedFileTables: Array<{ fileTable: fileTable, dir: Addr }> = []
-    private storageEntrySrc
     public adapterGuid: string
 
     /**
@@ -25,8 +23,6 @@ class GcryptV1Adapter implements AdapterBase {
     public async initAdapter(storageEntrySrc, pwd, KVPEngine: KVPEngineBase, encryptionEngine, adapterGuid = null) {
         this.adapterGuid = adapterGuid ?? sharedUtils.getHash(16)
         this.KVPEngine = KVPEngine
-        this.encryptionEngine = encryptionEngine
-        this.storageEntrySrc = storageEntrySrc
         await this.KVPEngine.init(storageEntrySrc, pwd, encryptionEngine, async (store: KVPEngineBase) => {
             // 若为第一次使用该库，则初始化
             const entryKey = sharedUtils.getHash(32)
@@ -331,7 +327,7 @@ class GcryptV1Adapter implements AdapterBase {
 
     /**
     * 移动文件
-    * warning：涉及到两个目录的改写，需要先后两次更新缓存！
+    * warning：涉及到两个目录的改写，需要先后两次更新缓存，并且保存两次！
     * @param filename
     * @param srcdir
     * @param dstdir
@@ -343,11 +339,12 @@ class GcryptV1Adapter implements AdapterBase {
         if (await this.exists(filename)) {
             // [内存]获取文件名对应的src目录项，并且删除
             const idx = this.currentFileTable.items.findIndex(item => item.name === filename)
-            this.currentFileTable.items.splice(idx, 1)
-            const srcFileItem = this.currentFileTable.items[idx]
+            const srcFileItem = this.currentFileTable.items.splice(idx, 1)[0]
             // 第一次更新缓存
             this._updateCache()
-            // [内存]修改dst文件表
+            // [本地]保存更新后的文件列表到本地
+            await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
+            // [内存]跳转到dst，修改dst文件表
             await this.changeCurrentDirectory(dstdir)
             this.currentFileTable.items.push(srcFileItem)
             // 第二次更新缓存

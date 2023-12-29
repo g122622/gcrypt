@@ -1,15 +1,14 @@
 <template>
     <div id="right-click-area" @click.right="handleRightClick($event)" />
-
-    <Teleport to="#ContextMenuGlobalRenderArea">
+    <Teleport :to="renderTarget">
         <Transition name="ctxmenu-transition">
             <div class='context_menu_container' ref="container"
-                :style="{ marginTop: coordY + 'px', marginLeft: coordX + 'px', width: props.width + 'px', opacity: isTransparent ? '0' : '1' }"
-                v-if="isInDOM">
+                :style="{ top: coordY + 'px', left: coordX + 'px', width: props.width + 'px', opacity: isTransparent ? '0' : '1' }"
+                v-if="isInDOM" v-click-outside="() => { isInDOM = false }">
                 <div v-for="(list, indexi) in computedMenuLists" :key="indexi">
                     <v-list density="compact">
                         <v-list-item v-for="(item, indexj) in list" :key="item.text" :value="indexj"
-                            @click="item.actions.onClick($event)">
+                            @click="item.actions.onClick($event); isInDOM = false;">
                             <template v-slot:prepend>
                                 <v-icon :icon="item.icon"></v-icon>
                             </template>
@@ -28,15 +27,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, nextTick } from "vue"
+import { ref, computed, nextTick } from "vue"
 import contextMenuItem from "@/types/contextMenuItem"
-import emitter from "@/eventBus"
 
 const container = ref<HTMLElement>()
 const coordX = ref<number>(0)
 const coordY = ref<number>(0)
 const isInDOM = ref<boolean>(false)
 const isTransparent = ref(false)
+const renderTarget = document.querySelector('html')
 // const offsetX = 0
 // const offsetY = 0
 interface Props {
@@ -70,19 +69,8 @@ const handleRightClick = async (event) => {
     await nextTick()
     coordX.value = event.pageX + props.width > document.body.offsetWidth ? document.body.offsetWidth - props.width : event.pageX
     coordY.value = event.pageY + height > document.body.offsetHeight ? document.body.offsetHeight - height : event.pageY
-    emitter.emit("UI::contextMenu::createdNewContextMenu")
     isInDOM.value = true
 }
-
-onMounted(() => {
-    emitter.on("UI::contextMenu::clickOutside", () => {
-        isInDOM.value = false
-    })
-})
-
-onUnmounted(() => {
-    emitter.off("UI::contextMenu::clickOutside")
-})
 
 </script>
 
@@ -100,6 +88,8 @@ onUnmounted(() => {
     border-radius: 15px;
     overflow: hidden;
     box-shadow: var(--shadow-x4_hover);
+    z-index: 9999999;
+    position: absolute;
 
 }
 

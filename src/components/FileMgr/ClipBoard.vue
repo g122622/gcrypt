@@ -52,6 +52,7 @@ const addFileItemToClipBoard = (filename: string, srcAddr: Addr, method: 'copy' 
 
 const addSelectedItemsToClipBoard = (method: 'copy' | 'move') => {
     props.selectedItems.forEach((val) => {
+        // name是字符串，传的是拷贝不是引用，无需克隆
         addFileItemToClipBoard(val.name, lodash.cloneDeep(props.currentDir), method)
     })
 }
@@ -75,6 +76,7 @@ const handleAction = (arg: ClipBoardItem) => {
                 await props.adapter.writeFile(arg.filename, buf, props.currentDir)
                 await props.adapter.deleteFile(arg.filename, arg.srcAddr)
             }
+            clipBoardItems.value.splice(clipBoardItems.value.findIndex(item => item === arg), 1)
         }, `移动文件 ${arg.filename}`), { runImmediately: true })
     }
 }

@@ -5,8 +5,8 @@
         <MsgContainer />
         <NotificationManager />
     </div>
-    <!-- 右键菜单全局绘制区域 -->
-    <ContextMenuGlobalRenderArea />
+    <!-- 右键菜单全局绘制区域
+    <ContextMenuGlobalRenderArea /> -->
     <!-- AppLocker -->
     <AppLocker />
     <!-- 打开方式管理器 -->
@@ -55,7 +55,7 @@ import { useDialogStore } from "@/store/dialog";
 import MsgContainer from "./components/Msg/MsgContainer.vue"
 import BackgroundImg from "./components/BackgroundImg.vue"
 import NotificationManager from "./components/AdvancedNotification/NotificationManager.vue";
-import ContextMenuGlobalRenderArea from "./components/ContextMenuGlobalRenderArea.vue"
+// import ContextMenuGlobalRenderArea from "./components/ContextMenuGlobalRenderArea.vue"
 import SystemBar from "./components/SystemBar.vue"
 import OpenMethodSelector from './components/Dialogs/OpenMethodSelector.vue';
 import SideColumn from "./components/SideColumn.vue";

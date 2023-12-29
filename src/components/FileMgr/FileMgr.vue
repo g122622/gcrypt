@@ -245,6 +245,8 @@ const refresh = async (arg?: Addr) => {
     selectedItems.value.clear()
     // 更改currentFileTable
     currentFileTable.value = await props.adapter.getCurrentFileTable()
+    // 清空当前缩略图
+    thumbnails.value = {}
     // 加载缩略图
     await loadThumbnails()
     // 如果是纯刷新，则显示提示
@@ -605,15 +607,14 @@ const thumbnails = ref({})
 
 const loadThumbnails = async () => {
     if (!viewOptions.showThumbnails) {
-        thumbnails.value = {}
         return
     }
     if (options.useThumbnailFile) {
         if (await props.adapter.exists(".thumbnails")) {
-            const foo = await props.adapter.readFile(".thumbnails")
-            thumbnails.value = JSON.parse(foo.toString())
-        } else {
-            thumbnails.value = {}
+            try {
+                const foo = await props.adapter.readFile(".thumbnails")
+                thumbnails.value = JSON.parse(foo.toString())
+            } catch (e) { /* 加载缩略图不是关键任务，如果失败了，可以忽略它 */ }
         }
     } else {
         // // 若不使用缩略图文件，则现场生成缩略图(非常耗费性能，现在已经废弃)
@@ -622,7 +623,6 @@ const loadThumbnails = async () => {
         //     temp[item.key] = (await getThumbnail(path.join(currentDir.value.toPathStr(), item.name))).toString('base64')
         // })
         // thumbnails.value = temp
-        thumbnails.value = {}
     }
 }
 
