@@ -7,5 +7,5 @@ import Addr from "@/api/core/common/Addr";
 export interface ClipBoardItem {
     filename: string,
     srcAddr: Addr,
-    method: 'copy' | 'move'
+    method: 'copy' | 'move' | 'symlink'
 }

@@ -18,6 +18,7 @@ abstract class AdapterBase {
     public abstract getCurrentDirectory(): Addr
     public abstract renameFile?: (oldname: string, newname: string, dir?: Addr) => Promise<void>
     public abstract copyFile?: (filename: string, srcdir: Addr, dstdir: Addr) => Promise<void>
+    public abstract createSymlink?: (objname: string, srcdir: Addr, dstdir: Addr) => Promise<void>
     public abstract moveFile?: (filename: string, srcdir: Addr, dstdir: Addr) => Promise<void>
 }
 

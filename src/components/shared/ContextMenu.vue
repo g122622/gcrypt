@@ -5,7 +5,7 @@
             <div class='context_menu_container' ref="container"
                 :style="{ top: coordY + 'px', left: coordX + 'px', width: props.width + 'px', opacity: isTransparent ? '0' : '1' }"
                 v-if="isInDOM" v-click-outside="() => { isInDOM = false }">
-                <div v-for="(list, indexi) in computedMenuLists" :key="indexi">
+                <template v-for="(list, indexi) in computedMenuLists" :key="indexi">
                     <v-list density="compact">
                         <v-list-item v-for="(item, indexj) in list" :key="item.text" :value="indexj"
                             @click="item.actions.onClick($event); isInDOM = false;">
@@ -20,7 +20,7 @@
                     <!-- 只有子list数大于等于1时才显示分割线 -->
                     <v-divider v-if="computedMenuLists.length >= 1 && indexi !== computedMenuLists.length - 1"
                         class="border-opacity-100" color="rgb(100,100,100)" />
-                </div>
+                </template>
             </div>
         </Transition>
     </Teleport>

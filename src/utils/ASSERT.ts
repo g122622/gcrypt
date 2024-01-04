@@ -1,8 +1,9 @@
 import { error } from "./gyConsole";
+import { abort } from "process"
 
-export default function ASSERT(arg: any) {
-    if (!arg) {
-        error("断言失败！")
-        throw new Error()
+export default function ASSERT(condition: any) {
+    if (!condition) {
+        error("ASSERT FAILED")
+        abort()
     }
 }

@@ -36,6 +36,7 @@ import { useTaskStore } from "@/store/task";
 import Task from "@/api/Task";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import lodash from "lodash";
+import notification from "@/api/notification";
 
 interface Props {
     adapter: AdapterBase,
@@ -46,11 +47,11 @@ const props = defineProps<Props>()
 const clipBoardItems = ref<ClipBoardItem[]>([])
 const taskStore = useTaskStore()
 
-const addFileItemToClipBoard = (filename: string, srcAddr: Addr, method: 'copy' | 'move') => {
+const addFileItemToClipBoard = (filename: string, srcAddr: Addr, method: ClipBoardItem['method']) => {
     clipBoardItems.value.push({ filename, srcAddr, method })
 }
 
-const addSelectedItemsToClipBoard = (method: 'copy' | 'move') => {
+const addSelectedItemsToClipBoard = (method: ClipBoardItem['method']) => {
     props.selectedItems.forEach((val) => {
         // name是字符串，传的是拷贝不是引用，无需克隆
         addFileItemToClipBoard(val.name, lodash.cloneDeep(props.currentDir), method)
@@ -78,6 +79,15 @@ const handleAction = (arg: ClipBoardItem) => {
             }
             clipBoardItems.value.splice(clipBoardItems.value.findIndex(item => item === arg), 1)
         }, `移动文件 ${arg.filename}`), { runImmediately: true })
+    } else if (arg.method === 'symlink') {
+        taskStore.addTask(new Task(async () => {
+            if (props.adapter.createSymlink) {
+                await props.adapter.createSymlink(arg.filename, arg.srcAddr, props.currentDir)
+            } else {
+                notification.error("adapter不支持符号链接")
+                throw new Error()
+            }
+        }, `创建符号链接 ${arg.filename}`), { runImmediately: true })
     }
 }
 

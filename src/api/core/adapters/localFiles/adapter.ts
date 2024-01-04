@@ -66,7 +66,8 @@ class LocalFileAdapter implements AdapterBase {
                                 createdTime: stats.ctime.getTime(),
                                 modifiedTime: stats.mtime.getTime(),
                                 size: stats.size
-                            }
+                            },
+                            isSymlink: false
                         })
                     }
                 } catch (e) { }

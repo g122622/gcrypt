@@ -91,19 +91,18 @@
             <v-main style="display: block; height: 100%;">
                 <div style="overflow-y: scroll;overflow-x: hidden;"
                     :style="{ height: props.height ?? 'calc(100% - 63px)' }">
-                    <div v-if="currentFileTableForRender.length > 0 && !isLoading">
+                    <template v-if="currentFileTableForRender.length > 0 && !isLoading">
                         <!-- <TransitionGroup name="file-item-transition"> -->
-                        <div v-for="(item, index) in currentFileTableForRender" :key="item.key">
-                            <FileItem :displayMode="viewOptions.itemDisplayMode" :singleFileItem="item" :index="index"
-                                @dblclick="handleItemClick(item)" :thumbnail="thumbnails[item.key] || ''"
-                                @selected="handleItemSelection(item)" @unselected="handleItemUnselection(item)"
-                                :isSelected="selectedItems.has(item)">
-                                <ContextMenu :width="200" :menuList="getItemMenuList(item)" v-if="options.useCtxMenu">
-                                </ContextMenu>
-                            </FileItem>
-                        </div>
+                        <FileItem :displayMode="viewOptions.itemDisplayMode" :singleFileItem="item" :index="index"
+                            @dblclick="handleItemClick(item)" :thumbnail="thumbnails[item.key] || ''"
+                            @selected="handleItemSelection(item)" @unselected="handleItemUnselection(item)"
+                            :isSelected="selectedItems.has(item)" v-for="(item, index) in currentFileTableForRender"
+                            :key="item.key">
+                            <ContextMenu :width="200" :menuList="getItemMenuList(item)" v-if="options.useCtxMenu">
+                            </ContextMenu>
+                        </FileItem>
                         <!-- </TransitionGroup> -->
-                    </div>
+                    </template>
                     <div v-else-if="currentFileTableForRender.length === 0 && !isLoading"
                         style="display: flex; justify-content: center; flex-direction: column; align-items: center;">
                         <img src="./assets/fileMgr/404.png" style="width:270px;" />
@@ -405,6 +404,9 @@ const getItemMenuList = (item) => {
                 type: 'divider'
             },
             {
+                text: '符号链接', icon: 'mdi-link-variant-plus', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('symlink') } }
+            },
+            {
                 text: '复制', icon: 'mdi-content-copy', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('copy') } }
             },
             {
@@ -424,6 +426,9 @@ const getItemMenuList = (item) => {
             }]
     } else {
         return [
+            {
+                text: '符号链接', icon: 'mdi-link-variant-plus', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('symlink') } }
+            },
             {
                 text: '复制', icon: 'mdi-content-copy', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('copy') } }
             },

@@ -1,4 +1,3 @@
-import { error } from "@/utils/gyConsole";
 import sharedUtils from "@/utils/sharedUtils";
 import Addr from "@/api/core/common/Addr";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
@@ -114,24 +113,21 @@ class GcryptV1Adapter implements AdapterBase {
      */
     public async readFile(filename, dir?: Addr): Promise<Buffer> {
         if (!filename) {
-            error("地址无效")
-            return
+            throw new Error("Adapter::InvalidDir")
         }
         // 拿到key
-        let matches: Array<dirSingleItem>
+        let match: dirSingleItem
         if (dir) {
             const fileTable = await this._getFileTable(dir)
-            matches = fileTable.items.filter(item => item.name === filename)
+            match = fileTable.items.find(item => item.name === filename)
         } else {
-            matches = this.currentFileTable.items.filter(item => item.name === filename)
+            match = this.currentFileTable.items.find(item => item.name === filename)
         }
-
-        if (matches.length === 0) {
-            error("文件不存在")
-            throw new Error("")
+        if (!match) {
+            throw new Error("Adapter::ObjNotFound")
         }
         // 取数据
-        return await this.KVPEngine.getData(matches[0].key)
+        return await this.KVPEngine.getData(match.key)
     }
 
     /**
@@ -168,7 +164,8 @@ class GcryptV1Adapter implements AdapterBase {
                     accessedTime: currentDate,
                     size: calcBufSize(bufData)
                 },
-                key
+                key,
+                isSymlink: false
             }
         }
 
@@ -190,9 +187,9 @@ class GcryptV1Adapter implements AdapterBase {
     public async exists(filename: string, dir?: Addr): Promise<boolean> {
         let oldDir = this.currentDirectory
         await this.changeCurrentDirectory(dir)
-        const matches = this.currentFileTable.items.filter(item => item.name === filename)
+        const match = this.currentFileTable.items.find(item => item.name === filename)
         await this.changeCurrentDirectory(oldDir)
-        return !(matches.length === 0)
+        return !!(match)
     }
 
     /**
@@ -205,9 +202,8 @@ class GcryptV1Adapter implements AdapterBase {
 
         // if names conflict
         if (await this.exists(folderName)) {
-            console.error("文件夹已存在");
             await this.changeCurrentDirectory(oldDir)
-            return
+            throw new Error("Adapter::Existed")
         }
         // [内存]当前文件表增加一个dirSingleItem，并更新缓存
         const dateNum: number = new Date().getTime()
@@ -221,7 +217,8 @@ class GcryptV1Adapter implements AdapterBase {
                 accessedTime: dateNum,
                 size: -1
             },
-            key: hash
+            key: hash,
+            isSymlink: false
         }
 
         this.currentFileTable.items.push(foo)
@@ -248,9 +245,8 @@ class GcryptV1Adapter implements AdapterBase {
         await this.changeCurrentDirectory(dir)
 
         if (!(await this.exists(filename))) {
-            error(`文件不存在，无法删除 ${filename}`)
             await this.changeCurrentDirectory(oldDir)
-            return
+            throw new Error("Adapter::NotExisted")
         }
 
         // 处理递归
@@ -301,21 +297,21 @@ class GcryptV1Adapter implements AdapterBase {
     }
 
     /**
-     * 复制文件
-     * @param filename
+     * 创建文件系统对象的符号链接
+     * @param objname
      * @param srcdir
      * @param dstdir
      */
-    public async copyFile(filename: string, srcdir: Addr, dstdir: Addr) {
-        let oldDir = this.currentDirectory
+    public async createSymlink(objname: string, srcdir: Addr, dstdir: Addr) {
+        const oldDir = this.currentDirectory
         await this.changeCurrentDirectory(srcdir)
 
-        if (await this.exists(filename)) {
+        if (await this.exists(objname)) {
             // [内存]获取文件名对应的src目录项
-            const srcFileItem = this.currentFileTable.items.find(item => item.name === filename)
+            const srcFileItem = this.currentFileTable.items.find(item => item.name === objname)
             // [内存]修改dst文件表
             await this.changeCurrentDirectory(dstdir)
-            this.currentFileTable.items.push(srcFileItem)
+            this.currentFileTable.items.push({ ...srcFileItem, isSymlink: true })
             // 更新缓存
             this._updateCache()
             // [本地]保存更新后的文件列表到本地
