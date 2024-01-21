@@ -1,3 +1,17 @@
+/**
+ * File: \src\main.ts
+ * Project: Gcrypt
+ * Created Date: 2023-11-26 17:14:30
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-01-21 15:48:26
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
+
 /* eslint-disable dot-notation */
 import { createApp } from 'vue';
 import router from './router';
@@ -53,6 +67,11 @@ let pinia;
         LifeCycle::outOfMem
         LifeCycle::clearMem
 */
+
+/** 异常处理规范
+ * 404类型的错误一律返回空值，不要抛出异常
+ * 其他类型的错误一律抛出异常
+ */
 
 class ApplicationRenderer {
     private AppInstance

@@ -1,3 +1,17 @@
+/**
+ * File: \src\api\core\types\AdapterBase.ts
+ * Project: Gcrypt
+ * Created Date: 2023-11-26 17:14:30
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-01-21 14:57:06
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
+
 import Addr from "../common/Addr"
 import fileTable from "./fileTable"
 
@@ -9,17 +23,22 @@ abstract class AdapterBase {
     public abstract adapterGuid: string
     public abstract initAdapter
     public abstract changeCurrentDirectory(newDir: Addr): Promise<void>
-    public abstract readFile(filename, dir?: Addr): Promise<Buffer>
+    public abstract readFile(filename: string, dir?: Addr): Promise<Buffer>
     public abstract writeFile(filename: string, data: Buffer | string, dir?: Addr): Promise<string>
     public abstract exists(filename: string, dir?: Addr): Promise<boolean>
     public abstract mkdir(folderName: string, dir?: Addr): Promise<void>
     public abstract deleteFile(filename: string, dir?: Addr): void
     public abstract getCurrentFileTable(): Promise<fileTable>
     public abstract getCurrentDirectory(): Addr
+
+    // 可选功能
     public abstract renameFile?: (oldname: string, newname: string, dir?: Addr) => Promise<void>
     public abstract copyFile?: (filename: string, srcdir: Addr, dstdir: Addr) => Promise<void>
     public abstract createSymlink?: (objname: string, srcdir: Addr, dstdir: Addr) => Promise<void>
     public abstract moveFile?: (filename: string, srcdir: Addr, dstdir: Addr) => Promise<void>
+    public abstract getExtraMeta?: (fileKey: string, metaKey: string) => Promise<Buffer | null>
+    public abstract setExtraMeta?: (fileKey: string, metaKey: string, value: Buffer) => Promise<void>
+    public abstract deleteExtraMeta?: (fileKey: string, metaKey: string) => Promise<void>
 }
 
 export default AdapterBase

@@ -13,15 +13,16 @@
             </v-tooltip>
             <!-- 前置内容 -->
             <div style="display: flex;justify-content: flex-start;align-items: center;"
-                :style="{ flexDirection: (displayMode === 1 ? 'column' : 'row') }">
-                <div v-if="singleFileItem.type === `folder`">
+                :style="{ flexDirection: (viewOptions.itemDisplayMode === 1 ? 'column' : 'row') }">
+                <template v-if="singleFileItem.type === `folder`">
                     <img :src="`./assets/fileTypes/folder.png`" class="file-types-image" loading="lazy" />
-                </div>
-                <div v-if="singleFileItem.type === `file`">
-                    <img v-if="thumbnail" :src="toDataURL(thumbnail)" class="file-thumbnail-img" loading="lazy" />
+                </template>
+                <template v-if="singleFileItem.type === `file`">
+                    <img v-if="currentThumbnail" :src="toDataURL(currentThumbnail)" class="file-thumbnail-img"
+                        loading="lazy" />
                     <img v-else :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`" class="file-types-image"
                         loading="lazy" />
-                </div>
+                </template>
                 <div class="file-name">
                     {{ singleFileItem.name }}
                 </div>
@@ -31,18 +32,16 @@
             <slot></slot>
 
             <!-- 尾置内容 -->
-            <div>
-                <!-- <IconBtn tooltip="更多" icon="mdi-dots-vertical" :onClick="handleClickMore" /> -->
-                <div class="file-meta">
-                    <div v-if="displayMode === 0">
-                        created: {{ new Date(singleFileItem.meta.createdTime).toLocaleString() }}
-                        <br />
-                        modified: {{ new Date(singleFileItem.meta.modifiedTime).toLocaleString() }}
-                    </div>
-                    <div v-else-if="displayMode === 1 && props.singleFileItem.type === 'file'">
-                        {{ prettyBytes(props.singleFileItem.meta.size, 2) }}
-                    </div>
-                </div>
+            <!-- <IconBtn tooltip="更多" icon="mdi-dots-vertical" :onClick="handleClickMore" /> -->
+            <div class="file-meta">
+                <template v-if="viewOptions.itemDisplayMode === 0">
+                    created: {{ new Date(singleFileItem.meta.createdTime).toLocaleString() }}
+                    <br />
+                    modified: {{ new Date(singleFileItem.meta.modifiedTime).toLocaleString() }}
+                </template>
+                <template v-else-if="viewOptions.itemDisplayMode === 1 && props.singleFileItem.type === 'file'">
+                    {{ prettyBytes(props.singleFileItem.meta.size, 2) }}
+                </template>
             </div>
         </template>
     </div>
@@ -51,15 +50,19 @@
 <script setup lang="ts">
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import getFileType from "@/utils/getFileType";
-import { computed, ref } from "vue";
+import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useMainStore } from "@/store/main"
 import prettyBytes from "@/utils/prettyBytes";
+import AdapterBase from "@/api/core/types/AdapterBase";
+import { ViewOptions } from "./types/ViewOptions";
+import getThumbnailFromSystem from '@/utils/image/getThumbnailFromSystem'
+import { warn } from "@/utils/gyConsole";
 
 interface Props {
-    displayMode: number,
+    viewOptions: ViewOptions,
     singleFileItem: dirSingleItem,
     index: number,
-    thumbnail: string,
+    adapter: AdapterBase,
     isSelected: boolean
 }
 const props = defineProps<Props>()
@@ -78,8 +81,8 @@ const isHidden = computed(() => {
 
 const fileItemClassList = computed(() => {
     return {
-        'file-item-list': props.displayMode === 0,
-        'file-item-item': props.displayMode === 1,
+        'file-item-list': props.viewOptions.itemDisplayMode === 0,
+        'file-item-item': props.viewOptions.itemDisplayMode === 1,
         'file-item-hidden': isHidden.value,
         'file-item-selected': props.isSelected,
     }
@@ -114,6 +117,46 @@ const onIntersect = (isIntersectingArg /* , entries, observer */) => {
         isIntersecting.value = isIntersectingArg
     }, 0)
 }
+
+// <缩略图>
+const currentThumbnail = ref<string>('')
+let idleCallbackId = 0
+
+onMounted(async () => {
+    // 自动创建和加载缩略图相关逻辑
+    if (props.viewOptions.showThumbnails && props.adapter.getExtraMeta) {
+        try {
+            const thumbnailBuf = await props.adapter.getExtraMeta(props.singleFileItem.key, 'thumbnail')
+            if (thumbnailBuf) {
+                const thumbnailStr = (await props.adapter.getExtraMeta(props.singleFileItem.key, 'thumbnail')).toString()
+                if (thumbnailStr !== 'n/a') {
+                    currentThumbnail.value = thumbnailStr
+                }
+            } else {
+                // 当thumbnailBuf为null
+                // 尝试生成缩略图
+                idleCallbackId = requestIdleCallback(async () => {
+                    try {
+                        const fileOriginalPath = (await props.adapter.getExtraMeta(props.singleFileItem.key, 'fileOriginalPath')).toString()
+                        currentThumbnail.value = await getThumbnailFromSystem(fileOriginalPath, { height: 128, width: 128, quality: 50 })
+                        await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from(currentThumbnail.value))
+                    } catch (e) {
+                        await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from('n/a'))
+                    } finally {
+                        // 收尾工作，清理掉fileOriginalPath
+                        await props.adapter.deleteExtraMeta(props.singleFileItem.key, 'fileOriginalPath')
+                    }
+                })
+            }
+        } catch (e) {
+            warn('缩略图加载失败' + e.message)
+        }
+    }
+})
+
+onUnmounted(() => {
+    cancelIdleCallback(idleCallbackId)
+})
 
 </script>
 

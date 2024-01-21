@@ -93,11 +93,10 @@
                     :style="{ height: props.height ?? 'calc(100% - 63px)' }">
                     <template v-if="currentFileTableForRender.length > 0 && !isLoading">
                         <!-- <TransitionGroup name="file-item-transition"> -->
-                        <FileItem :displayMode="viewOptions.itemDisplayMode" :singleFileItem="item" :index="index"
-                            @dblclick="handleItemClick(item)" :thumbnail="thumbnails[item.key] || ''"
-                            @selected="handleItemSelection(item)" @unselected="handleItemUnselection(item)"
-                            :isSelected="selectedItems.has(item)" v-for="(item, index) in currentFileTableForRender"
-                            :key="item.key">
+                        <FileItem :viewOptions="viewOptions" :singleFileItem="item" :index="index"
+                            @dblclick="handleItemClick(item)" :adapter="props.adapter" @selected="handleItemSelection(item)"
+                            @unselected="handleItemUnselection(item)" :isSelected="selectedItems.has(item)"
+                            v-for="(item, index) in currentFileTableForRender" :key="item.key">
                             <ContextMenu :width="200" :menuList="getItemMenuList(item)" v-if="options.useCtxMenu">
                             </ContextMenu>
                         </FileItem>
@@ -142,8 +141,6 @@
 import { ref, computed, watch, reactive, onMounted } from "vue";
 import Addr from "@/api/core/common/Addr";
 import getFileName from "@/utils/getFileName";
-import fs from "fs-extra";
-import Electron from "electron";
 import lodash from "lodash";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
 import fileTable from "@/api/core/types/fileTable";
@@ -166,6 +163,7 @@ import FileItem from "./FileItem.vue";
 import DialogMgr from "./DialogMgr.vue";
 import BottomBar from "./BottomBar.vue";
 import ClipBoard from "./ClipBoard.vue";
+import { ViewOptions } from "./types/ViewOptions";
 
 interface Props {
     adapter: AdapterBase,
@@ -213,10 +211,10 @@ const initAll = () => {
 const mergeOptions = () => {
     const defaultOptions = {
         useCtxMenu: true,
-        useThumbnailFile: true,
         onlyAllowFolderSelection: false,
         allowMultipleSelection: true,
-        exposeSelection: false
+        exposeSelection: false,
+        useThumbnails: true
     } as FileMgrOptions
     return { ...defaultOptions, ...props.options }
 }
@@ -244,10 +242,6 @@ const refresh = async (arg?: Addr) => {
     selectedItems.value.clear()
     // 更改currentFileTable
     currentFileTable.value = await props.adapter.getCurrentFileTable()
-    // 清空当前缩略图
-    thumbnails.value = {}
-    // 加载缩略图
-    await loadThumbnails()
     // 如果是纯刷新，则显示提示
     if (!arg) {
         notification.success("刷新成功")
@@ -303,15 +297,16 @@ const importFile = async (files: FileList) => {
     const taskGroupId = sharedUtils.getHash(16)
     for (const file of files) {
         taskStore.addTask(new Task(async () => {
-            let key: string
+            let fileKey: string
             // 读文件
             const reader = new FileReader();
             reader.onload = async function (evt) {
                 const dataBuf: Buffer = Buffer.from(evt.target.result as ArrayBuffer)
-                key = await props.adapter.writeFile(getFileName(file.path, true), dataBuf)
-                // 处理缩略图
-                const tb = await getThumbnail(file.path)
-                await addThumbnail(key, tb)
+                fileKey = await props.adapter.writeFile(getFileName(file.path, true), dataBuf)
+                // 处理缩略图相关逻辑
+                if (options.useThumbnails && props.adapter.setExtraMeta) {
+                    props.adapter.setExtraMeta(fileKey, 'fileOriginalPath', Buffer.from(file.path))
+                }
             }
             reader.readAsArrayBuffer(file);
         }, `引入文件 ${file.path}`, taskGroupId), { runImmediately: false })
@@ -339,7 +334,6 @@ const deleteFile = async () => {
     for (const item of selectedItems.value) {
         taskStore.addTask(new Task(async () => {
             await props.adapter.deleteFile(item.name)
-            await deleteThumbnail(item.key)
         }, `删除文件 ${item.name}`, taskGroupId), { runImmediately: false })
     }
     try {
@@ -456,7 +450,7 @@ const handleFileImportClick = () => {
 }
 
 // <外观选择相关>
-const viewOptions = reactive({
+const viewOptions = reactive<ViewOptions>({
     itemDisplayMode: 1, // 0 list, 1 item
     itemSize: 5, // 区间[0,10]的整数, '5' stands for medium size
     sortBy: 0, // 0 name, 1 timeModify
@@ -606,73 +600,6 @@ const copyToClipboard = (arg: string) => {
 }
 
 const DialogMgrRef = ref(null)
-
-// <缩略图>
-const thumbnails = ref({})
-
-const loadThumbnails = async () => {
-    if (!viewOptions.showThumbnails) {
-        return
-    }
-    if (options.useThumbnailFile) {
-        if (await props.adapter.exists(".thumbnails")) {
-            try {
-                const foo = await props.adapter.readFile(".thumbnails")
-                thumbnails.value = JSON.parse(foo.toString())
-            } catch (e) { /* 加载缩略图不是关键任务，如果失败了，可以忽略它 */ }
-        }
-    } else {
-        // // 若不使用缩略图文件，则现场生成缩略图(非常耗费性能，现在已经废弃)
-        // let temp = {}
-        // currentFileTableForRender.value.forEach(async item => {
-        //     temp[item.key] = (await getThumbnail(path.join(currentDir.value.toPathStr(), item.name))).toString('base64')
-        // })
-        // thumbnails.value = temp
-    }
-}
-
-/**
- * 从本地系统COM Surrogate获取给定文件的缩略图，JPEG压缩处理后返回图像Buffer
- * @param filePath 文件在本地文件系统上的路径
- */
-const getThumbnail = async (filePath: string): Promise<Buffer> => {
-    const quality = 50
-    try {
-        return await (await Electron
-            .nativeImage
-            .createThumbnailFromPath(filePath, { height: 128, width: 128 }))
-            .toJPEG(quality)
-    } catch (e) { /* 获取缩略图不是关键任务，如果失败了，可以忽略它 */ }
-}
-
-const saveThumbnailFile = async () => {
-    if (!options.useThumbnailFile) {
-        return
-    }
-    const str = JSON.stringify(thumbnails.value)
-    if (str === '{}') {
-        await props.adapter.deleteFile(".thumbnails")
-    } else {
-        await props.adapter.writeFile(".thumbnails", str)
-    }
-}
-
-/**
- * add缩略图。支持新增/更新
- * @param key
- * @param thumbnail
- */
-const addThumbnail = async (key: string, thumbnail: Buffer) => {
-    if (thumbnail) {
-        thumbnails.value[key] = thumbnail.toString('base64')
-        await saveThumbnailFile()
-    }
-}
-
-const deleteThumbnail = async (key: string) => {
-    delete thumbnails.value[key]
-    await saveThumbnailFile()
-}
 
 // <文件选择>
 let selectedItems = null

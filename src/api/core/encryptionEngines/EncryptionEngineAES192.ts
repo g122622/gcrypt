@@ -1,3 +1,17 @@
+/**
+ * File: \src\api\core\encryptionEngines\EncryptionEngineAES192.ts
+ * Project: Gcrypt
+ * Created Date: 2023-11-26 17:14:30
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-01-09 18:43:27
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
+
 import ASSERT from "@/utils/ASSERT"
 import { error } from "@/utils/gyConsole"
 import crypto from "crypto"
@@ -69,7 +83,7 @@ class EncryptionEngineAES192 implements EncryptionEngineBase {
                     decipher.end();
                 });
             } catch (e) {
-                error("加密失败" + e.toString())
+                error("解密失败" + e.toString())
                 throw e
             }
         })

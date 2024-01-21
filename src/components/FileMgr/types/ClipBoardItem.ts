@@ -1,3 +1,17 @@
+/**
+ * File: \src\components\FileMgr\types\ClipBoardItem.ts
+ * Project: Gcrypt
+ * Created Date: 2023-12-02 15:44:46
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-01-14 17:18:26
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
+
 import Addr from "@/api/core/common/Addr";
 
 /**

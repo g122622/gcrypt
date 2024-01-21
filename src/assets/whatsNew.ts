@@ -1,3 +1,17 @@
+/**
+ * File: \src\assets\whatsNew.ts
+ * Project: Gcrypt
+ * Created Date: 2023-11-26 17:14:30
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-01-09 16:39:26
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
+
 export default {
     "1.0.2": ["新增更新详情弹框", "顶栏增加版本展示", "支持选择主题色"],
     "1.1.0": ["侧边栏优化", "右键菜单弹出位置优化", "文件管理器滚动条修复", "文件管理器增加底部状态条",

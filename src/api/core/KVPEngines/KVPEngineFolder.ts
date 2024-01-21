@@ -1,6 +1,7 @@
 import fs from "fs-extra";
 import KVPEngineBase from "../types/KVPEngineBase";
 import EncryptionEngineBase from "../types/EncryptionEngineBase";
+import getDigest from "@/api/hash/getDigest";
 
 const calcDataFileSrc = (entryJsonSrc, dataFileName: string) => {
     let foo = entryJsonSrc.split("/")
@@ -22,47 +23,61 @@ class KVPEngineFolder implements KVPEngineBase {
         this.storeEntryJsonSrc = storeEntryJsonSrc
         this.encryptionEngine = encryptionEngine
         this.encryptionEngine.init(pwd)
-        try {
-            await fs.access(calcDataFileSrc(this.storeEntryJsonSrc, "NEW_STORE_FLAG"))
-        } catch {
+        if (!(await this.hasData("NEW_STORE_FLAG"))) {
             await this.setData("NEW_STORE_FLAG", Buffer.from(""))
             await onNewStore(this)
         }
     }
 
     /**
-     * 获取数据
-     * @param hash
+     * 判断数据是否存在
+     * @param key
      */
-    public getData = async (hash: string): Promise<Buffer> => {
+    public hasData = async (key: string): Promise<boolean> => {
         try {
-            let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, hash)
+            await fs.access(calcDataFileSrc(this.storeEntryJsonSrc, getDigest(Buffer.from(key), 'md5')))
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    /**
+     * 获取数据
+     * @param key
+     */
+    public getData = async (key: string): Promise<Buffer | null> => {
+        if (!(await this.hasData(key))) {
+            return null
+        }
+        try {
+            let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, getDigest(Buffer.from(key), 'md5'))
             await fs.access(dataFilePath)
             const data: Buffer = await fs.readFile(dataFilePath)
             return await this.encryptionEngine.decrypt(data)
         } catch (e) {
-            console.error(`这个哈希key不存在`, hash)
+            console.error(`键值对引擎获取数据失败`, e)
             throw e
         }
     }
 
     /**
      *
-     * @param hash 根据已有键去set数据
+     * @param key 根据已有键去set数据
      * @param buf
      */
-    public setData = async (hash: string, buf: Buffer) => {
-        let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, hash)
+    public setData = async (key: string, buf: Buffer) => {
+        let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, getDigest(Buffer.from(key), 'md5'))
         await fs.writeFile(dataFilePath, await this.encryptionEngine.encrypt(buf))
     }
 
     /**
      *
-     * @param hash 根据已有键去set数据
+     * @param key 根据已有键去set数据
      * @param buf
      */
-    public deleteData = async (hash: string) => {
-        let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, hash)
+    public deleteData = async (key: string) => {
+        let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, getDigest(Buffer.from(key), 'md5'))
         await fs.unlink(dataFilePath)
     }
 }

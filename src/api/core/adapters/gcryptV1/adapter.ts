@@ -1,3 +1,17 @@
+/**
+ * File: \src\api\core\adapters\gcryptV1\adapter.ts
+ * Project: Gcrypt
+ * Created Date: 2023-11-26 17:14:30
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-01-21 15:50:22
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
+
 import sharedUtils from "@/utils/sharedUtils";
 import Addr from "@/api/core/common/Addr";
 import dirSingleItem from "@/api/core/types/dirSingleItem";
@@ -113,7 +127,7 @@ class GcryptV1Adapter implements AdapterBase {
      */
     public async readFile(filename, dir?: Addr): Promise<Buffer> {
         if (!filename) {
-            throw new Error("Adapter::InvalidDir")
+            throw new Error("GcryptV1Adapter::InvalidFileName")
         }
         // 拿到key
         let match: dirSingleItem
@@ -124,7 +138,7 @@ class GcryptV1Adapter implements AdapterBase {
             match = this.currentFileTable.items.find(item => item.name === filename)
         }
         if (!match) {
-            throw new Error("Adapter::ObjNotFound")
+            throw new Error("GcryptV1Adapter::NotExisted")
         }
         // 取数据
         return await this.KVPEngine.getData(match.key)
@@ -189,7 +203,7 @@ class GcryptV1Adapter implements AdapterBase {
         await this.changeCurrentDirectory(dir)
         const match = this.currentFileTable.items.find(item => item.name === filename)
         await this.changeCurrentDirectory(oldDir)
-        return !!(match)
+        return !!match
     }
 
     /**
@@ -203,7 +217,7 @@ class GcryptV1Adapter implements AdapterBase {
         // if names conflict
         if (await this.exists(folderName)) {
             await this.changeCurrentDirectory(oldDir)
-            throw new Error("Adapter::Existed")
+            throw new Error("GcryptV1Adapter::Existed")
         }
         // [内存]当前文件表增加一个dirSingleItem，并更新缓存
         const dateNum: number = new Date().getTime()
@@ -246,7 +260,7 @@ class GcryptV1Adapter implements AdapterBase {
 
         if (!(await this.exists(filename))) {
             await this.changeCurrentDirectory(oldDir)
-            throw new Error("Adapter::NotExisted")
+            throw new Error("GcryptV1Adapter::NotExisted")
         }
 
         // 处理递归
@@ -347,9 +361,40 @@ class GcryptV1Adapter implements AdapterBase {
             this._updateCache()
             // [本地]保存更新后的文件列表到本地
             await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
+        } else {
+            throw new Error("GcryptV1Adapter::NotExisted")
         }
 
         await this.changeCurrentDirectory(oldDir)
+    }
+
+    /**
+     * 获取额外元数据
+     * @param fileKey 长度为32的16进制字符串
+     * @param metaKey 长度随意的任意字符串
+     * @returns
+     */
+    public async getExtraMeta(fileKey: string, metaKey: string): Promise<Buffer | null> {
+        if (!fileKey) {
+            throw new Error("GcryptV1Adapter::InvalidKey")
+        }
+        // 取数据
+        return (await this.KVPEngine.getData(fileKey + metaKey)) ?? null
+    }
+
+    public async setExtraMeta(fileKey: string, metaKey: string, value: Buffer): Promise<void> {
+        if (!fileKey || !metaKey) {
+            throw new Error("GcryptV1Adapter::InvalidKey")
+        }
+        await this.KVPEngine.setData(fileKey + metaKey, value)
+        // await this.KVPEngine.setData('[ExtraMetaKeyList]' + fileKey, Buffer.from(metaKey))
+    }
+
+    public async deleteExtraMeta(fileKey: string, metaKey: string): Promise<void> {
+        if (!fileKey || !metaKey) {
+            throw new Error("GcryptV1Adapter::InvalidKey")
+        }
+        await this.KVPEngine.deleteData(fileKey + metaKey)
     }
 
     /**
@@ -359,7 +404,7 @@ class GcryptV1Adapter implements AdapterBase {
         return lodash.cloneDeep(this.currentFileTable)
     }
 
-    public getCurrentDirectory = function () {
+    public getCurrentDirectory(): Addr {
         return lodash.cloneDeep(this.currentDirectory)
     }
 }
