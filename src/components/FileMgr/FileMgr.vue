@@ -91,12 +91,14 @@
             <v-main style="display: block; height: 100%;">
                 <div style="overflow-y: scroll;overflow-x: hidden;"
                     :style="{ height: props.height ?? 'calc(100% - 63px)' }">
+                    <!-- 文件列表 -->
                     <template v-if="currentFileTableForRender.length > 0 && !isLoading">
                         <!-- <TransitionGroup name="file-item-transition"> -->
                         <FileItem :viewOptions="viewOptions" :singleFileItem="item" :index="index"
-                            @dblclick="handleItemClick(item)" :adapter="props.adapter" @selected="handleItemSelection(item)"
-                            @unselected="handleItemUnselection(item)" :isSelected="selectedItems.has(item)"
-                            v-for="(item, index) in currentFileTableForRender" :key="item.key">
+                            @dblclick="handleItemDoubleClick(item)" :adapter="props.adapter"
+                            @selected="handleItemSelection(item)" @unselected="handleItemUnselection(item)"
+                            :isSelected="selectedItems.has(item)" v-for="(item, index) in currentFileTableForRender"
+                            :key="item.key">
                             <ContextMenu :width="200" :menuList="getItemMenuList(item)" v-if="options.useCtxMenu">
                             </ContextMenu>
                         </FileItem>
@@ -138,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, reactive, onMounted } from "vue";
+import { ref, computed, watch, reactive, onMounted, nextTick } from "vue";
 import Addr from "@/api/core/common/Addr";
 import getFileName from "@/utils/getFileName";
 import lodash from "lodash";
@@ -164,6 +166,7 @@ import DialogMgr from "./DialogMgr.vue";
 import BottomBar from "./BottomBar.vue";
 import ClipBoard from "./ClipBoard.vue";
 import { ViewOptions } from "./types/ViewOptions";
+import { warn } from "@/utils/gyConsole";
 
 interface Props {
     adapter: AdapterBase,
@@ -178,7 +181,7 @@ const taskStore = useTaskStore()
 const isLoading = ref<boolean>(true)
 const currentFileTable = ref<fileTable>(null)
 const currentDir = ref(new Addr(""))
-const operationHistory = ref([])
+const operationHistory = ref<Addr[]>([])
 const itemCache = ref(null)
 const models = reactive({
     isPropOpening: false,
@@ -204,7 +207,13 @@ const ClipBoardRef = ref()
 // <生命周期&初始化>
 const initAll = () => {
     isLoading.value = true
-    currentDir.value = props.adapter.getCurrentDirectory()
+
+    gotoDir(props.adapter.getCurrentDirectory(), true)
+    watch(viewOptions, () => {
+        // 保存viewOptions
+        tryToSaveViewOptions()
+    }, { deep: true })
+
     isLoading.value = false
 }
 
@@ -214,7 +223,8 @@ const mergeOptions = () => {
         onlyAllowFolderSelection: false,
         allowMultipleSelection: true,
         exposeSelection: false,
-        useThumbnails: true
+        useThumbnails: true,
+        allowSavingViewOptions: true
     } as FileMgrOptions
     return { ...defaultOptions, ...props.options }
 }
@@ -226,21 +236,27 @@ onMounted(async () => {
 })
 
 // <核心功能-文件相关>
-const refresh = async (arg?: Addr) => {
+watch(() => props.directory, async (newVal) => {
+    if (newVal) {
+        await gotoDir(newVal, true)
+    }
+}, { immediate: true })
+
+const gotoDir = async (arg: Addr, pushHistory: boolean) => {
     isLoading.value = true
-    if (arg) {
-        // 检查是否为无效操作
-        if (operationHistory.value.length !== 0) {
-            if (operationHistory.value[operationHistory.value.length - 1].compareWith(arg)) {
-                return
-            }
-        }
-        await props.adapter.changeCurrentDirectory(arg)
+    // 执行路径更新的核心刷新逻辑
+    await props.adapter.changeCurrentDirectory(arg)
+    if (pushHistory) {
         operationHistory.value.push(lodash.cloneDeep(arg))
     }
-    // 取消选择
+    // 加载viewOptions
+    nextTick().then(() => {
+        tryToGetAndApplyViewOptions()
+    })
+    // 取消选择的所有item
     selectedItems.value.clear()
     // 更改currentFileTable
+    currentDir.value = arg
     currentFileTable.value = await props.adapter.getCurrentFileTable()
     // 如果是纯刷新，则显示提示
     if (!arg) {
@@ -249,25 +265,18 @@ const refresh = async (arg?: Addr) => {
     isLoading.value = false
 }
 
-watch(currentDir, async (newVal) => {
-    await refresh(newVal)
-},
-    { deep: true })
-
-watch(() => props.directory, async (newVal) => {
-    if (newVal) {
-        currentDir.value = newVal
-        await refresh(newVal)
-    }
-}, { immediate: true })
+const refresh = async () => {
+    await gotoDir(currentDir.value, false)
+}
 
 const up = () => {
-    currentDir.value.up()
+    gotoDir(currentDir.value.up(), true)
 }
 
 const back = () => {
     if (operationHistory.value.length >= 2) {
-        currentDir.value = operationHistory.value[operationHistory.value.length - 2]
+        operationHistory.value.pop()
+        gotoDir(operationHistory.value.pop(), true)
     }
 }
 
@@ -276,7 +285,7 @@ const openFile = (filename, fileguid) => {
     if (process.platform === 'win32' && getExtName(filename) === 'lnk') {
         const output = getWindowsShortcutProperties.sync(path.join(currentDir.value.toPathStr(), filename));
         if (output) {
-            currentDir.value = new Addr(output[0].TargetPath)
+            gotoDir(new Addr(output[0].TargetPath), true)
             return
         }
     }
@@ -380,9 +389,9 @@ const handlePropertiesClick = (item?: dirSingleItem) => {
     }
 }
 
-const handleItemClick = (item) => {
+const handleItemDoubleClick = (item) => {
     if (item.type === "folder") {
-        currentDir.value.down(item.name)
+        gotoDir(currentDir.value.down(item.name), true)
     } else if (item.type === "file") {
         openFile(item.name, item.key)
     }
@@ -392,7 +401,7 @@ const getItemMenuList = (item) => {
     if (selectedItems.value.size <= 1) {
         return [
             {
-                text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemClick(item) } }
+                text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemDoubleClick(item) } }
             },
             {
                 type: 'divider'
@@ -450,7 +459,7 @@ const handleFileImportClick = () => {
 }
 
 // <外观选择相关>
-const viewOptions = reactive<ViewOptions>({
+const viewOptions = ref<ViewOptions>({
     itemDisplayMode: 1, // 0 list, 1 item
     itemSize: 5, // 区间[0,10]的整数, '5' stands for medium size
     sortBy: 0, // 0 name, 1 timeModify
@@ -460,6 +469,38 @@ const viewOptions = reactive<ViewOptions>({
     showExtName: 1,
     showThumbnails: 1
 })
+
+/**
+ * 尝试保存布局选项
+ */
+const tryToSaveViewOptions = async () => {
+    if (!props.adapter.setExtraMeta || !options.allowSavingViewOptions || !currentFileTable.value) {
+        return
+    }
+    try {
+        await props.adapter.setExtraMeta(currentFileTable.value.selfKey, 'viewOptions', Buffer.from(JSON.stringify(viewOptions.value)))
+        console.log('save succeed ' + currentFileTable.value)
+    } catch (e) {
+        warn('尝试保存布局选项失败' + e.toString())
+    }
+}
+
+/**
+ * 尝试加载布局选项
+ */
+const tryToGetAndApplyViewOptions = async () => {
+    if (!props.adapter.getExtraMeta || !options.allowSavingViewOptions) {
+        return
+    }
+    try {
+        const obj = JSON.parse((await props.adapter.getExtraMeta(currentFileTable.value.selfKey, 'viewOptions')).toString())
+        if (obj) {
+            viewOptions.value = obj
+        }
+    } catch (e) {
+        warn('尝试加载布局选项失败' + e.toString())
+    }
+}
 
 const viewOptionsLists = [
     {
@@ -559,7 +600,7 @@ const currentFileTableForRender = computed<fileTable['items']>(() => {
     // 数组浅拷贝
     let res = [...currentFileTable.value.items]
     // 这里的所有排序均为升序
-    switch (viewOptions.sortBy) {
+    switch (viewOptions.value.sortBy) {
         case 0:
             res.sort((a, b) => {
                 return a.name > b.name ? 1 : -1
@@ -578,16 +619,16 @@ const currentFileTableForRender = computed<fileTable['items']>(() => {
     }
 
     // 降序排序
-    if (viewOptions.sequence === 1) {
+    if (viewOptions.value.sequence === 1) {
         res.reverse()
     }
     // 文件夹优先
-    if (viewOptions.folderFirst) {
+    if (viewOptions.value.folderFirst) {
         // NOTE: ES2019已经要求sort为稳定排序，没必要这样先展开再合并
         res = [...res.filter(item => item.type === "folder"), ...res.filter(item => item.type === "file")]
     }
     // 不显示隐藏文件
-    if (!viewOptions.showHiddenItem) {
+    if (!viewOptions.value.showHiddenItem) {
         res = res.filter(item => item.name[0] !== ".")
     }
     return res

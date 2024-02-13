@@ -60,10 +60,11 @@ emitter.on("Action::openFilePicker", async ({ directory, taskId, onlyAllowFolder
         selectedItems: new Set(),
         fileMgrOptions: {
             useCtxMenu: true,
-            useThumbnailFile: false,
+            useThumbnails: false,
             exposeSelection: true,
             onlyAllowFolderSelection,
-            allowMultipleSelection
+            allowMultipleSelection,
+            allowSavingViewOptions: false
         },
         taskId,
         confirmHandler: (selectedItems, adapter) => {

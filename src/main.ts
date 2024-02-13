@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-01-21 15:48:26
+ * Last Modified: 2024-01-22 13:48:58
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -272,5 +272,6 @@ class ApplicationRenderer {
 }
 
 (function () {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const GcryptApp = new ApplicationRenderer()
 })()

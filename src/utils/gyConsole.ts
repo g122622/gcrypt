@@ -1,6 +1,6 @@
 const log = function (arg: string) {
     console.log(
-        `%cLOG | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
+        `%c@ LOG | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
         `
           background-color: #3f51b5;
           color: #eee;
@@ -16,7 +16,7 @@ const log = function (arg: string) {
 
 const error = function (arg: string) {
     console.log(
-        `%cERROR | at ${new Date().toLocaleTimeString()}`,
+        `%c@ ERROR | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
         `
           background-color: #eb5c5a;
           color: #eee;
@@ -33,7 +33,7 @@ const error = function (arg: string) {
 
 const warn = function (arg: string) {
     console.log(
-        `%cWARNING | at ${new Date().toLocaleTimeString()}`,
+        `%c@ WARNING | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
         `
           background-color: #fbc02d;
           color: #eee;

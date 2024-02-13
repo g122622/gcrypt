@@ -149,7 +149,7 @@ onMounted(async () => {
                 })
             }
         } catch (e) {
-            warn('缩略图加载失败' + e.message)
+            warn('缩略图加载失败:' + e.message)
         }
     }
 })

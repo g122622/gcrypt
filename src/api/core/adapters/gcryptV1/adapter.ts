@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-01-21 15:50:22
+ * Last Modified: 2024-02-13 10:28:51
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -370,7 +370,7 @@ class GcryptV1Adapter implements AdapterBase {
 
     /**
      * 获取额外元数据
-     * @param fileKey 长度为32的16进制字符串
+     * @param fileKey 不是文件名，长度为32的16进制字符串
      * @param metaKey 长度随意的任意字符串
      * @returns
      */
@@ -382,6 +382,12 @@ class GcryptV1Adapter implements AdapterBase {
         return (await this.KVPEngine.getData(fileKey + metaKey)) ?? null
     }
 
+    /**
+     * 设置额外元数据
+     * @param fileKey 不是文件名
+     * @param metaKey 长度随意的任意字符串
+     * @param value 元数据值
+     */
     public async setExtraMeta(fileKey: string, metaKey: string, value: Buffer): Promise<void> {
         if (!fileKey || !metaKey) {
             throw new Error("GcryptV1Adapter::InvalidKey")
@@ -390,6 +396,11 @@ class GcryptV1Adapter implements AdapterBase {
         // await this.KVPEngine.setData('[ExtraMetaKeyList]' + fileKey, Buffer.from(metaKey))
     }
 
+    /**
+    * 删除额外元数据
+     * @param fileKey 不是文件名
+     * @param metaKey 长度随意的任意字符串
+    */
     public async deleteExtraMeta(fileKey: string, metaKey: string): Promise<void> {
         if (!fileKey || !metaKey) {
             throw new Error("GcryptV1Adapter::InvalidKey")
