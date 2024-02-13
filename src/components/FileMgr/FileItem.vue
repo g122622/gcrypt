@@ -1,7 +1,7 @@
 <template>
     <div class="file-item" :class="fileItemClassList" v-ripple ref="fileItemElement" @click="handleClick()"
         @click.right="handleClick(true)" v-intersect="{
-            handler: onIntersect,
+            handler: props.viewOptions.itemDisplayMode === 2 ? () => { } : onIntersect,
             options: {
                 threshold: 0
             }
@@ -13,7 +13,7 @@
             </v-tooltip>
             <!-- 前置内容 -->
             <div style="display: flex;justify-content: flex-start;align-items: center;"
-                :style="{ flexDirection: (viewOptions.itemDisplayMode === 1 ? 'column' : 'row') }">
+                :style="{ flexDirection: (viewOptions.itemDisplayMode === 0 ? 'row' : 'column') }">
                 <template v-if="singleFileItem.type === `folder`">
                     <img :src="`./assets/fileTypes/folder.png`" class="file-types-image" loading="lazy" />
                 </template>
@@ -42,6 +42,9 @@
                 <template v-else-if="viewOptions.itemDisplayMode === 1 && props.singleFileItem.type === 'file'">
                     {{ prettyBytes(props.singleFileItem.meta.size, 2) }}
                 </template>
+                <template v-else-if="viewOptions.itemDisplayMode === 2">
+                    {{ new Date(singleFileItem.meta.createdTime).toLocaleString() }}
+                </template>
             </div>
         </template>
     </div>
@@ -68,7 +71,8 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['selected', 'unselected'])
 const mainStore = useMainStore()
-const isIntersecting = ref<boolean>(false)
+// 由于看图模式下排版存在不稳定性，故不启用虚拟列表
+const isIntersecting = ref<boolean>(props.viewOptions.itemDisplayMode === 2)
 
 const toDataURL = (str: string) => {
     const prefix = 'data:image/jpg;base64,'
@@ -83,6 +87,7 @@ const fileItemClassList = computed(() => {
     return {
         'file-item-list': props.viewOptions.itemDisplayMode === 0,
         'file-item-item': props.viewOptions.itemDisplayMode === 1,
+        'file-item-photo': props.viewOptions.itemDisplayMode === 2,
         'file-item-hidden': isHidden.value,
         'file-item-selected': props.isSelected,
     }
@@ -112,6 +117,10 @@ const handleClick = (isRightClick = false) => {
 }
 
 const onIntersect = (isIntersectingArg /* , entries, observer */) => {
+    if (props.viewOptions.itemDisplayMode === 2) {
+        isIntersecting.value = true
+        return
+    }
     // setTimeout是很重要的优化，降低并发
     setTimeout(() => {
         isIntersecting.value = isIntersectingArg
@@ -138,7 +147,7 @@ onMounted(async () => {
                 idleCallbackId = requestIdleCallback(async () => {
                     try {
                         const fileOriginalPath = (await props.adapter.getExtraMeta(props.singleFileItem.key, 'fileOriginalPath')).toString()
-                        currentThumbnail.value = await getThumbnailFromSystem(fileOriginalPath, { height: 128, width: 128, quality: 50 })
+                        currentThumbnail.value = await getThumbnailFromSystem(fileOriginalPath, { height: 256, width: 256, quality: 90 })
                         await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from(currentThumbnail.value))
                     } catch (e) {
                         await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from('n/a'))
@@ -225,6 +234,29 @@ onUnmounted(() => {
 
     .file-name {
         max-width: 100px;
+    }
+}
+
+.file-item-photo {
+    float: left;
+    height: 214px;
+    // width: 200px;
+    flex-direction: column;
+    padding: 5px;
+    margin-left: 5px;
+    margin-top: 5px;
+    border-radius: 5px;
+
+    .file-types-image {
+        height: 100px;
+    }
+
+    .file-thumbnail-img {
+        height: 190px;
+    }
+
+    .file-name {
+        display: none;
     }
 }
 

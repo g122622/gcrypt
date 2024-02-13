@@ -1,13 +1,26 @@
-import { error, warn } from "../../../utils/gyConsole";
+/**
+ * File: \src\api\core\common\Addr.ts
+ * Project: Gcrypt
+ * Created Date: 2023-11-26 17:14:30
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-02-13 16:29:15
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
 
-/* tips
-1.tokens数组全空表示根目录:
-√ => []
-× => [""] or null or [null]
-2.绝对不允许tokens数组存在空字符串
-3.支持链式调用
-*/
+import { error } from "../../../utils/gyConsole";
 
+/** tips
+ * 1.tokens数组全空表示根目录:
+ * √ => []
+ * × => [""] or null or [null]
+ * 2.绝对不允许tokens数组存在空字符串
+ * 3.支持链式调用
+ */
 class Addr {
     tokens: Array<string>
 
@@ -32,10 +45,9 @@ class Addr {
     }
 
     up = function (): Addr {
-        if (this.isRoot()) {
-            return null
+        if (!this.isRoot()) {
+            this.tokens.pop()
         }
-        this.tokens.pop()
         return this
     }
 

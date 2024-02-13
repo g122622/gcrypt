@@ -140,7 +140,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, reactive, onMounted, nextTick } from "vue";
+import { ref, computed, watch, reactive, onMounted } from "vue";
 import Addr from "@/api/core/common/Addr";
 import getFileName from "@/utils/getFileName";
 import lodash from "lodash";
@@ -209,9 +209,9 @@ const initAll = () => {
     isLoading.value = true
 
     gotoDir(props.adapter.getCurrentDirectory(), true)
-    watch(viewOptions, () => {
+    watch(viewOptions, (newVal, oldVal) => {
         // 保存viewOptions
-        tryToSaveViewOptions()
+        tryToSaveViewOptions(oldVal)
     }, { deep: true })
 
     isLoading.value = false
@@ -244,29 +244,28 @@ watch(() => props.directory, async (newVal) => {
 
 const gotoDir = async (arg: Addr, pushHistory: boolean) => {
     isLoading.value = true
-    // 执行路径更新的核心刷新逻辑
+    // 保存布局选项
+    await tryToSaveViewOptions()
+
+    // adapter切换当前目录
     await props.adapter.changeCurrentDirectory(arg)
-    if (pushHistory) {
-        operationHistory.value.push(lodash.cloneDeep(arg))
-    }
-    // 加载viewOptions
-    nextTick().then(() => {
-        tryToGetAndApplyViewOptions()
-    })
-    // 取消选择的所有item
-    selectedItems.value.clear()
     // 更改currentFileTable
     currentDir.value = arg
     currentFileTable.value = await props.adapter.getCurrentFileTable()
-    // 如果是纯刷新，则显示提示
-    if (!arg) {
-        notification.success("刷新成功")
+
+    // 加载新的布局选项
+    await tryToGetAndApplyViewOptions()
+    // 取消选择的所有item
+    selectedItems.value.clear()
+    if (pushHistory) {
+        operationHistory.value.push(lodash.cloneDeep(arg))
     }
     isLoading.value = false
 }
 
 const refresh = async () => {
     await gotoDir(currentDir.value, false)
+    notification.success("刷新成功")
 }
 
 const up = () => {
@@ -473,13 +472,15 @@ const viewOptions = ref<ViewOptions>({
 /**
  * 尝试保存布局选项
  */
-const tryToSaveViewOptions = async () => {
+const tryToSaveViewOptions = async (optionsIn?: ViewOptions) => {
     if (!props.adapter.setExtraMeta || !options.allowSavingViewOptions || !currentFileTable.value) {
         return
     }
     try {
-        await props.adapter.setExtraMeta(currentFileTable.value.selfKey, 'viewOptions', Buffer.from(JSON.stringify(viewOptions.value)))
-        console.log('save succeed ' + currentFileTable.value)
+        await props.adapter.setExtraMeta(
+            currentFileTable.value.selfKey,
+            'viewOptions',
+            Buffer.from(JSON.stringify(viewOptions.value ?? optionsIn)))
     } catch (e) {
         warn('尝试保存布局选项失败' + e.toString())
     }
@@ -514,7 +515,12 @@ const viewOptionsLists = [
             {
                 title: '平铺',
                 icon: "mdi-dots-grid"
-            }]
+            },
+            {
+                title: '看图模式',
+                icon: "mdi-image"
+            }
+        ]
     },
     {
         name: '排序依据',
