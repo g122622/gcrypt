@@ -10,6 +10,10 @@ import GcryptV1Adapter from '@/api/core/adapters/gcryptV1/adapter'
 import EncryptionEngineAES192 from '@/api/core/encryptionEngines/EncryptionEngineAES192'
 import notification from '@/api/notification'
 import KVPEngineFolder from '@/api/core/KVPEngines/KVPEngineFolder'
+import { error } from '@/utils/gyConsole'
+import EncryptionEngineBase from '@/api/core/types/EncryptionEngineBase'
+import AdapterBase from '@/api/core/types/AdapterBase'
+import KVPEngineBase from '@/api/core/types/KVPEngineBase'
 
 interface StoreListItem extends EntryJson {
     storeEntryJsonSrc: string
@@ -40,9 +44,9 @@ export const useEncryptionStore = defineStore("encryption", {
             diskStore.set("appLockerKeyEncrypted", key)
         },
         async getInitedAdapter(entryFileSrc: string, password: string, entryJSONArg: EntryJson) {
-            let adapter = null
-            let KVPEngine = null
-            let encryptionEngine = null
+            let adapter: AdapterBase = null
+            let KVPEngine: KVPEngineBase = null
+            let encryptionEngine: EncryptionEngineBase = null
             const adapterGuid = sharedUtils.getHash(16)
 
             switch (entryJSONArg.config.adapter) {
@@ -80,9 +84,12 @@ export const useEncryptionStore = defineStore("encryption", {
                     break;
             }
             try {
-                await adapter.initAdapter(entryFileSrc, password, KVPEngine, encryptionEngine, adapterGuid)
+                await encryptionEngine.init(password)
+                await KVPEngine.init(entryFileSrc, password, encryptionEngine)
+                await adapter.initAdapter(KVPEngine, adapterGuid)
             } catch (e) {
-                notification.error("密码错误")
+                notification.error("加载加密库失败：" + e.toString())
+                error("加载加密库失败：" + e.toString())
             }
             return adapter
         },

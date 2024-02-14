@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 11:37:23
+ * Last Modified: 2024-02-14 22:54:28
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -33,7 +33,7 @@ class KVPEngineJson implements KVPEngineBase {
      * @param storeEntryJsonSrc 入口json文件的绝对路径，不是data.json的路径！！！
      * @param pwd 密码
      */
-    public init = async (storeEntryJsonSrc: string, pwd: string, encryptionEngine, onNewStore: (store) => null) => {
+    public init = async (storeEntryJsonSrc: string, pwd: string, encryptionEngine) => {
         this.currentDataJsonSrc = calcDataJsonSrc(storeEntryJsonSrc, "data.json")
         this.encryptionEngine = encryptionEngine
         this.encryptionEngine.init(pwd)
@@ -42,7 +42,6 @@ class KVPEngineJson implements KVPEngineBase {
             this.currentJson = JSON.parse(await fs.readFile(this.currentDataJsonSrc, 'utf-8'))
         } else {
             await this.createNewStore()
-            await onNewStore(this)
         }
     }
 
@@ -75,6 +74,14 @@ class KVPEngineJson implements KVPEngineBase {
     private createNewStore = async () => {
         this.currentJson = this.getEmptyJson()
         await this.sync()
+    }
+
+    /**
+     * 判断数据是否存在
+     * @param hash
+     */
+    public hasData = async (hash: string): Promise<boolean> => {
+        return Object.hasOwn(this.currentJson.data, hash)
     }
 
     /**

@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 11:57:13
+ * Last Modified: 2024-02-14 21:20:27
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -33,20 +33,22 @@ class GcryptV1Adapter implements AdapterBase {
      * @param storageEntrySrc example:C:/gy/store.json
      * @param pwd
      */
-    public async initAdapter(storageEntrySrc, pwd, KVPEngine: KVPEngineBase, encryptionEngine, adapterGuid = null) {
+    public async initAdapter(KVPEngine: KVPEngineBase, adapterGuid = null) {
         this.adapterGuid = adapterGuid ?? sharedUtils.getHash(16)
         this.KVPEngine = KVPEngine
-        await this.KVPEngine.init(storageEntrySrc, pwd, encryptionEngine, async (store: KVPEngineBase) => {
-            // 若为第一次使用该库，则初始化
+
+        // 若为第一次使用该库，则初始化
+        if (!this.KVPEngine.hasData('entryKey')) {
             const entryKey = sharedUtils.getHash(32)
             // 准备根目录filetable
             const fileTableData: FileTable = {
                 selfKey: entryKey,
                 items: []
             }
-            await store.setData("entryKey", Buffer.from(entryKey))
-            await store.setData(entryKey, Buffer.from(JSON.stringify(fileTableData)))
-        })
+            await this.KVPEngine.setData("entryKey", Buffer.from(entryKey))
+            await this.KVPEngine.setData(entryKey, Buffer.from(JSON.stringify(fileTableData)))
+        }
+
         this.currentDirectory = new Addr("")
         this.currentFileTable = await this._getFileTable(this.currentDirectory)
     }

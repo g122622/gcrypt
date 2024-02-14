@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 11:54:23
+ * Last Modified: 2024-02-14 21:13:42
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -14,6 +14,7 @@
 
 import Addr from "../common/Addr"
 import FileTable from "./FileTable"
+import KVPEngineBase from "./KVPEngineBase"
 
 /**
  * 这是adapter的抽象类，是所有adapter的实现标准
@@ -21,7 +22,7 @@ import FileTable from "./FileTable"
  */
 abstract class AdapterBase {
     public abstract adapterGuid: string
-    public abstract initAdapter
+    public abstract initAdapter(KVPEngine?: KVPEngineBase, adapterGuid?: string): Promise<void>
     public abstract changeCurrentDirectory(newDir: Addr): Promise<void>
     public abstract readFile(filename: string, dir?: Addr): Promise<Buffer>
     public abstract writeFile(filename: string, data: Buffer | string, dir?: Addr): Promise<string>

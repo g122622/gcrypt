@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 11:37:38
+ * Last Modified: 2024-02-14 21:21:22
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -33,21 +33,17 @@ class KVPEngineFolder implements KVPEngineBase {
      * @param storeEntryJsonSrc 入口json文件的绝对路径，不是data.json的路径！！！
      * @param pwd 密码
      */
-    public init = async (storeEntryJsonSrc: string, pwd: string, encryptionEngine, onNewStore: (store) => null) => {
+    public async init(storeEntryJsonSrc: string, pwd: string, encryptionEngine) {
         this.storeEntryJsonSrc = storeEntryJsonSrc
         this.encryptionEngine = encryptionEngine
         this.encryptionEngine.init(pwd)
-        if (!(await this.hasData("NEW_STORE_FLAG"))) {
-            await this.setData("NEW_STORE_FLAG", Buffer.from(""))
-            await onNewStore(this)
-        }
     }
 
     /**
      * 判断数据是否存在
      * @param key
      */
-    public hasData = async (key: string): Promise<boolean> => {
+    public async hasData(key: string): Promise<boolean> {
         try {
             await fs.access(calcDataFileSrc(this.storeEntryJsonSrc, getDigest(Buffer.from(key), 'md5')))
             return true
@@ -60,7 +56,7 @@ class KVPEngineFolder implements KVPEngineBase {
      * 获取数据
      * @param key
      */
-    public getData = async (key: string): Promise<Buffer | null> => {
+    public async getData(key: string): Promise<Buffer | null> {
         if (!(await this.hasData(key))) {
             return null
         }
@@ -80,7 +76,7 @@ class KVPEngineFolder implements KVPEngineBase {
      * @param key 根据已有键去set数据
      * @param buf
      */
-    public setData = async (key: string, buf: Buffer) => {
+    public async setData(key: string, buf: Buffer) {
         let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, getDigest(Buffer.from(key), 'md5'))
         await fs.writeFile(dataFilePath, await this.encryptionEngine.encrypt(buf))
     }
@@ -90,7 +86,7 @@ class KVPEngineFolder implements KVPEngineBase {
      * @param key 根据已有键去set数据
      * @param buf
      */
-    public deleteData = async (key: string) => {
+    public async deleteData(key: string) {
         let dataFilePath = calcDataFileSrc(this.storeEntryJsonSrc, getDigest(Buffer.from(key), 'md5'))
         await fs.unlink(dataFilePath)
     }

@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-13 16:46:05
+ * Last Modified: 2024-02-14 21:34:39
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -35,4 +35,6 @@ export default {
     "3.3.0": ['修改文件读取逻辑，支持读取mtp设备的文件', "支持文件批量复制与剪切",
         '构建过程使用缓存，加快构建速度', "核心优化：去除冗余代码，修复移动文件bug", "修复移动和复制文件后缩略图没有的问题",
         '支持保存每个文件夹的布局选项'],
+    "3.4.0": ['新的均衡型存储引擎：KVPEngineHybrid', "优化adapter初始化逻辑", ""],
+
 }
