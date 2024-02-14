@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-13 10:28:51
+ * Last Modified: 2024-02-14 11:57:13
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -14,8 +14,8 @@
 
 import sharedUtils from "@/utils/sharedUtils";
 import Addr from "@/api/core/common/Addr";
-import dirSingleItem from "@/api/core/types/dirSingleItem";
-import fileTable from "@/api/core/types/fileTable";
+import DirSingleItem from "@/api/core/types/DirSingleItem";
+import FileTable from "@/api/core/types/FileTable";
 import lodash from "lodash";
 import AdapterBase from "@/api/core/types/AdapterBase"
 import KVPEngineBase from "@/api/core/types/KVPEngineBase";
@@ -24,8 +24,8 @@ import calcBufSize from "@/utils/calcBufSize";
 class GcryptV1Adapter implements AdapterBase {
     private KVPEngine: KVPEngineBase
     private currentDirectory: Addr
-    private currentFileTable: fileTable
-    private cachedFileTables: Array<{ fileTable: fileTable, dir: Addr }> = []
+    private currentFileTable: FileTable
+    private cachedFileTables: Array<{ fileTable: FileTable, dir: Addr }> = []
     public adapterGuid: string
 
     /**
@@ -40,7 +40,7 @@ class GcryptV1Adapter implements AdapterBase {
             // 若为第一次使用该库，则初始化
             const entryKey = sharedUtils.getHash(32)
             // 准备根目录filetable
-            const fileTableData: fileTable = {
+            const fileTableData: FileTable = {
                 selfKey: entryKey,
                 items: []
             }
@@ -73,7 +73,7 @@ class GcryptV1Adapter implements AdapterBase {
     /**
      * 缓存文件列表，提高下次访问速率
      */
-    private _cacheFileTables(fileTable: fileTable, dir: Addr) {
+    private _cacheFileTables(fileTable: FileTable, dir: Addr) {
         for (let i = 0; i < this.cachedFileTables.length; i++) {
             // 发现之前缓存过一样的dir，那么更新缓存
             if (this.cachedFileTables[i].dir.compareWith(dir)) {
@@ -94,7 +94,7 @@ class GcryptV1Adapter implements AdapterBase {
     /**
      * 核心函数: 根据传入的dir递归遍历文件系统，将找到的filetable传回
      */
-    private async _getFileTable(dir: Addr): Promise<fileTable> {
+    private async _getFileTable(dir: Addr): Promise<FileTable> {
         const foo = lodash.cloneDeep(dir)
 
         // 先查找缓存，看是否命中
@@ -108,13 +108,13 @@ class GcryptV1Adapter implements AdapterBase {
         // 缓存未命中
         if (foo.isRoot()) {
             const entryKey: string = (await this.KVPEngine.getData("entryKey")).toString()
-            const tempTable: fileTable = JSON.parse((await this.KVPEngine.getData(entryKey)).toString())
+            const tempTable: FileTable = JSON.parse((await this.KVPEngine.getData(entryKey)).toString())
             this._cacheFileTables(tempTable, foo)
             return tempTable
         } else {
             foo.up()
             // 查找符合上一层dir的子文件列表，将其应用在本层dir
-            const tempTable: fileTable = JSON.parse((await this.readFile(dir.getTopToken(), foo)).toString())
+            const tempTable: FileTable = JSON.parse((await this.readFile(dir.getTopToken(), foo)).toString())
             this._cacheFileTables(tempTable, dir)
             return tempTable
         }
@@ -130,7 +130,7 @@ class GcryptV1Adapter implements AdapterBase {
             throw new Error("GcryptV1Adapter::InvalidFileName")
         }
         // 拿到key
-        let match: dirSingleItem
+        let match: DirSingleItem
         if (dir) {
             const fileTable = await this._getFileTable(dir)
             match = fileTable.items.find(item => item.name === filename)
@@ -156,10 +156,10 @@ class GcryptV1Adapter implements AdapterBase {
 
         let bufData: Buffer = typeof data === "string" ? Buffer.from(data) : data
         let key: string
-        let newDirItem: dirSingleItem
+        let newDirItem: DirSingleItem
         const currentDate = Date.now()
 
-        // [内存]当前文件表增加一个dirSingleItem，并更新缓存
+        // [内存]当前文件表增加一个DirSingleItem，并更新缓存
         if (await this.exists(filename)) {
             const idx = this.currentFileTable.items.findIndex(item => item.name === filename)
             newDirItem = this.currentFileTable.items.splice(idx, 1)[0]
@@ -179,7 +179,8 @@ class GcryptV1Adapter implements AdapterBase {
                     size: calcBufSize(bufData)
                 },
                 key,
-                isSymlink: false
+                isSymlink: false,
+                extraMetaKeysList: []
             }
         }
 
@@ -217,12 +218,12 @@ class GcryptV1Adapter implements AdapterBase {
         // if names conflict
         if (await this.exists(folderName)) {
             await this.changeCurrentDirectory(oldDir)
-            throw new Error("GcryptV1Adapter::Existed")
+            throw new Error("GcryptV1Adapter::mkdir::FolderAlreadyExisted: " + folderName)
         }
-        // [内存]当前文件表增加一个dirSingleItem，并更新缓存
+        // [内存]当前文件表增加一个DirSingleItem，并更新缓存
         const dateNum: number = new Date().getTime()
         const hash = sharedUtils.getHash(32)
-        const foo: dirSingleItem = {
+        const foo: DirSingleItem = {
             name: folderName,
             type: "folder",
             meta: {
@@ -232,7 +233,8 @@ class GcryptV1Adapter implements AdapterBase {
                 size: -1
             },
             key: hash,
-            isSymlink: false
+            isSymlink: false,
+            extraMetaKeysList: []
         }
 
         this.currentFileTable.items.push(foo)
@@ -241,7 +243,7 @@ class GcryptV1Adapter implements AdapterBase {
         await this.KVPEngine.setData(this.currentFileTable.selfKey, Buffer.from(JSON.stringify(this.currentFileTable)))
 
         // [本地]2.创建新的文件列表到本地
-        const fileTableData: fileTable = {
+        const fileTableData: FileTable = {
             selfKey: hash,
             items: []
         }
@@ -294,7 +296,7 @@ class GcryptV1Adapter implements AdapterBase {
         await this.changeCurrentDirectory(dir)
 
         if (await this.exists(oldname)) {
-            // [内存]修改当前文件表dirSingleItem
+            // [内存]修改当前文件表DirSingleItem
             const idx = this.currentFileTable.items.findIndex(item => item.name === oldname)
             const newDirItem = this.currentFileTable.items.splice(idx, 1)[0]
             // 修改元数据
@@ -411,7 +413,7 @@ class GcryptV1Adapter implements AdapterBase {
     /**
      * 获取当前文件列表
      */
-    public async getCurrentFileTable(): Promise<fileTable> {
+    public async getCurrentFileTable(): Promise<FileTable> {
         return lodash.cloneDeep(this.currentFileTable)
     }
 

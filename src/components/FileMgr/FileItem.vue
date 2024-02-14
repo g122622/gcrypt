@@ -1,7 +1,7 @@
 <template>
     <div class="file-item" :class="fileItemClassList" v-ripple ref="fileItemElement" @click="handleClick()"
         @click.right="handleClick(true)" v-intersect="{
-            handler: props.viewOptions.itemDisplayMode === 2 ? () => { } : onIntersect,
+            handler: onIntersect,
             options: {
                 threshold: 0
             }
@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import dirSingleItem from "@/api/core/types/dirSingleItem";
+import DirSingleItem from "@/api/core/types/DirSingleItem";
 import getFileType from "@/utils/getFileType";
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useMainStore } from "@/store/main"
@@ -63,7 +63,7 @@ import { warn } from "@/utils/gyConsole";
 
 interface Props {
     viewOptions: ViewOptions,
-    singleFileItem: dirSingleItem,
+    singleFileItem: DirSingleItem,
     index: number,
     adapter: AdapterBase,
     isSelected: boolean
@@ -133,7 +133,7 @@ let idleCallbackId = 0
 
 onMounted(async () => {
     // 自动创建和加载缩略图相关逻辑
-    if (props.viewOptions.showThumbnails && props.adapter.getExtraMeta) {
+    if (props.viewOptions.showThumbnails && props.adapter.getExtraMeta && props.singleFileItem.type === 'file') {
         try {
             const thumbnailBuf = await props.adapter.getExtraMeta(props.singleFileItem.key, 'thumbnail')
             if (thumbnailBuf) {

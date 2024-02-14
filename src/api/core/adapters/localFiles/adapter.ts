@@ -1,8 +1,22 @@
+/**
+ * File: \src\api\core\adapters\localFiles\adapter.ts
+ * Project: Gcrypt
+ * Created Date: 2023-11-26 17:14:30
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-02-14 11:59:05
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
+
 import { error } from "@/utils/gyConsole";
 import sharedUtils from "@/utils/sharedUtils";
 import Addr from "@/api/core/common/Addr";
-import dirSingleItem from "@/api/core/types/dirSingleItem";
-import fileTable from "@/api/core/types/fileTable";
+import DirSingleItem from "@/api/core/types/DirSingleItem";
+import FileTable from "@/api/core/types/FileTable";
 import lodash from "lodash";
 import AdapterBase from "@/api/core/types/AdapterBase"
 import fs from "fs-extra";
@@ -19,7 +33,7 @@ const forbiddenDirents = ["System Volume Information",
 
 class LocalFileAdapter implements AdapterBase {
     private currentDirectory: Addr
-    private currentFileTable: fileTable
+    private currentFileTable: FileTable
     public adapterGuid: string
 
     /**
@@ -47,8 +61,8 @@ class LocalFileAdapter implements AdapterBase {
         this.currentFileTable = await this._getFileTable(newDir)
     }
 
-    private async _getFileTable(dir: Addr): Promise<fileTable> {
-        const res: fileTable = { items: [] as dirSingleItem[], selfKey: '' }
+    private async _getFileTable(dir: Addr): Promise<FileTable> {
+        const res: FileTable = { items: [] as DirSingleItem[], selfKey: '' }
         const pathBase = dir.toPathStr()
         try {
             let dirs = await fs.readdir(pathBase);
@@ -67,7 +81,8 @@ class LocalFileAdapter implements AdapterBase {
                                 modifiedTime: stats.mtime.getTime(),
                                 size: stats.size
                             },
-                            isSymlink: false
+                            isSymlink: false,
+                            extraMetaKeysList: []
                         })
                     }
                 } catch (e) { }
@@ -168,7 +183,7 @@ class LocalFileAdapter implements AdapterBase {
     /**
      * 获取当前文件列表
      */
-    public getCurrentFileTable = async function (): Promise<fileTable> {
+    public getCurrentFileTable = async function (): Promise<FileTable> {
         return lodash.cloneDeep(this.currentFileTable)
     }
 

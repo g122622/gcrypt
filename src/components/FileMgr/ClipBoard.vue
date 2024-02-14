@@ -34,14 +34,14 @@ import { ClipBoardItem } from "./types/ClipBoardItem";
 import Addr from "@/api/core/common/Addr";
 import { useTaskStore } from "@/store/task";
 import Task from "@/api/Task";
-import dirSingleItem from "@/api/core/types/dirSingleItem";
+import DirSingleItem from "@/api/core/types/DirSingleItem";
 import lodash from "lodash";
 import notification from "@/api/notification";
 
 interface Props {
     adapter: AdapterBase,
     currentDir: Addr,
-    selectedItems: Set<dirSingleItem>
+    selectedItems: Set<DirSingleItem>
 }
 const props = defineProps<Props>()
 const clipBoardItems = ref<ClipBoardItem[]>([])

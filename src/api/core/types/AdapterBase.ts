@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-01-21 14:57:06
+ * Last Modified: 2024-02-14 11:54:23
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -13,7 +13,7 @@
  */
 
 import Addr from "../common/Addr"
-import fileTable from "./fileTable"
+import FileTable from "./FileTable"
 
 /**
  * 这是adapter的抽象类，是所有adapter的实现标准
@@ -28,7 +28,7 @@ abstract class AdapterBase {
     public abstract exists(filename: string, dir?: Addr): Promise<boolean>
     public abstract mkdir(folderName: string, dir?: Addr): Promise<void>
     public abstract deleteFile(filename: string, dir?: Addr): void
-    public abstract getCurrentFileTable(): Promise<fileTable>
+    public abstract getCurrentFileTable(): Promise<FileTable>
     public abstract getCurrentDirectory(): Addr
 
     // 可选功能

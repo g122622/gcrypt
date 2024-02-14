@@ -144,8 +144,8 @@ import { ref, computed, watch, reactive, onMounted } from "vue";
 import Addr from "@/api/core/common/Addr";
 import getFileName from "@/utils/getFileName";
 import lodash from "lodash";
-import dirSingleItem from "@/api/core/types/dirSingleItem";
-import fileTable from "@/api/core/types/fileTable";
+import DirSingleItem from "@/api/core/types/DirSingleItem";
+import FileTable from "@/api/core/types/FileTable";
 import emitter from "@/eventBus";
 import AdapterBase from "@/api/core/types/AdapterBase";
 import File from "@/api/File";
@@ -172,14 +172,14 @@ interface Props {
     adapter: AdapterBase,
     height?: string,
     options?: FileMgrOptions,
-    selectedItems?: Set<dirSingleItem>,
+    selectedItems?: Set<DirSingleItem>,
     directory?: Addr
 }
 const props = defineProps<Props>()
 const emit = defineEmits(['update:selectedItems'])
 const taskStore = useTaskStore()
 const isLoading = ref<boolean>(true)
-const currentFileTable = ref<fileTable>(null)
+const currentFileTable = ref<FileTable>(null)
 const currentDir = ref(new Addr(""))
 const operationHistory = ref<Addr[]>([])
 const itemCache = ref(null)
@@ -269,6 +269,10 @@ const refresh = async () => {
 }
 
 const up = () => {
+    if (currentDir.value.isRoot()) {
+        notification.warning("已经是根目录了")
+        return
+    }
     gotoDir(currentDir.value.up(), true)
 }
 
@@ -368,7 +372,7 @@ const renameFile = async (oldname, newname) => {
 }
 
 // <UI>
-const handlePropertiesClick = (item?: dirSingleItem) => {
+const handlePropertiesClick = (item?: DirSingleItem) => {
     if (item) {
         itemCache.value = { ...item, ...item.meta }
         delete itemCache.value.meta
@@ -599,7 +603,7 @@ const viewOptionsLists = [
 
 ]
 
-const currentFileTableForRender = computed<fileTable['items']>(() => {
+const currentFileTableForRender = computed<FileTable['items']>(() => {
     if (!currentFileTable.value) {
         return []
     }
@@ -651,7 +655,7 @@ const DialogMgrRef = ref(null)
 // <文件选择>
 let selectedItems = null
 if (options.exposeSelection) {
-    selectedItems = computed<Set<dirSingleItem>>({
+    selectedItems = computed<Set<DirSingleItem>>({
         get() {
             return props.selectedItems
         },
@@ -660,16 +664,16 @@ if (options.exposeSelection) {
         }
     })
 } else {
-    selectedItems = ref<Set<dirSingleItem>>(new Set())
+    selectedItems = ref<Set<DirSingleItem>>(new Set())
 }
 
-const handleItemSelection = (item: dirSingleItem) => {
+const handleItemSelection = (item: DirSingleItem) => {
     if (!options.allowMultipleSelection && selectedItems.value.size > 0) return
     if (options.onlyAllowFolderSelection && item.type !== "folder") return
     selectedItems.value.add(item)
 }
 
-const handleItemUnselection = (item: dirSingleItem) => {
+const handleItemUnselection = (item: DirSingleItem) => {
     selectedItems.value.delete(item)
 }
 

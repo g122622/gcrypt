@@ -1,3 +1,17 @@
+/**
+ * File: \src\api\core\KVPEngines\KVPEngineJson.ts
+ * Project: Gcrypt
+ * Created Date: 2023-11-26 17:14:30
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-02-14 11:37:23
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
+
 import fs from "fs-extra";
 import KVPEngineBase from "../types/KVPEngineBase";
 import EncryptionEngineBase from "../types/EncryptionEngineBase";

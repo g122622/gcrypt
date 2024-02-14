@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-01-09 18:43:27
+ * Last Modified: 2024-02-14 13:45:52
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -37,7 +37,7 @@ class EncryptionEngineAES192 implements EncryptionEngineBase {
         return new Promise((resolve) => {
             ASSERT(!!this.currentPwd)
             try {
-                crypto.scrypt(this.currentPwd, 'gcrypt', 24, (err, key) => {
+                crypto.scrypt(this.currentPwd, 'gcrypt', 24, { cost: 16 }, (err, key) => {
                     if (err) throw err;
 
                     const cipher = crypto.createCipheriv(EncryptConfig.algorithm, key, EncryptConfig.iv);
@@ -65,7 +65,7 @@ class EncryptionEngineAES192 implements EncryptionEngineBase {
         return new Promise((resolve) => {
             ASSERT(!!this.currentPwd)
             try {
-                crypto.scrypt(this.currentPwd, 'gcrypt', 24, (err, key) => {
+                crypto.scrypt(this.currentPwd, 'gcrypt', 24, { cost: 16 }, (err, key) => {
                     if (err) throw err;
 
                     const decipher = crypto.createDecipheriv(EncryptConfig.algorithm, key, EncryptConfig.iv);

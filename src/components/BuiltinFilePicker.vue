@@ -27,7 +27,7 @@ import FileMgr from '@/components/FileMgr/FileMgr.vue'
 import emitter from "@/eventBus"
 import Adapter from "@/api/core/adapters/localFiles/adapter"
 import { FileMgrOptions } from '@/components/FileMgr/types/FileMgrOptions';
-import dirSingleItem from '@/api/core/types/dirSingleItem';
+import DirSingleItem from '@/api/core/types/DirSingleItem';
 import path from 'path'
 import notification from '@/api/notification';
 import getAllDrive from '@/utils/file/getAllDrive'
@@ -37,10 +37,10 @@ const filePickers = ref<{
     isDialogOpen: boolean,
     currentDrive: string
     adapter: Adapter,
-    selectedItems: Set<dirSingleItem>,
+    selectedItems: Set<DirSingleItem>,
     fileMgrOptions: FileMgrOptions,
     taskId: string,
-    confirmHandler(selectedItems: Set<dirSingleItem>, adapter: Adapter): void,
+    confirmHandler(selectedItems: Set<DirSingleItem>, adapter: Adapter): void,
     cancellHandler(): void
 }[]>([])
 const allDrive = await getAllDrive()

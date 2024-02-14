@@ -17,11 +17,11 @@
 </template>
 
 <script setup lang="ts">
-import dirSingleItem from '@/api/core/types/dirSingleItem';
+import DirSingleItem from '@/api/core/types/DirSingleItem';
 
 interface Props {
-    currentFileTableForRender: dirSingleItem[],
-    selectedItems: Set<dirSingleItem>
+    currentFileTableForRender: DirSingleItem[],
+    selectedItems: Set<DirSingleItem>
 }
 const props = defineProps<Props>()
 const emit = defineEmits(['selectAll', 'unSelectAll', 'reverseSelection'])
