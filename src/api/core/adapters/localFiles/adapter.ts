@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 11:59:05
+ * Last Modified: 2024-02-15 11:28:49
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -37,9 +37,9 @@ class LocalFileAdapter implements AdapterBase {
     public adapterGuid: string
 
     /**
-     * 初始化adapter，若不存在，则根据传入的src的末尾文件名解析出storeName
-     * @param storageEntrySrc example:C:/gy/store.json
-     * @param pwd
+     * 初始化adapter
+     * @param initialDirectory
+     * @param adapterGuid
      */
     public initAdapter = async function (initialDirectory: string, adapterGuid = null) {
         this.adapterGuid = adapterGuid ?? sharedUtils.getHash(16)

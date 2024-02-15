@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 13:45:52
+ * Last Modified: 2024-02-15 16:36:16
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -19,7 +19,8 @@ import EncryptionEngineBase from "../types/EncryptionEngineBase"
 
 const EncryptConfig = {
     algorithm: 'aes-192-cbc',
-    iv: new Uint8Array([86, 215, 125, 103, 83, 172, 176, 47, 18, 209, 131, 206, 48, 61, 70, 196])
+    iv: new Uint8Array([86, 215, 125, 103, 83, 172, 176, 47, 18, 209, 131, 206, 48, 61, 70, 196]),
+    cost: 2// 默认：16384
 }
 
 class EncryptionEngineAES192 implements EncryptionEngineBase {
@@ -37,7 +38,7 @@ class EncryptionEngineAES192 implements EncryptionEngineBase {
         return new Promise((resolve) => {
             ASSERT(!!this.currentPwd)
             try {
-                crypto.scrypt(this.currentPwd, 'gcrypt', 24, { cost: 16 }, (err, key) => {
+                crypto.scrypt(this.currentPwd, 'gcrypt', 24, { cost: EncryptConfig.cost }, (err, key) => {
                     if (err) throw err;
 
                     const cipher = crypto.createCipheriv(EncryptConfig.algorithm, key, EncryptConfig.iv);
@@ -65,7 +66,7 @@ class EncryptionEngineAES192 implements EncryptionEngineBase {
         return new Promise((resolve) => {
             ASSERT(!!this.currentPwd)
             try {
-                crypto.scrypt(this.currentPwd, 'gcrypt', 24, { cost: 16 }, (err, key) => {
+                crypto.scrypt(this.currentPwd, 'gcrypt', 24, { cost: EncryptConfig.cost }, (err, key) => {
                     if (err) throw err;
 
                     const decipher = crypto.createDecipheriv(EncryptConfig.algorithm, key, EncryptConfig.iv);

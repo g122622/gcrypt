@@ -325,17 +325,16 @@ const importFile = async (files: FileList) => {
     }
     try {
         await taskStore.runTaskGroup(taskGroupId)
+        notification.success(`导入${files.length}个文件成功`)
     } catch (error) {
         emitter.emit("showMsg",
             {
                 level: "error",
                 msg: `导入文件失败 ${error.message}`
             })
-        return
     } finally {
         await refresh()
     }
-    notification.success(`导入${files.length}个文件成功`)
 }
 
 const deleteFile = async () => {

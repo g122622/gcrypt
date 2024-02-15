@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 22:54:28
+ * Last Modified: 2024-02-15 11:13:37
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -81,7 +81,9 @@ class KVPEngineJson implements KVPEngineBase {
      * @param hash
      */
     public hasData = async (hash: string): Promise<boolean> => {
-        return Object.hasOwn(this.currentJson.data, hash)
+        // TS2339: Property 'hasOwn' does not exist on type 'ObjectConstructor'.
+        // eslint-disable-next-line dot-notation
+        return Object['hasOwn'](this.currentJson.data, hash)
     }
 
     /**

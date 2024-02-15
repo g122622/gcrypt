@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-01-21 20:57:07
+ * Last Modified: 2024-02-15 10:15:49
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -18,6 +18,9 @@ import { abort } from "process"
 export default function ASSERT(condition: any) {
     if (!condition) {
         error("ASSERT FAILED")
+        if (process.env.NODE_ENV === 'development') {
+            return
+        }
         abort()
     }
 }

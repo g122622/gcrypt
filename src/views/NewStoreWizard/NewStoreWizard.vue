@@ -15,12 +15,12 @@
             <v-container v-if="currentStage === 2">
                 <v-col cols="12">
                     <small>加密库配置</small>
-                    <v-autocomplete :items="['KVPEngineJson', 'KVPEngineFolder']" label="存储引擎" density="compact"
-                        v-model="currentKVPEngine"></v-autocomplete>
+                    <v-autocomplete :items="['KVPEngineJson', 'KVPEngineFolder', 'KVPEngineHybrid']" label="存储引擎"
+                        density="compact" v-model="currentKVPEngine"></v-autocomplete>
                     <v-autocomplete :items="['gcryptV1']" label="adapter" density="compact"
                         v-model="currentAdapter"></v-autocomplete>
-                    <v-autocomplete :items="['encryptionEngineAES192']" label="加密引擎" density="compact"
-                        v-model="currentEncryptionEngine"></v-autocomplete>
+                    <v-autocomplete :items="['encryptionEngineAES192', 'EncryptionEngineNoop']" label="加密引擎"
+                        density="compact" v-model="currentEncryptionEngine"></v-autocomplete>
                 </v-col>
                 <v-btn variant="tonal" @click="isEngineConfirmed = true" prepend-icon="mdi-check">
                     确定

@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 21:21:22
+ * Last Modified: 2024-02-15 10:57:42
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -83,7 +83,7 @@ class KVPEngineFolder implements KVPEngineBase {
 
     /**
      *
-     * @param key 根据已有键去set数据
+     * @param key 根据已有键去delete数据
      * @param buf
      */
     public async deleteData(key: string) {

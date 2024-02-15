@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 21:20:27
+ * Last Modified: 2024-02-15 12:36:17
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -36,9 +36,8 @@ class GcryptV1Adapter implements AdapterBase {
     public async initAdapter(KVPEngine: KVPEngineBase, adapterGuid = null) {
         this.adapterGuid = adapterGuid ?? sharedUtils.getHash(16)
         this.KVPEngine = KVPEngine
-
         // 若为第一次使用该库，则初始化
-        if (!this.KVPEngine.hasData('entryKey')) {
+        if (!(await this.KVPEngine.hasData('entryKey'))) {
             const entryKey = sharedUtils.getHash(32)
             // 准备根目录filetable
             const fileTableData: FileTable = {

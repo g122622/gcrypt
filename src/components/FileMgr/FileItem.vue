@@ -137,7 +137,7 @@ onMounted(async () => {
         try {
             const thumbnailBuf = await props.adapter.getExtraMeta(props.singleFileItem.key, 'thumbnail')
             if (thumbnailBuf) {
-                const thumbnailStr = (await props.adapter.getExtraMeta(props.singleFileItem.key, 'thumbnail')).toString()
+                const thumbnailStr = thumbnailBuf.toString()
                 if (thumbnailStr !== 'n/a') {
                     currentThumbnail.value = thumbnailStr
                 }

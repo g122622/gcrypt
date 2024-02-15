@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-14 21:13:42
+ * Last Modified: 2024-02-15 11:13:37
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -22,7 +22,8 @@ import KVPEngineBase from "./KVPEngineBase"
  */
 abstract class AdapterBase {
     public abstract adapterGuid: string
-    public abstract initAdapter(KVPEngine?: KVPEngineBase, adapterGuid?: string): Promise<void>
+    // public abstract initAdapter(KVPEngine?: KVPEngineBase, adapterGuid?: string): Promise<void>
+    public abstract initAdapter(...args: any[]): Promise<void>
     public abstract changeCurrentDirectory(newDir: Addr): Promise<void>
     public abstract readFile(filename: string, dir?: Addr): Promise<Buffer>
     public abstract writeFile(filename: string, data: Buffer | string, dir?: Addr): Promise<string>

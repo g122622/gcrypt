@@ -5,15 +5,19 @@ import FileMgr from "@/components/FileMgr/FileMgr.vue"
 import emitter from '@/eventBus'
 import sharedUtils from '@/utils/sharedUtils'
 import fs from "fs-extra"
-import KVPEngineJson from '@/api/core/KVPEngines/KVPEngineJson'
-import GcryptV1Adapter from '@/api/core/adapters/gcryptV1/adapter'
-import EncryptionEngineAES192 from '@/api/core/encryptionEngines/EncryptionEngineAES192'
-import notification from '@/api/notification'
-import KVPEngineFolder from '@/api/core/KVPEngines/KVPEngineFolder'
 import { error } from '@/utils/gyConsole'
+import notification from '@/api/notification'
+
 import EncryptionEngineBase from '@/api/core/types/EncryptionEngineBase'
 import AdapterBase from '@/api/core/types/AdapterBase'
 import KVPEngineBase from '@/api/core/types/KVPEngineBase'
+
+import KVPEngineJson from '@/api/core/KVPEngines/KVPEngineJson'
+import GcryptV1Adapter from '@/api/core/adapters/gcryptV1/adapter'
+import EncryptionEngineAES192 from '@/api/core/encryptionEngines/EncryptionEngineAES192'
+import KVPEngineFolder from '@/api/core/KVPEngines/KVPEngineFolder'
+import KVPEngineHybrid from '@/api/core/KVPEngines/KVPEngineHybrid'
+import EncryptionEngineNoop from '@/api/core/encryptionEngines/EncryptionEngineNoop'
 
 interface StoreListItem extends EntryJson {
     storeEntryJsonSrc: string
@@ -67,6 +71,10 @@ export const useEncryptionStore = defineStore("encryption", {
                     KVPEngine = new KVPEngineFolder()
                     break;
 
+                case "KVPEngineHybrid":
+                    KVPEngine = new KVPEngineHybrid()
+                    break;
+
                 default:
                     break;
             }
@@ -79,6 +87,10 @@ export const useEncryptionStore = defineStore("encryption", {
                 case "EncryptionEngineAES192":
                     encryptionEngine = new EncryptionEngineAES192()
                     break;
+
+                case "EncryptionEngineNoop":
+                    encryptionEngine = new EncryptionEngineNoop()
+                    break
 
                 default:
                     break;
