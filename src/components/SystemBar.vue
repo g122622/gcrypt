@@ -42,6 +42,17 @@ const pendingOrRunningTaskAmount = computed<number>(() => taskStore.getPendingOr
 const itemList = computed(() => {
     return [
         {
+            name: 'test',
+            tooltip: '运行测试函数',
+            onClick: () => {
+                // eslint-disable-next-line dot-notation
+                window['runTest']()
+            },
+            icon: 'mdi-test-tube',
+            class: 'system-bar-item-normal',
+            hide: sharedUtils.env === 'production'
+        },
+        {
             name: 'devtools',
             tooltip: '切换开发者工具',
             onClick: () => {

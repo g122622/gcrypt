@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-01-21 20:57:39
+ * Last Modified: 2024-02-16 15:30:22
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -12,7 +12,7 @@
  * ------------------------------------
  */
 
-import fileTypes from "../types/fileTypes";
+import fileTypes from "@/types/fileTypes";
 
 function getFileType(filename: string) {
     if (filename.indexOf(".") === -1) {

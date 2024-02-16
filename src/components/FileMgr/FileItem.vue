@@ -52,7 +52,7 @@
 
 <script setup lang="ts">
 import DirSingleItem from "@/api/core/types/DirSingleItem";
-import getFileType from "@/utils/getFileType";
+import getFileType from "@/utils/file/getFileType";
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useMainStore } from "@/store/main"
 import prettyBytes from "@/utils/prettyBytes";
@@ -145,12 +145,17 @@ onMounted(async () => {
                 // 当thumbnailBuf为null
                 // 尝试生成缩略图
                 idleCallbackId = requestIdleCallback(async () => {
+                    if (!(await props.adapter.hasExtraMeta(props.singleFileItem.key, 'fileOriginalPath'))) {
+                        return
+                    }
+                    let fileOriginalPath = null
                     try {
-                        const fileOriginalPath = (await props.adapter.getExtraMeta(props.singleFileItem.key, 'fileOriginalPath')).toString()
+                        fileOriginalPath = (await props.adapter.getExtraMeta(props.singleFileItem.key, 'fileOriginalPath')).toString()
                         currentThumbnail.value = await getThumbnailFromSystem(fileOriginalPath, { height: 256, width: 256, quality: 90 })
                         await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from(currentThumbnail.value))
                     } catch (e) {
                         await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from('n/a'))
+                        warn(`从系统获取缩略图失败，错误：${e.toString()}，路径：${fileOriginalPath}`)
                     } finally {
                         // 收尾工作，清理掉fileOriginalPath
                         await props.adapter.deleteExtraMeta(props.singleFileItem.key, 'fileOriginalPath')

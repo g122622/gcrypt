@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-15 11:13:37
+ * Last Modified: 2024-02-16 10:54:14
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -41,6 +41,7 @@ abstract class AdapterBase {
     public abstract getExtraMeta?: (fileKey: string, metaKey: string) => Promise<Buffer | null>
     public abstract setExtraMeta?: (fileKey: string, metaKey: string, value: Buffer) => Promise<void>
     public abstract deleteExtraMeta?: (fileKey: string, metaKey: string) => Promise<void>
+    public abstract hasExtraMeta?: (fileKey: string, metaKey: string) => Promise<boolean>
 }
 
 export default AdapterBase

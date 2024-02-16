@@ -10,7 +10,7 @@ import { ref, onMounted, watch } from "vue"
 import sharedUtils from "@/utils/sharedUtils"
 import { VAceEditor } from 'vue3-ace-editor';
 import File from "@/api/File";
-import getExtName from "@/utils/getExtName";
+import getExtName from "@/utils/file/getExtName";
 import { useSettingsStore } from "@/store/settings"
 
 const settingsStore = useSettingsStore()

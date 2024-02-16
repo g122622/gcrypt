@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-15 11:13:37
+ * Last Modified: 2024-02-15 22:49:30
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -90,13 +90,13 @@ class KVPEngineJson implements KVPEngineBase {
      * 获取数据
      * @param hash
      */
-    public getData = async (hash: string): Promise<Buffer> => {
+    public getData = async (hash: string): Promise<Buffer | null> => {
         // eslint-disable-next-line dot-notation
         if (Object['hasOwn'](this.currentJson.data, hash)) {
             const data: string = this.currentJson.data[hash]
             return await this.encryptionEngine.decrypt(Buffer.from(data, 'base64'))
         } else {
-            console.error(`这个哈希key不存在`, hash, this.currentJson)
+            return null
         }
     }
 
@@ -112,10 +112,13 @@ class KVPEngineJson implements KVPEngineBase {
 
     /**
      *
-     * @param hash 根据已有键去set数据
+     * @param hash 根据已有键去delete数据
      * @param buf
      */
     public deleteData = async (hash: string) => {
+        if (!(await this.hasData(hash))) {
+            throw new Error('要删除的key不存在：' + hash)
+        }
         delete this.currentJson.data[hash]
         await this.sync()
     }

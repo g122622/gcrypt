@@ -1,6 +1,6 @@
 import fs from "fs-extra"
 import path from "path"
-import isFileOccupied from '@/utils/isFileOccupied'
+import isFileOccupied from '@/utils/file/isFileOccupied'
 
 interface Options {
     minUpdateIntervalMs: number,

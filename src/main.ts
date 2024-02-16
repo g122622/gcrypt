@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-01-22 13:48:58
+ * Last Modified: 2024-02-15 18:00:05
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -26,6 +26,7 @@ import utils from "./utils/utils";
 import lodash, { debounce } from "lodash";
 import { nextTick } from 'process';
 import notification from './api/notification';
+import test from "./test/KVPEngineHybridUnit";
 
 // 全局组件
 import VueApp from './App.vue';
@@ -274,4 +275,5 @@ class ApplicationRenderer {
 (function () {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const GcryptApp = new ApplicationRenderer()
+    window['runTest'] = test
 })()

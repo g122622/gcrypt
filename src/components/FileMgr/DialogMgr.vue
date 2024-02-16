@@ -128,15 +128,15 @@ export default defineComponent({
         },
         async handleSaveFile() {
             await this.adapter.writeFile(this.fileName, Buffer.from(''))
-            this.refresh()
+            await this.refresh()
         },
         async handleSaveFolder() {
             await this.adapter.mkdir(this.folderName)
-            this.refresh()
+            await this.refresh()
         },
         async handleRenameFile() {
             await this.adapter.renameFile(this.oldFileName, this.newFileName)
-            this.refresh()
+            await this.refresh()
         }
     }
     // mounted() {

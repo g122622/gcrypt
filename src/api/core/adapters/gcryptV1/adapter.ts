@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-15 12:36:17
+ * Last Modified: 2024-02-16 11:01:43
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -382,7 +382,7 @@ class GcryptV1Adapter implements AdapterBase {
             throw new Error("GcryptV1Adapter::InvalidKey")
         }
         // 取数据
-        return (await this.KVPEngine.getData(fileKey + metaKey)) ?? null
+        return (await this.KVPEngine.getData(metaKey + '-' + fileKey)) ?? null
     }
 
     /**
@@ -395,12 +395,12 @@ class GcryptV1Adapter implements AdapterBase {
         if (!fileKey || !metaKey) {
             throw new Error("GcryptV1Adapter::InvalidKey")
         }
-        await this.KVPEngine.setData(fileKey + metaKey, value)
+        await this.KVPEngine.setData(metaKey + '-' + fileKey, value)
         // await this.KVPEngine.setData('[ExtraMetaKeyList]' + fileKey, Buffer.from(metaKey))
     }
 
     /**
-    * 删除额外元数据
+     * 删除额外元数据
      * @param fileKey 不是文件名
      * @param metaKey 长度随意的任意字符串
     */
@@ -408,7 +408,19 @@ class GcryptV1Adapter implements AdapterBase {
         if (!fileKey || !metaKey) {
             throw new Error("GcryptV1Adapter::InvalidKey")
         }
-        await this.KVPEngine.deleteData(fileKey + metaKey)
+        await this.KVPEngine.deleteData(metaKey + '-' + fileKey)
+    }
+
+    /**
+     * 是否存在额外元数据
+     * @param fileKey 不是文件名
+     * @param metaKey 长度随意的任意字符串
+    */
+    public async hasExtraMeta(fileKey: string, metaKey: string): Promise<boolean> {
+        if (!fileKey || !metaKey) {
+            throw new Error("GcryptV1Adapter::InvalidKey")
+        }
+        return await this.KVPEngine.hasData(metaKey + '-' + fileKey)
     }
 
     /**

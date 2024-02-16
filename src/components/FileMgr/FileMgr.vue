@@ -142,14 +142,14 @@
 <script setup lang="ts">
 import { ref, computed, watch, reactive, onMounted } from "vue";
 import Addr from "@/api/core/common/Addr";
-import getFileName from "@/utils/getFileName";
+import getFileName from "@/utils/file/getFileName";
 import lodash from "lodash";
 import DirSingleItem from "@/api/core/types/DirSingleItem";
 import FileTable from "@/api/core/types/FileTable";
 import emitter from "@/eventBus";
 import AdapterBase from "@/api/core/types/AdapterBase";
 import File from "@/api/File";
-import getExtName from "@/utils/getExtName";
+import getExtName from "@/utils/file/getExtName";
 import { useTaskStore } from '@/store/task'
 import Task from "@/api/Task";
 import sharedUtils from "@/utils/sharedUtils";
@@ -317,7 +317,7 @@ const importFile = async (files: FileList) => {
                 fileKey = await props.adapter.writeFile(getFileName(file.path, true), dataBuf)
                 // 处理缩略图相关逻辑
                 if (options.useThumbnails && props.adapter.setExtraMeta) {
-                    props.adapter.setExtraMeta(fileKey, 'fileOriginalPath', Buffer.from(file.path))
+                    await props.adapter.setExtraMeta(fileKey, 'fileOriginalPath', Buffer.from(file.path))
                 }
             }
             reader.readAsArrayBuffer(file);

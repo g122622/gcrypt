@@ -16,6 +16,7 @@ import KVPEngineFolder from "./KVPEngineFolder";
 import calcBufSize from "@/utils/calcBufSize";
 import ASSERT from "@/utils/ASSERT";
 import sharedUtils from "@/utils/sharedUtils";
+import Lock from "@/utils/helpers/Lock"
 
 const config = {
     blockInclusionThreshold: 12 * 1024, // 小于这个值的value将被放在block内
@@ -28,6 +29,8 @@ class KVPEngineHybrid extends KVPEngineFolder {
     private keyReferenceMap = {}
     // blockUsageMap用于快速查询某个block的存在情况和空间使用情况
     private blockUsageMap = {}
+    // 用于确保操作的原子性
+    private opLock: Lock
 
     /**
      * 初始化jsonStorage
@@ -35,6 +38,7 @@ class KVPEngineHybrid extends KVPEngineFolder {
      * @param pwd 密码
      */
     public async init(storeEntryJsonSrc: string, pwd: string, encryptionEngine) {
+        this.opLock = new Lock()
         await super.init(storeEntryJsonSrc, pwd, encryptionEngine)
         if (await super.hasData('@keyReferenceMap')) {
             this.keyReferenceMap = JSON.parse((await super.getData('@keyReferenceMap')).toString())
@@ -44,6 +48,11 @@ class KVPEngineHybrid extends KVPEngineFolder {
         }
     }
 
+    private async saveMaps() {
+        await super.setData('@keyReferenceMap', Buffer.from(JSON.stringify(this.keyReferenceMap)))
+        await super.setData('@blockUsageMap', Buffer.from(JSON.stringify(this.blockUsageMap)))
+    }
+
     private async hasDataInBlock(blockKey: string, masterKey: string) {
         // TS2339: Property 'hasOwn' does not exist on type 'ObjectConstructor'.
         // eslint-disable-next-line dot-notation
@@ -51,10 +60,15 @@ class KVPEngineHybrid extends KVPEngineFolder {
     }
 
     private async getDataInBlock(blockKey: string, masterKey: string): Promise<Buffer | null> {
-        const obj = JSON.parse((await super.getData(blockKey)).toString('utf-8'))
+        // console.log(blockKey, masterKey, (await super.getData(blockKey)).toString())
+        const obj = JSON.parse((await super.getData(blockKey)).toString())
         if (!!obj && !!obj[masterKey]) {
-            return Buffer.from(obj[masterKey])
+            return Buffer.from(obj[masterKey], 'binary')
         } else {
+            // 还需判断obj[masterKey]是否为空字符串
+            if (obj[masterKey] === '') {
+                return Buffer.from('')
+            }
             return null
         }
     }
@@ -74,10 +88,9 @@ class KVPEngineHybrid extends KVPEngineFolder {
         }
 
         // 修改对象，增加或改写键值对
-        obj[masterKey] = value.toString('utf-8')
+        obj[masterKey] = value.toString('binary')
         // 已修改的对象写回本地磁盘
         await super.setData(blockKey, Buffer.from(JSON.stringify(obj)))
-        // console.log('写入数据完毕', blockKey, masterKey, obj, JSON.stringify(obj))
         // 更新使用量数据
         if (!this.blockUsageMap[blockKey]) {
             this.blockUsageMap[blockKey] = 0
@@ -85,22 +98,23 @@ class KVPEngineHybrid extends KVPEngineFolder {
         this.blockUsageMap[blockKey] += calcBufSize(value)
         // 更新keyReferenceMap
         this.keyReferenceMap[masterKey] = blockKey
+        await this.saveMaps()
     }
 
     private async deleteDataInBlock(blockKey: string, masterKey: string): Promise<void> {
         const obj = JSON.parse((await super.getData(blockKey)).toString())
         if (obj) {
-            const size = calcBufSize(Buffer.from(obj[masterKey]))
+            const size = calcBufSize(Buffer.from(obj[masterKey], 'binary'))
             // 修改对象，删除键值对
             delete obj[masterKey]
             // 已修改的对象写回本地磁盘
             await super.setData(blockKey, Buffer.from(JSON.stringify(obj)))
-            // console.log('删除数据完毕', blockKey, masterKey, obj, JSON.stringify(obj))
             // 更新使用量数据
             ASSERT(this.blockUsageMap[blockKey] - size >= 0) // 断言：删除之后，block大小不应该为负数
             this.blockUsageMap[blockKey] -= size
             // 更新keyReferenceMap
             delete this.keyReferenceMap[masterKey]
+            await this.saveMaps()
         } else {
             throw new Error("KVPEngineHybrid::deleteDataInBlock::noSuchKey: " + masterKey + "in block " + blockKey)
         }
@@ -135,14 +149,20 @@ class KVPEngineHybrid extends KVPEngineFolder {
      * @param key
      */
     public async getData(key: string): Promise<Buffer | null> {
+        await this.opLock.lock()
         if (!(await this.hasData(key))) {
+            this.opLock.unlock()
             return null
         }
         // 若属于存在block内的小文件
         if (this.keyReferenceMap[key]) {
-            return await this.getDataInBlock(this.keyReferenceMap[key], key)
+            const res = await this.getDataInBlock(this.keyReferenceMap[key], key)
+            this.opLock.unlock()
+            return res
         } else {
-            return await super.getData(key)
+            const res = await super.getData(key)
+            this.opLock.unlock()
+            return res
         }
     }
 
@@ -152,6 +172,8 @@ class KVPEngineHybrid extends KVPEngineFolder {
      * @param buf
      */
     public async setData(key: string, buf: Buffer) {
+        await this.opLock.lock()
+
         // 小文件，从单独存放转移，再存block
         if (calcBufSize(buf) <= config.blockInclusionThreshold) {
             if (this.keyReferenceMap[key]) {
@@ -182,6 +204,8 @@ class KVPEngineHybrid extends KVPEngineFolder {
                 await super.setData(key, buf)
             }
         }
+
+        this.opLock.unlock()
     }
 
     /**
@@ -190,11 +214,13 @@ class KVPEngineHybrid extends KVPEngineFolder {
      * @param buf
      */
     public async deleteData(key: string) {
+        await this.opLock.lock()
         if (this.keyReferenceMap[key]) {
             await this.deleteDataInBlock(this.keyReferenceMap[key], key)
         } else {
             await super.deleteData(key)
         }
+        this.opLock.unlock()
     }
 }
 
