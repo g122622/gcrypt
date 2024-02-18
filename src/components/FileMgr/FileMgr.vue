@@ -205,11 +205,11 @@ const addList = [
 const ClipBoardRef = ref()
 
 // <生命周期&初始化>
-const initAll = () => {
+const initAll = async () => {
     isLoading.value = true
     console.log("FileMgr.vue-1")
 
-    gotoDir(props.adapter.getCurrentDirectory(), true)
+    await gotoDir(props.adapter.getCurrentDirectory(), true)
     console.log("FileMgr.vue-2")
     watch(viewOptions, (newVal, oldVal) => {
         // 保存viewOptions
@@ -237,7 +237,7 @@ const mergeOptions = () => {
 const options = reactive(mergeOptions())
 
 onMounted(async () => {
-    initAll()
+    await initAll()
 })
 
 // <核心功能-文件相关>
@@ -250,20 +250,34 @@ watch(() => props.directory, async (newVal) => {
 const gotoDir = async (arg: Addr, pushHistory: boolean) => {
     isLoading.value = true
     // 保存布局选项
+    console.log("[2]FileMgr.vue-1")
+
     await tryToSaveViewOptions()
+    console.log("[2]FileMgr.vue-2")
 
     // adapter切换当前目录
     await props.adapter.changeCurrentDirectory(arg)
+    console.log("[2]FileMgr.vue-3")
+
     // 更改currentFileTable
     currentDir.value = arg
+    console.log("[2]FileMgr.vue-4")
+
     currentFileTable.value = await props.adapter.getCurrentFileTable()
+    console.log("[2]FileMgr.vue-5")
 
     // 加载新的布局选项
     await tryToGetAndApplyViewOptions()
+    console.log("[2]FileMgr.vue-6")
+
     // 取消选择的所有item
     selectedItems.value.clear()
+    console.log("[2]FileMgr.vue-7")
+
     if (pushHistory) {
+        console.log("[2]FileMgr.vue-8")
         operationHistory.value.push(lodash.cloneDeep(arg))
+        console.log("[2]FileMgr.vue-9")
     }
     isLoading.value = false
 }
