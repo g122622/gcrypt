@@ -95,6 +95,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         with:
           prerelease: false
-          files: "dist_electron/**"
+          files: "dist_electron/win-unpacked/resources/**"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
