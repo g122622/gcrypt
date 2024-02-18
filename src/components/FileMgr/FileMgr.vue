@@ -207,11 +207,16 @@ const ClipBoardRef = ref()
 // <生命周期&初始化>
 const initAll = () => {
     isLoading.value = true
+    console.log("FileMgr.vue-1")
 
     gotoDir(props.adapter.getCurrentDirectory(), true)
+    console.log("FileMgr.vue-2")
     watch(viewOptions, (newVal, oldVal) => {
         // 保存viewOptions
-        tryToSaveViewOptions(oldVal)
+        console.log("FileMgr.vue-3")
+        tryToSaveViewOptions(oldVal).then(() => {
+            console.log("FileMgr.vue-4")
+        })
     }, { deep: true })
 
     isLoading.value = false
@@ -479,11 +484,13 @@ const tryToSaveViewOptions = async (optionsIn?: ViewOptions) => {
     if (!props.adapter.setExtraMeta || !options.allowSavingViewOptions || !currentFileTable.value) {
         return
     }
+    console.log("FileMgr.vue-5")
     try {
         await props.adapter.setExtraMeta(
             currentFileTable.value.selfKey,
             'viewOptions',
             Buffer.from(JSON.stringify(viewOptions.value ?? optionsIn)))
+        console.log("FileMgr.vue-6-final")
     } catch (e) {
         warn('尝试保存布局选项失败' + e.toString())
     }
