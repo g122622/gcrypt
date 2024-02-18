@@ -518,7 +518,11 @@ const tryToGetAndApplyViewOptions = async () => {
         return
     }
     try {
+        console.log('[3]-1')
+        console.log(await props.adapter.getExtraMeta(currentFileTable.value.selfKey, 'viewOptions'))
+        console.log((await props.adapter.getExtraMeta(currentFileTable.value.selfKey, 'viewOptions')).toString())
         const obj = JSON.parse((await props.adapter.getExtraMeta(currentFileTable.value.selfKey, 'viewOptions')).toString())
+        console.log('[3]-2')
         if (obj) {
             viewOptions.value = obj
         }
