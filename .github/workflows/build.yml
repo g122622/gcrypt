@@ -69,7 +69,8 @@ jobs:
       - name: cleanup artifacts for windows
         if: matrix.os == 'windows-latest'
         run: |
-          npx rimraf "dist_electron/!(*.exe)"
+          npx rimraf "dist_electron/bundled" 
+      # npx rimraf "dist_electron/!(*.exe)"
 
       - name: cleanup artifacts for macos
         if: matrix.os == 'macos-latest'
@@ -86,7 +87,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}
-          path: dist_electron
+          path: dist_electron/win-unpacked/resources
 
       # step7: create release
       - name: release
