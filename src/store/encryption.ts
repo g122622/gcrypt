@@ -99,9 +99,7 @@ export const useEncryptionStore = defineStore("encryption", {
                 await encryptionEngine.init(password)
                 await KVPEngine.init(entryFileSrc, password, encryptionEngine)
                 await adapter.initAdapter(KVPEngine, adapterGuid)
-                console.log("encryption.ts-1")
             } catch (e) {
-                console.log(e)
                 notification.error("加载加密库失败：" + e.toString())
                 error("加载加密库失败：" + e.toString())
             }

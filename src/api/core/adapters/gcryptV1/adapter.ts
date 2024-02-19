@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-18 23:41:34
+ * Last Modified: 2024-02-19 09:19:51
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -45,15 +45,11 @@ class GcryptV1Adapter implements AdapterBase {
                 items: []
             }
             await this.KVPEngine.setData("entryKey", Buffer.from(entryKey))
-            console.log("adapter.js-1")
             await this.KVPEngine.setData(entryKey, Buffer.from(JSON.stringify(fileTableData)))
-            console.log("adapter.js-2")
         }
 
         this.currentDirectory = new Addr("")
-        console.log("adapter.js-3")
         this.currentFileTable = await this._getFileTable(this.currentDirectory)
-        console.log("adapter.js-4")
     }
 
     /**
@@ -109,7 +105,6 @@ class GcryptV1Adapter implements AdapterBase {
                 return this.cachedFileTables[i].fileTable
             }
         }
-        console.log("adapter.ts-5-缓存未命中-final")
 
         // 缓存未命中
         if (foo.isRoot()) {

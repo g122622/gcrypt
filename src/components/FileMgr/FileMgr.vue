@@ -207,16 +207,11 @@ const ClipBoardRef = ref()
 // <生命周期&初始化>
 const initAll = async () => {
     isLoading.value = true
-    console.log("FileMgr.vue-1")
 
     await gotoDir(props.adapter.getCurrentDirectory(), true)
-    console.log("FileMgr.vue-2")
     watch(viewOptions, (newVal, oldVal) => {
         // 保存viewOptions
-        console.log("FileMgr.vue-3")
-        tryToSaveViewOptions(oldVal).then(() => {
-            console.log("FileMgr.vue-4")
-        })
+        tryToSaveViewOptions(oldVal)
     }, { deep: true })
 
     isLoading.value = false
@@ -237,7 +232,7 @@ const mergeOptions = () => {
 const options = reactive(mergeOptions())
 
 onMounted(async () => {
-    await initAll()
+    initAll()
 })
 
 // <核心功能-文件相关>
@@ -250,34 +245,20 @@ watch(() => props.directory, async (newVal) => {
 const gotoDir = async (arg: Addr, pushHistory: boolean) => {
     isLoading.value = true
     // 保存布局选项
-    console.log("[2]FileMgr.vue-1")
-
     await tryToSaveViewOptions()
-    console.log("[2]FileMgr.vue-2")
 
     // adapter切换当前目录
     await props.adapter.changeCurrentDirectory(arg)
-    console.log("[2]FileMgr.vue-3")
-
     // 更改currentFileTable
     currentDir.value = arg
-    console.log("[2]FileMgr.vue-4")
-
     currentFileTable.value = await props.adapter.getCurrentFileTable()
-    console.log("[2]FileMgr.vue-5")
 
     // 加载新的布局选项
     await tryToGetAndApplyViewOptions()
-    console.log("[2]FileMgr.vue-6")
-
     // 取消选择的所有item
     selectedItems.value.clear()
-    console.log("[2]FileMgr.vue-7")
-
     if (pushHistory) {
-        console.log("[2]FileMgr.vue-8")
         operationHistory.value.push(lodash.cloneDeep(arg))
-        console.log("[2]FileMgr.vue-9")
     }
     isLoading.value = false
 }
@@ -480,7 +461,7 @@ const handleFileImportClick = () => {
 }
 
 // <外观选择相关>
-const viewOptions = ref<ViewOptions>({
+const defaultViewOptions = {
     itemDisplayMode: 1, // 0 list, 1 item
     itemSize: 5, // 区间[0,10]的整数, '5' stands for medium size
     sortBy: 0, // 0 name, 1 timeModify
@@ -489,7 +470,9 @@ const viewOptions = ref<ViewOptions>({
     showHiddenItem: 1,
     showExtName: 1,
     showThumbnails: 1
-})
+}
+
+const viewOptions = ref<ViewOptions>(defaultViewOptions)
 
 /**
  * 尝试保存布局选项
@@ -498,13 +481,11 @@ const tryToSaveViewOptions = async (optionsIn?: ViewOptions) => {
     if (!props.adapter.setExtraMeta || !options.allowSavingViewOptions || !currentFileTable.value) {
         return
     }
-    console.log("FileMgr.vue-5")
     try {
         await props.adapter.setExtraMeta(
             currentFileTable.value.selfKey,
             'viewOptions',
             Buffer.from(JSON.stringify(viewOptions.value ?? optionsIn)))
-        console.log("FileMgr.vue-6-final")
     } catch (e) {
         warn('尝试保存布局选项失败' + e.toString())
     }
@@ -518,11 +499,11 @@ const tryToGetAndApplyViewOptions = async () => {
         return
     }
     try {
-        console.log('[3]-1')
-        console.log(await props.adapter.getExtraMeta(currentFileTable.value.selfKey, 'viewOptions'))
-        console.log((await props.adapter.getExtraMeta(currentFileTable.value.selfKey, 'viewOptions')).toString())
+        if (!(await props.adapter.hasExtraMeta(currentFileTable.value.selfKey, 'viewOptions'))) {
+            viewOptions.value = defaultViewOptions
+            return
+        }
         const obj = JSON.parse((await props.adapter.getExtraMeta(currentFileTable.value.selfKey, 'viewOptions')).toString())
-        console.log('[3]-2')
         if (obj) {
             viewOptions.value = obj
         }
