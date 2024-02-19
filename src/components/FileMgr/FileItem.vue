@@ -60,6 +60,7 @@ import AdapterBase from "@/api/core/types/AdapterBase";
 import { ViewOptions } from "./types/ViewOptions";
 import getThumbnailFromSystem from '@/utils/image/getThumbnailFromSystem'
 import { warn } from "@/utils/gyConsole";
+import sleep from "@/utils/sleep";
 
 interface Props {
     viewOptions: ViewOptions,
@@ -143,23 +144,32 @@ onMounted(async () => {
                 }
             } else {
                 // 当thumbnailBuf为null
-                // 尝试生成缩略图
+                // 尝试从系统获取缩略图，并保存
                 idleCallbackId = requestIdleCallback(async () => {
                     if (!(await props.adapter.hasExtraMeta(props.singleFileItem.key, 'fileOriginalPath'))) {
                         return
                     }
                     let fileOriginalPath = null
-                    try {
-                        fileOriginalPath = (await props.adapter.getExtraMeta(props.singleFileItem.key, 'fileOriginalPath')).toString()
-                        currentThumbnail.value = await getThumbnailFromSystem(fileOriginalPath, { height: 256, width: 256, quality: 90 })
-                        await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from(currentThumbnail.value))
-                    } catch (e) {
-                        await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from('n/a'))
-                        warn(`从系统获取缩略图失败，错误：${e.toString()}，路径：${fileOriginalPath}`)
-                    } finally {
-                        // 收尾工作，清理掉fileOriginalPath
-                        await props.adapter.deleteExtraMeta(props.singleFileItem.key, 'fileOriginalPath')
+                    // 3次尝试从系统获取缩略图，并保存
+                    for (let i = 0; i < 3; i++) {
+                        try {
+                            fileOriginalPath = (await props.adapter.getExtraMeta(props.singleFileItem.key, 'fileOriginalPath')).toString()
+                            currentThumbnail.value = await getThumbnailFromSystem(fileOriginalPath, { height: 256, width: 256, quality: 90 })
+                            await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from(currentThumbnail.value))
+                            break
+                        } catch (e) {
+                            warn(`第${i + 1}次从系统获取缩略图失败，错误原因：${e.toString()}，文件在本地系统的路径：${fileOriginalPath}`)
+                        }
+                        if (i === 2) {
+                            await props.adapter.setExtraMeta(props.singleFileItem.key, 'thumbnail', Buffer.from('n/a'))
+                            warn(`3次从系统获取缩略图全部失败，文件在本地系统的路径：${fileOriginalPath}`)
+                        } else {
+                            // 休眠一段时间之后再试
+                            await sleep(500)
+                        }
                     }
+                    // 收尾工作，清理掉fileOriginalPath
+                    await props.adapter.deleteExtraMeta(props.singleFileItem.key, 'fileOriginalPath')
                 })
             }
         } catch (e) {
