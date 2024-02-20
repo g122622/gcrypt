@@ -3,6 +3,7 @@
         :height="props.height">
         <v-card density="compact">
             <v-card-title style="display: flex; align-items: center;">
+                <v-icon v-if="props.titleIcon" style="margin-right: 10px;">{{ props.titleIcon }}</v-icon>
                 <span class="text-h6">{{ props.title }}</span>
                 <slot name="title"></slot>
             </v-card-title>
@@ -36,6 +37,7 @@ interface Props {
     isDialogOpen: boolean,
     footer?: string,
     title: string,
+    titleIcon?: string,
     bottomActions?: Array<dialogBottomAction>,
     isPersistent?: boolean,
     width?: string,

@@ -1,9 +1,9 @@
 <template>
     <DialogGenerator height="500px" width="720px" v-model:isDialogOpen="item.isDialogOpen"
-        :title="item.fileMgrOptions.onlyAllowFolderSelection ? '选择文件夹' : '选择文件'" :isPersistent="true"
-        useCompactContentOuterMargin v-for="item in filePickers" :key="item.taskId">
+        :title="item.fileMgrOptions.onlyAllowFolderSelection ? '选择文件夹' : '选择文件'" titleIcon="mdi-file-check"
+        :isPersistent="true" useCompactContentOuterMargin v-for="item in filePickers" :key="item.taskId">
         <template #title>
-            <div style="margin-left: 7px; width: 150px;">
+            <div style="margin-left: 17px; margin-top: 10px; margin-bottom: -10px; width: 150px;">
                 <v-select density="compact" label="选择盘符" clearable :items="allDrive.map(i => i.drive).sort()"
                     v-model="item.currentDrive"></v-select>
             </div>

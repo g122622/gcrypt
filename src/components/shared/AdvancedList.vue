@@ -13,7 +13,7 @@
     <template v-if="matchedItems.length >= 1">
         <!-- 列表主内容 -->
         <v-list :lines="lines ?? 'one'" :density="density ?? 'compact'" :width="width" :height="height"
-            :id="`advanced-list-${guid}`">
+            :id="`advanced-list-${guid}`" style="border-radius: 15px;margin: 15px;margin-top: 3px;">
             <slot :matchedItems="matchedItems" />
         </v-list>
         <BottomTip v-if="useBottomTip" />

@@ -67,10 +67,10 @@ const handleAction = (arg: ClipBoardItem) => {
                 const buf = await props.adapter.readFile(arg.filename, arg.srcAddr)
                 await props.adapter.writeFile(arg.filename, buf, props.currentDir)
             }
-        }, `复制文件 ${arg.filename}`), { runImmediately: true })
+        }, { name: `复制文件 ${arg.filename}` }), { runImmediately: true })
     } else if (arg.method === 'move') {
         taskStore.addTask(new Task(async () => {
-            if (props.adapter.copyFile) {
+            if (props.adapter.moveFile) {
                 await props.adapter.moveFile(arg.filename, arg.srcAddr, props.currentDir)
             } else {
                 const buf = await props.adapter.readFile(arg.filename, arg.srcAddr)
@@ -78,7 +78,7 @@ const handleAction = (arg: ClipBoardItem) => {
                 await props.adapter.deleteFile(arg.filename, arg.srcAddr)
             }
             clipBoardItems.value.splice(clipBoardItems.value.findIndex(item => item === arg), 1)
-        }, `移动文件 ${arg.filename}`), { runImmediately: true })
+        }, { name: `移动文件 ${arg.filename}` }), { runImmediately: true })
     } else if (arg.method === 'symlink') {
         taskStore.addTask(new Task(async () => {
             if (props.adapter.createSymlink) {
@@ -87,7 +87,7 @@ const handleAction = (arg: ClipBoardItem) => {
                 notification.error("adapter不支持符号链接")
                 throw new Error()
             }
-        }, `创建符号链接 ${arg.filename}`), { runImmediately: true })
+        }, { name: `创建符号链接 ${arg.filename}` }), { runImmediately: true })
     }
 }
 

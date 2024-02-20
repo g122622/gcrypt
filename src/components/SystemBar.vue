@@ -109,7 +109,7 @@ const itemList = computed(() => {
         {
             name: 'close',
             tooltip: '关闭应用',
-            onClick: () => {
+            onClick: async () => {
                 if (pendingOrRunningTaskAmount.value > 0) {
                     emitter.emit("showMsg", {
                         level: "warning",
@@ -127,10 +127,15 @@ const itemList = computed(() => {
                             },
                         ]
                     })
-                } else {
-                    Electron.ipcRenderer.send('mainService',
-                        { code: "close" })
+                    return
                 }
+
+                if (mainStore.activeFiles.size) {
+                    await mainStore.inactivateAllFiles()
+                }
+
+                Electron.ipcRenderer.send('mainService',
+                    { code: "close" })
             },
             icon: 'mdi-close',
             class: 'system-bar-item-danger',

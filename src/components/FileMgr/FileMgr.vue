@@ -2,9 +2,14 @@
     <!-- 对话框管理器 -->
     <DialogMgr ref="DialogMgrRef" :adapter="props.adapter" :refresh="refresh"></DialogMgr>
     <!-- 文件属性 -->
-    <DialogGenerator title="属性" v-model:isDialogOpen="models.isPropOpening" width="700px">
+    <DialogGenerator title="属性" titleIcon="mdi-information" v-model:isDialogOpen="models.isPropOpening" width="425px">
         <template #mainContent>
-            <v-list lines="one" width="700px">
+            <JsonViewer :value="currentPropertiesForRender" :expand-depth="1"
+                :copyable="{ copyText: '复制全部', copiedText: '复制完成', timeout: 2000 }" boxed
+                :style="{ filter: settingsStore.getSetting('is_dark') ? 'invert(100%)' : 'unset' }"
+                style="user-select:text;">
+            </JsonViewer>
+            <!-- v-list lines="one" width="700px">
                 <v-list-subheader>属性值</v-list-subheader>
                 <v-list-item v-for="key in Object.keys(itemCache)" :key="key" :title="key">
                     <template #append>
@@ -13,7 +18,7 @@
                             @click="copyToClipboard(itemCache[key])" />
                     </template>
                 </v-list-item>
-            </v-list>
+            </v-list -->
         </template>
     </DialogGenerator>
 
@@ -140,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, reactive, onMounted } from "vue";
+import { ref, computed, watch, reactive, onMounted, onUnmounted } from "vue";
 import Addr from "@/api/core/common/Addr";
 import getFileName from "@/utils/file/getFileName";
 import lodash from "lodash";
@@ -151,6 +156,7 @@ import AdapterBase from "@/api/core/types/AdapterBase";
 import File from "@/api/File";
 import getExtName from "@/utils/file/getExtName";
 import { useTaskStore } from '@/store/task'
+import { useSettingsStore } from "@/store/settings"
 import Task from "@/api/Task";
 import sharedUtils from "@/utils/sharedUtils";
 import prettyBytes from "@/utils/prettyBytes";
@@ -159,6 +165,7 @@ import pickFile from "@/utils/shell/pickFile";
 import { FileMgrOptions } from "./types/FileMgrOptions"
 import getWindowsShortcutProperties from 'get-windows-shortcut-properties'
 import path from 'path'
+import fs from 'fs-extra'
 
 import ContextMenu from "../shared/ContextMenu.vue";
 import FileItem from "./FileItem.vue";
@@ -166,7 +173,8 @@ import DialogMgr from "./DialogMgr.vue";
 import BottomBar from "./BottomBar.vue";
 import ClipBoard from "./ClipBoard.vue";
 import { ViewOptions } from "./types/ViewOptions";
-import { warn } from "@/utils/gyConsole";
+import { log, warn } from "@/utils/gyConsole";
+import sleep from "@/utils/sleep";
 
 interface Props {
     adapter: AdapterBase,
@@ -178,11 +186,11 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['update:selectedItems'])
 const taskStore = useTaskStore()
+const settingsStore = useSettingsStore()
 const isLoading = ref<boolean>(true)
 const currentFileTable = ref<FileTable>(null)
 const currentDir = ref(new Addr(""))
 const operationHistory = ref<Addr[]>([])
-const itemCache = ref(null)
 const models = reactive({
     isPropOpening: false,
 })
@@ -233,6 +241,10 @@ const options = reactive(mergeOptions())
 
 onMounted(async () => {
     initAll()
+})
+
+onUnmounted(() => {
+    log('FileMgr成功销毁')
 })
 
 // <核心功能-文件相关>
@@ -306,34 +318,56 @@ const importFile = async (files: FileList) => {
     if (files.length === 0) {
         return
     }
+    // 阶段一：引入文件
     const taskGroupId = sharedUtils.getHash(16)
     for (const file of files) {
-        taskStore.addTask(new Task(async () => {
-            let fileKey: string
-            // 读文件
-            const reader = new FileReader();
-            reader.onload = async function (evt) {
-                const dataBuf: Buffer = Buffer.from(evt.target.result as ArrayBuffer)
-                fileKey = await props.adapter.writeFile(getFileName(file.path, true), dataBuf)
-                // 处理缩略图相关逻辑
-                if (options.useThumbnails && props.adapter.setExtraMeta) {
-                    await props.adapter.setExtraMeta(fileKey, 'fileOriginalPath', Buffer.from(file.path))
+        taskStore.addTask(new Task(() => {
+            return new Promise((resolve, reject) => {
+                let fileKey: string
+                // 读文件
+                const reader = new FileReader();
+                reader.onload = async function (evt) {
+                    // 回调函数要单独加try-catch来捕获异常
+                    try {
+                        const dataBuf: Buffer = Buffer.from(evt.target.result as ArrayBuffer)
+                        fileKey = await props.adapter.writeFile(getFileName(file.path, true), dataBuf)
+                        // 处理缩略图相关逻辑
+                        if (options.useThumbnails && props.adapter.setExtraMeta) {
+                            await props.adapter.setExtraMeta(fileKey, 'fileOriginalPath', Buffer.from(file.path))
+                        }
+                    } catch (e) {
+                        reject(e)
+                    }
+                    resolve()
                 }
-            }
-            reader.readAsArrayBuffer(file);
-        }, `引入文件 ${file.path}`, taskGroupId), { runImmediately: false })
-    }
-    try {
-        await taskStore.runTaskGroup(taskGroupId)
-        notification.success(`导入${files.length}个文件成功`)
-    } catch (error) {
-        emitter.emit("showMsg",
-            {
-                level: "error",
-                msg: `导入文件失败 ${error.message}`
+                reader.readAsArrayBuffer(file);
             })
-    } finally {
-        await refresh()
+        }, {
+            name: `引入文件 ${file.path}`,
+            groupId: taskGroupId,
+            errorHandler(err) {
+                notification.error(`导入文件失败 ${err.message}`)
+            },
+        }), { runImmediately: false })
+    }
+    const res = await taskStore.runTaskGroup(taskGroupId)
+
+    // 阶段二：反馈用户、刷新界面
+    if (res) {
+        notification.success(`导入${files.length}个文件成功`)
+    } else {
+        notification.error(`导入文件并未全部成功`)
+    }
+    await refresh()
+
+    // 阶段三：删除所有源文件
+    if (res && settingsStore.getSetting('filemgr_delete_after_import')) {
+        // 等一会再删，避免影响生成缩略图
+        await sleep(2000)
+        for (const file of files) {
+            await fs.unlink(file.path)
+        }
+        notification.success(`[本地]删除${files.length}个本地源文件成功`)
     }
 }
 
@@ -345,7 +379,7 @@ const deleteFile = async () => {
     for (const item of selectedItems.value) {
         taskStore.addTask(new Task(async () => {
             await props.adapter.deleteFile(item.name)
-        }, `删除文件 ${item.name}`, taskGroupId), { runImmediately: false })
+        }, { name: `删除文件 ${item.name}`, groupId: taskGroupId }), { runImmediately: false })
     }
     try {
         await taskStore.runTaskGroup(taskGroupId)
@@ -366,15 +400,21 @@ const renameFile = async (oldname, newname) => {
     if (props.adapter.renameFile) {
         taskStore.addTask(new Task(async () => {
             await props.adapter.renameFile(oldname, newname)
-        }, `重命名文件 ${oldname} -> ${newname}`), { runImmediately: true })
+        }, { name: `重命名文件 ${oldname} -> ${newname}` }), { runImmediately: true })
     }
 }
 
 // <UI>
+const currentPropertiesForRender = ref(null)
 const handlePropertiesClick = (item?: DirSingleItem) => {
     if (item) {
-        itemCache.value = { ...item, ...item.meta }
-        delete itemCache.value.meta
+        currentPropertiesForRender.value = {
+            ...item,
+            sizeFormatted: prettyBytes(item.meta.size),
+            accessedTimeFormatted: new Date(item.meta.accessedTime).toLocaleDateString(),
+            createdTimeFormatted: new Date(item.meta.createdTime).toLocaleDateString(),
+            modifiedTimeFormatted: new Date(item.meta.modifiedTime).toLocaleDateString(),
+        }
         models.isPropOpening = true
     } else {
         let totalSize = 0
@@ -383,7 +423,7 @@ const handlePropertiesClick = (item?: DirSingleItem) => {
                 totalSize += element.meta.size
             }
         }
-        itemCache.value = {
+        currentPropertiesForRender.value = {
             totalSize,
             totalSizeFormatted: prettyBytes(totalSize)
         }
@@ -462,7 +502,7 @@ const handleFileImportClick = () => {
 
 // <外观选择相关>
 const defaultViewOptions = {
-    itemDisplayMode: 1, // 0 list, 1 item
+    itemDisplayMode: Math.floor(settingsStore.getSetting('filemgr_dafault_display_mode')), // 0 list, 1 item, 2 看图模式
     itemSize: 5, // 区间[0,10]的整数, '5' stands for medium size
     sortBy: 0, // 0 name, 1 timeModify
     folderFirst: 1,

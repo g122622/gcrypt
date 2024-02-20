@@ -27,7 +27,7 @@
                     <v-btn variant="text" @click="isMenuOpen = false">
                         退出
                     </v-btn>
-                    <v-btn color="primary" variant="text" @click="inactivateAllFiles()">
+                    <v-btn color="primary" variant="text" @click="mainStore.inactivateAllFiles()">
                         解除全部
                     </v-btn>
                 </v-card-actions>
@@ -56,11 +56,6 @@ const getTooltip = (item: FileActiveState) => {
     isOpen: ${item.isOpen},
     isUsingTempFile: ${item.isUsingTempFile}
     `
-}
-const inactivateAllFiles = () => {
-    mainStore.activeFiles.forEach((value, key) => {
-        File.inactivateFile(key)
-    })
 }
 </script>
 

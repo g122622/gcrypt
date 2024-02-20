@@ -1,6 +1,7 @@
 import FileActiveState from '@/types/FileActiveState'
 import { defineStore } from 'pinia'
 import ElectronStore from 'electron-store'
+import File from "@/api/File";
 
 // 初始化electron-store
 const mainStore = new ElectronStore({
@@ -31,6 +32,12 @@ export const useMainStore = defineStore("main", {
                 this.activeFiles.set(fileguid, <FileActiveState>{ file: null, isOpen: false, isUsingTempFile: false })
             }
             this.activeFiles.get(fileguid)[statusName] = statusValue
+        },
+
+        async inactivateAllFiles() {
+            this.activeFiles.forEach(async (value, key) => {
+                await File.inactivateFile(key)
+            })
         }
     }
 }

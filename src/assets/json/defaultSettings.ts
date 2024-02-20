@@ -1,3 +1,17 @@
+/**
+ * File: \src\assets\json\defaultSettings.ts
+ * Project: Gcrypt
+ * Created Date: 2023-11-26 17:14:30
+ * Author: Guoyi
+ * -----
+ * Last Modified: 2024-02-20 17:09:41
+ * Modified By: Guoyi
+ * -----
+ * Copyright (c) 2024 Guoyi Inc.
+ *
+ * ------------------------------------
+ */
+
 import settingItem from "@/types/settingItem"
 import SettingTypes from "@/types/settingTypes"
 
@@ -156,6 +170,27 @@ const defaultSettings = Object.freeze(<Array<settingItem>>[
             maxLimitation: 60000,
             minLimitation: 1000
         }
+    },
+    {
+        name: "filemgr_dafault_display_mode",
+        type: SettingTypes.slider,
+        value: "1",
+        title: "默认布局模式",
+        des: "0 list, 1 item, 2 看图模式",
+        category: "文件管理器",
+        extra: {
+            maxLimitation: 2,
+            minLimitation: 0,
+            step: 1
+        }
+    },
+    {
+        name: "filemgr_delete_after_import",
+        type: SettingTypes.switcher,
+        value: false,
+        title: "引入文件后删除源文件",
+        des: "文件管理器引入文件后删除源文件",
+        category: "文件管理器"
     },
     {
         name: "dev1",

@@ -143,25 +143,25 @@ class File {
         const destPath = path.join(folderPath, this.filename ?? sharedUtils.getHash(7))
         taskStore.addTask(new Task(async () => {
             await fs.writeFile(destPath, await this.read())
-        }, `导出文件 ${destPath}`), { runImmediately: true })
+        }, { name: `导出文件 ${destPath}` }), { runImmediately: true })
     }
 
-    public destroy() {
+    public async destroy() {
         // 先销毁文件watcher，再删除临时文件，
         // 若顺序颠倒则会在删除的时候触动fileWatcher
         if (this.fileWatcher) {
             this.fileWatcher.destroy()
         }
         if (this.tmpFilePath) {
-            fs.unlink(this.tmpFilePath)
+            await fs.unlink(this.tmpFilePath)
         }
     }
 
     /**
      * 静态方法
      */
-    static inactivateFile(fileguid) {
-        mainStore.activeFiles.get(fileguid).file.destroy()
+    static async inactivateFile(fileguid) {
+        await mainStore.activeFiles.get(fileguid).file.destroy()
         mainStore.activeFiles.delete(fileguid)
     }
 }
