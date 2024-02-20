@@ -690,11 +690,6 @@ const currentFileTableForRender = computed<FileTable['items']>(() => {
 })
 
 // <杂项>
-const copyToClipboard = (arg: string) => {
-    navigator.clipboard.writeText(arg)
-    notification.success("复制成功")
-}
-
 const DialogMgrRef = ref(null)
 
 // <文件选择>
