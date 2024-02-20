@@ -33,7 +33,8 @@
         "vue-router": "^4.0.3",
         "vue3-ace-editor": "^2.2.3",
         "vuetify": "3.4.2",
-        "webfontloader": "^1.0.0"
+        "webfontloader": "^1.0.0",
+        "clipboard": "^2.0.4"
     },
     "devDependencies": {
         "@types/electron-devtools-installer": "^2.2.0",
