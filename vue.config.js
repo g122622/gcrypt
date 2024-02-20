@@ -66,6 +66,7 @@ module.exports = defineConfig({
                     displayLanguageSelector: true,
                 },
             },
+            externals: ['clipboard']
         },
         vuetify: {
             // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vuetify-loader
