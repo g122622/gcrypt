@@ -130,7 +130,7 @@ const handleText = (item: settingItem) => {
     file.fromRef(toRefs(item).value)
     emitter.emit('openFile', {
         fileArg: file,
-        fileTypeArg: 'txt'
+        fileTypeArg: 'json'
     })
 }
 

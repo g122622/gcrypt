@@ -1,6 +1,6 @@
 <template>
     <!-- 顶部工具栏 -->
-    <ToolBarBase :ToolbarTitle="subheader ?? ''">
+    <ToolBarBase :ToolbarTitle="subheader ?? ''" v-if="useSearch">
         <template #prepend>
             <!-- 搜索框 -->
             <AdvancedTextField label="搜索..." prepend-inner-icon="mdi-magnify" v-model:currentInput="searchWord"
@@ -13,7 +13,8 @@
     <template v-if="matchedItems.length >= 1">
         <!-- 列表主内容 -->
         <v-list :lines="lines ?? 'one'" :density="density ?? 'compact'" :width="width" :height="height"
-            :id="`advanced-list-${guid}`" style="border-radius: 15px;margin: 15px;margin-top: 3px;">
+            :id="`advanced-list-${guid}`"
+            :style="{ 'border-radius': useBiggerMargin ? '15px' : 'unset', 'margin': useBiggerMargin ? '15px' : 'unset', 'margin-top': useBiggerMargin ? '3px' : 'unset' }">
             <slot :matchedItems="matchedItems" />
         </v-list>
         <BottomTip v-if="useBottomTip" />
@@ -41,7 +42,8 @@ interface Props {
     subheader?: string,
     lines?: false | 'one' | 'two' | 'three',
     width?: string,
-    emptyTip?: string
+    emptyTip?: string,
+    useBiggerMargin?: boolean
 }
 const props = defineProps<Props>()
 const guid = sharedUtils.getHash(16)

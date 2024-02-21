@@ -14,10 +14,10 @@
                         <span v-if="!!props.HTMLContent" v-html="props.HTMLContent"></span>
                     </v-row>
                 </v-container>
-                <slot name="footer" />
                 <small v-if="props.footer">*{{ props.footer }}</small>
             </v-card-text>
             <v-card-actions v-if="props.bottomActions">
+                <slot name="footer" />
                 <v-spacer></v-spacer>
                 <v-btn v-for="(item, index) in props.bottomActions" color="blue-darken-1" variant="tonal"
                     @click="item.onClick" :key="index">

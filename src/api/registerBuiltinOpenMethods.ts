@@ -7,6 +7,7 @@ import FroalaEditor from "@/components/FroalaEditor/FroalaEditor.vue";
 import getDigest from "@/api/hash/getDigest"
 import pickFile from "@/utils/shell/pickFile";
 import AceEditor from "@/components/AceEditor/AceEditor.vue";
+import JsonEditor from "@/components/JsonEditor.vue";
 
 /**
  * 注册内置方法
@@ -15,7 +16,7 @@ import AceEditor from "@/components/AceEditor/AceEditor.vue";
  */
 export default async function registerBulitinOpenMethods(mgr) {
     mgr.registerMethod({
-        name: "内置浏览器打开",
+        name: "内置浏览器",
         icon: 'mdi-earth',
         fileType: ['html', 'txt', 'js'],
         async onSelected(file: File) {
@@ -29,24 +30,24 @@ export default async function registerBulitinOpenMethods(mgr) {
                 })
         }
     })
+    // mgr.registerMethod({
+    //     name: "内置图片viewer",
+    //     icon: 'mdi-image',
+    //     fileType: ['jpg', 'jpeg', 'png', 'gif'],
+    //     async onSelected(file: File) {
+    //         emitter.emit("Action::addTab",
+    //             {
+    //                 name: '图片查看器',
+    //                 component: ImageViewer,
+    //                 icon: "mdi-image",
+    //                 onClick: () => null,
+    //                 props: { images: [{ src: await file.read() }] }
+    //             }
+    //         )
+    //     }
+    // })
     mgr.registerMethod({
-        name: "内置图片查看器",
-        icon: 'mdi-image',
-        fileType: ['jpg', 'jpeg', 'png', 'gif'],
-        async onSelected(file: File) {
-            emitter.emit("Action::addTab",
-                {
-                    name: '图片查看器',
-                    component: ImageViewer,
-                    icon: "mdi-image",
-                    onClick: () => null,
-                    props: { images: [{ src: await file.read() }] }
-                }
-            )
-        }
-    })
-    mgr.registerMethod({
-        name: "外部打开(写入本地文件系统缓存,并监听写入以同步)",
+        name: "外部打开",
         icon: 'mdi-open-in-new',
         fileType: /./,
         async onSelected(file: File) {
@@ -87,7 +88,23 @@ export default async function registerBulitinOpenMethods(mgr) {
         }
     })
     mgr.registerMethod({
-        name: "导出文件到外部",
+        name: "JsonEditor",
+        icon: 'mdi-code-json',
+        fileType: ['txt', 'json'],
+        async onSelected(file: File) {
+            emitter.emit("Action::addTab",
+                {
+                    name: file.filename + "-JsonEditor",
+                    component: JsonEditor,
+                    icon: "mdi-code-json",
+                    onClick: () => null,
+                    props: { file }
+                }
+            )
+        }
+    })
+    mgr.registerMethod({
+        name: "导出文件",
         icon: 'mdi-export-variant',
         fileType: /./,
         async onSelected(file: File) {

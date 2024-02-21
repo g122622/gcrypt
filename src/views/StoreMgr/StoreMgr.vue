@@ -34,7 +34,7 @@
     </DialogGenerator>
 
     <AdvancedList lines="two" subheader="加密库列表" :items="encryptionStore.storeList" useBottomTip useSearch
-        v-slot="{ matchedItems }" emptyTip="请点击右上角的“+”新建一个加密库，或导入一个加密库">
+        v-slot="{ matchedItems }" emptyTip="请点击右上角的“+”新建一个加密库，或导入一个加密库" useBiggerMargin>
         <v-list-item v-for="item in matchedItems" :key="item.storeEntryJsonSrc" :title="item.storageName"
             :subtitle="new Date(item.createdTime).toLocaleString()" @click=" handleItemClick(item)">
             <template v-slot:prepend>

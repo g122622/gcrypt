@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-20 16:23:15
+ * Last Modified: 2024-02-21 13:57:56
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -28,6 +28,7 @@ import { nextTick } from 'process';
 import notification from './api/notification';
 import test from "./test/KVPEngineHybridUnit";
 import JsonViewer from 'vue-json-viewer'
+import JsonEditorVue from 'json-editor-vue'
 
 // 全局组件
 import VueApp from './App.vue';
@@ -194,6 +195,7 @@ class ApplicationRenderer {
         this.AppInstance.use(vuetify)
         this.AppInstance.use(pinia)
         this.AppInstance.use(JsonViewer)
+        this.AppInstance.use(JsonEditorVue)
         this.MainStore = useMainStore()
         this.SettingsStore = useSettingsStore()
         // 根节点挂载
