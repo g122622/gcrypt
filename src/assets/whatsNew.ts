@@ -4,7 +4,7 @@
  * Created Date: 2023-11-26 17:14:30
  * Author: Guoyi
  * -----
- * Last Modified: 2024-02-21 16:00:08
+ * Last Modified: 2024-02-23 16:14:16
  * Modified By: Guoyi
  * -----
  * Copyright (c) 2024 Guoyi Inc.
@@ -38,6 +38,6 @@ export default {
     "3.4.0": ['新的均衡型存储引擎：KVPEngineHybrid', "优化adapter初始化逻辑"],
     "3.5.0": ['修复null值导致程序崩溃的bug', "优化任务执行逻辑", "增加filemgr的相关设置项",
         '新增JSON查看器，查看属性更方便', '关闭应用时自动解除文件占用', 'store列表圆角优化'],
-    "3.6.0": ['新增json编辑器', '重写打开方式选择界面']
+    "3.6.0": ['新增json编辑器', '重写打开方式选择界面', '支持点击地址栏来导航', '支持直接编辑settings.json']
 
 }

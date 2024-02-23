@@ -2,6 +2,7 @@
     <!-- 顶部工具栏 -->
     <Teleport to="#ActionToolBar">
         <ActionToolBarBase ToolbarTitle="设置">
+            <IconBtn icon="mdi-open-in-new" @click="handleEditSettings()" tooltip="直接编辑settings.json" />
             <IconBtn icon="mdi-content-save" @click="settingsStore.saveSettings()" tooltip="手动保存设置（app会自动保存设置，一般情况不用点）" />
             <IconBtn icon="mdi-update" @click="updateSettings" tooltip="升级所有设置（保留数据）" />
             <IconBtn icon="mdi-cog-refresh" @click="resetSettings" tooltip="重置所有设置" />
@@ -83,7 +84,7 @@
 <script setup lang="ts">
 import emitter from "@/eventBus";
 import ActionToolBarBase from "@/components/shared/ActionToolBarBase.vue";
-import { computed, toRefs, ref } from "vue";
+import { computed, toRefs, ref, watch } from "vue";
 import SettingTypes from "@/types/settingTypes"
 import { useSettingsStore } from "@/store/settings"
 import settingItem from "@/types/settingItem";
@@ -128,6 +129,22 @@ const handleFile = (file, targetSettingName) => {
 const handleText = (item: settingItem) => {
     const file = new File()
     file.fromRef(toRefs(item).value)
+    emitter.emit('openFile', {
+        fileArg: file,
+        fileTypeArg: 'json'
+    })
+}
+
+const handleEditSettings = () => {
+    const file = new File()
+    const settingJSONStringRef = ref(JSON.stringify(settingsStore.settings))
+    watch(settingJSONStringRef, (newVal) => {
+        const newArr = settingsStore.settings = JSON.parse(newVal)
+        settingsStore.settings.forEach((item, index) => {
+            settingsStore.settings[index] = newArr[index]
+        })
+    }, { deep: true })
+    file.fromRef(settingJSONStringRef)
     emitter.emit('openFile', {
         fileArg: file,
         fileTypeArg: 'json'

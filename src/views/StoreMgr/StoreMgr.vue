@@ -48,7 +48,15 @@
                     @click.stop="Electron.shell.openPath(path.dirname(item.storeEntryJsonSrc))"></IconBtn>
                 <IconBtn icon="mdi-delete" tooltip="移除" @click.stop="encryptionStore.removeStore(item.storeEntryJsonSrc)">
                 </IconBtn>
-                <IconBtn icon="mdi-information" :tooltip="JSON.stringify(item)"></IconBtn>
+                <v-btn icon size="default" variant="plain">
+                    <v-icon>mdi-information</v-icon>
+                    <v-tooltip activator="parent" location="bottom"
+                        style="--v-theme-surface-variant: 255,255,255 !important;">
+                        <JsonViewer :value="item" :expand-depth="5" theme="custom-json-theme" style="user-select:text">
+                        </JsonViewer>
+                    </v-tooltip>
+                </v-btn>
+
             </template>
         </v-list-item>
     </AdvancedList>
@@ -131,4 +139,87 @@ const handleImportStoreClick = () => {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less"></style>
+<style lang="less">
+.custom-json-theme {
+    background-color: transparent;
+    white-space: nowrap;
+    font-size: 14px;
+    font-family: Consolas, Menlo, Courier, monospace;
+
+    .jv-ellipsis {
+        color: #999;
+        background-color: #eee;
+        display: inline-block;
+        line-height: 0.9;
+        font-size: 0.9em;
+        padding: 0px 4px 2px 4px;
+        border-radius: 3px;
+        vertical-align: 2px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .jv-button {
+        color: #49b3ff
+    }
+
+    .jv-key {
+        color: #111111
+    }
+
+    .jv-item {
+        &.jv-array {
+            color: #111111
+        }
+
+        &.jv-boolean {
+            color: #fc1e70
+        }
+
+        &.jv-function {
+            color: #067bca
+        }
+
+        &.jv-number {
+            color: #ba1451
+        }
+
+        &.jv-number-float {
+            color: #ba1451
+        }
+
+        &.jv-number-integer {
+            color: #ba1451
+        }
+
+        &.jv-object {
+            color: #111111
+        }
+
+        &.jv-undefined {
+            color: #e08331
+        }
+
+        &.jv-string {
+            color: #0c3d90;
+            word-break: break-word;
+            white-space: normal;
+        }
+    }
+
+    .jv-code {
+        .jv-toggle {
+            &:before {
+                padding: 0px 2px;
+                border-radius: 2px;
+            }
+
+            &:hover {
+                &:before {
+                    background: #eee;
+                }
+            }
+        }
+    }
+}
+</style>

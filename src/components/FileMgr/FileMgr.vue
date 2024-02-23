@@ -82,9 +82,18 @@
                     :disabled="!selectedItems.size"></IconBtn>
                 <!-- 地址栏 -->
                 <div style="margin-left: 15px;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;">
-                    <v-icon>mdi-map-marker</v-icon>
+                    <v-icon @click="gotoDir(currentDir.goToRoot(), true)" style="cursor: pointer;">mdi-map-marker</v-icon>
                     <v-tooltip activator="parent" location="bottom">{{ `当前目录: ` + currentDir.toPathStr() }}</v-tooltip>
-                    <v-breadcrumbs :items="currentDir.toBreadcrumbs()" density="compact" style="display: inline;">
+                    <v-breadcrumbs density="compact" style="display: inline;">
+                        <template v-for="(item, i) in currentDir.tokens" :key="item">
+                            <v-breadcrumbs-item :title="item"
+                                @click="gotoDir((new Addr()).setTokens(currentDir.tokens.slice(0, i + 1)), true)"
+                                style="cursor: pointer;">
+                            </v-breadcrumbs-item>
+                            <v-breadcrumbs-divider>
+                            </v-breadcrumbs-divider>
+                        </template>
+
                     </v-breadcrumbs>
                 </div>
                 <v-spacer></v-spacer>
