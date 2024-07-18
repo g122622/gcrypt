@@ -16,7 +16,7 @@ class FileWatcher {
     shouldChange = false
     onRename
     onChange
-    onDestroyed
+    onDestroyed // 销毁回调，必须是同步函数
     private abortController: AbortController // watcher的中断控制器
     private interval
 

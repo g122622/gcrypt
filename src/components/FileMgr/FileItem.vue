@@ -20,8 +20,12 @@
                 <template v-if="singleFileItem.type === `file`">
                     <img v-if="currentThumbnail" :src="toDataURL(currentThumbnail)" class="file-thumbnail-img"
                         loading="lazy" />
-                    <img v-else :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`" class="file-types-image"
-                        loading="lazy" />
+                    <img v-else :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`"
+                        class="file-types-image" loading="lazy" />
+                </template>
+                <template v-if="singleFileItem.type === `file` && !!currentThumbnail">
+                    <img :src="`./assets/fileTypes/${getFileType(singleFileItem.name)}.png`"
+                        class="file-types-image-corner" loading="lazy" />
                 </template>
                 <div class="file-name">
                     {{ singleFileItem.name }}
@@ -42,8 +46,11 @@
                 <template v-else-if="viewOptions.itemDisplayMode === 1 && props.singleFileItem.type === 'file'">
                     {{ prettyBytes(props.singleFileItem.meta.size, 2) }}
                 </template>
-                <template v-else-if="viewOptions.itemDisplayMode === 2">
-                    {{ new Date(singleFileItem.meta.createdTime).toLocaleString() }}
+                <template v-else-if="viewOptions.itemDisplayMode === 1 && props.singleFileItem.type === 'folder'">
+                    {{ new Date(singleFileItem.meta.modifiedTime).toLocaleDateString() }}
+                </template>
+                <template v-else-if="viewOptions.itemDisplayMode === 2 && props.singleFileItem.type === 'file'">
+                    {{ prettyBytes(props.singleFileItem.meta.size, 2) }}
                 </template>
             </div>
         </template>
@@ -228,11 +235,15 @@ onUnmounted(() => {
         margin-left: 5px;
         margin-right: 5px;
     }
+
+    .file-types-image-corner {
+        display: none;
+    }
 }
 
 .file-item-item {
     float: left;
-    height: 130px;
+    height: 120px;
     width: 115px;
     flex-direction: column;
     padding: 10px;
@@ -241,6 +252,13 @@ onUnmounted(() => {
 
     .file-types-image {
         height: 60px;
+    }
+
+    .file-types-image-corner {
+        height: 25px;
+        position: absolute;
+        bottom: 45px;
+        right: 7px;
     }
 
     .file-thumbnail-img {
@@ -264,6 +282,13 @@ onUnmounted(() => {
 
     .file-types-image {
         height: 100px;
+    }
+
+    .file-types-image-corner {
+        height: 30px;
+        position: absolute;
+        bottom: 25px;
+        right: 10px;
     }
 
     .file-thumbnail-img {

@@ -148,7 +148,7 @@ class File {
 
     public async destroy() {
         // 先销毁文件watcher，再删除临时文件，
-        // 若顺序颠倒则会在删除的时候触动fileWatcher
+        // 若顺序颠倒则会在删除的时候触动fileWatcher，造成死循环
         if (this.fileWatcher) {
             this.fileWatcher.destroy()
         }

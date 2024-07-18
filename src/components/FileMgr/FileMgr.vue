@@ -17,8 +17,8 @@
                         <IconBtn icon="mdi-content-copy" tooltip="复制到剪贴板" size="small"
                             @click="copyToClipboard(itemCache[key])" />
                     </template>
-                </v-list-item>
-            </v-list -->
+</v-list-item>
+</v-list -->
         </template>
     </DialogGenerator>
 
@@ -45,7 +45,8 @@
                                     <v-btn-toggle shaped mandatory divided v-model="viewOptions[item.modelName]">
                                         <v-btn v-for="listItem in item.list" :key="listItem.title">
                                             <v-icon>{{ listItem.icon }}</v-icon>
-                                            <v-tooltip activator="parent" location="bottom">{{ listItem.title }}</v-tooltip>
+                                            <v-tooltip activator="parent" location="bottom">{{ listItem.title
+                                                }}</v-tooltip>
                                         </v-btn>
 
                                     </v-btn-toggle>
@@ -82,7 +83,8 @@
                     :disabled="!selectedItems.size"></IconBtn>
                 <!-- 地址栏 -->
                 <div style="margin-left: 15px;white-space: nowrap;text-overflow: ellipsis;overflow: hidden;">
-                    <v-icon @click="gotoDir(currentDir.goToRoot(), true)" style="cursor: pointer;">mdi-map-marker</v-icon>
+                    <v-icon @click="gotoDir(currentDir.goToRoot(), true)"
+                        style="cursor: pointer;">mdi-map-marker</v-icon>
                     <v-tooltip activator="parent" location="bottom">{{ `当前目录: ` + currentDir.toPathStr() }}</v-tooltip>
                     <v-breadcrumbs density="compact" style="display: inline;">
                         <template v-for="(item, i) in currentDir.tokens" :key="item">
@@ -97,6 +99,8 @@
                     </v-breadcrumbs>
                 </div>
                 <v-spacer></v-spacer>
+                <!-- 搜索 -->
+                <SearchMgr v-model:searchWord="searchWord"></SearchMgr>
                 <!-- 刷新按钮 -->
                 <IconBtn icon="mdi-refresh" tooltip="刷新内容" @click="refresh()"></IconBtn>
             </v-app-bar>
@@ -113,7 +117,8 @@
                             @selected="handleItemSelection(item)" @unselected="handleItemUnselection(item)"
                             :isSelected="selectedItems.has(item)" v-for="(item, index) in currentFileTableForRender"
                             :key="item.key">
-                            <ContextMenu :width="200" :menuList="getItemMenuList(item)" v-if="options.useCtxMenu">
+                            <ContextMenu :width="200" :menuList="getItemMenuList(item) as contextMenuItem[]"
+                                v-if="options.useCtxMenu">
                             </ContextMenu>
                         </FileItem>
                         <!-- </TransitionGroup> -->
@@ -124,7 +129,8 @@
                         当前目录下没有文件
                     </div>
                     <div v-else style="display: flex;flex-direction: column;align-items: center;margin-top: 20px;">
-                        <v-progress-circular indeterminate color="primary" bg-color="rgba(0,0,0,0)"></v-progress-circular>
+                        <v-progress-circular indeterminate color="primary"
+                            bg-color="rgba(0,0,0,0)"></v-progress-circular>
                     </div>
                     <BottomTip></BottomTip>
                     <ContextMenu :width="200" v-if="options.useCtxMenu" :menuList="[
@@ -175,15 +181,18 @@ import { FileMgrOptions } from "./types/FileMgrOptions"
 import getWindowsShortcutProperties from 'get-windows-shortcut-properties'
 import path from 'path'
 import fs from 'fs-extra'
+import { ViewOptions } from "./types/ViewOptions";
+import { log, warn } from "@/utils/gyConsole";
+import sleep from "@/utils/sleep";
+import contextMenuItem from "@/types/contextMenuItem";
 
+// 组件
 import ContextMenu from "../shared/ContextMenu.vue";
 import FileItem from "./FileItem.vue";
 import DialogMgr from "./DialogMgr.vue";
 import BottomBar from "./BottomBar.vue";
 import ClipBoard from "./ClipBoard.vue";
-import { ViewOptions } from "./types/ViewOptions";
-import { log, warn } from "@/utils/gyConsole";
-import sleep from "@/utils/sleep";
+import SearchMgr from "./SearchMgr.vue";
 
 interface Props {
     adapter: AdapterBase,
@@ -695,6 +704,11 @@ const currentFileTableForRender = computed<FileTable['items']>(() => {
     if (!viewOptions.value.showHiddenItem) {
         res = res.filter(item => item.name[0] !== ".")
     }
+
+    // 搜索过滤
+    if (searchWord.value) {
+        res = res.filter(item => item.name.toLowerCase().includes(searchWord.value.toLowerCase()))
+    }
     return res
 })
 
@@ -758,6 +772,10 @@ const handleFileExport = async () => {
         })
     } catch (e) { }
 }
+
+// <搜索>
+const searchWord = ref('')
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
