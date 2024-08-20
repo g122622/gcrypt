@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * File: \src\utils\ASSERT.ts
  * Project: Gcrypt
@@ -13,14 +14,14 @@
  */
 
 import { error } from "./gyConsole";
-import { abort } from "process"
+import { abort } from "process";
 
 export default function ASSERT(condition: any) {
     if (!condition) {
-        error("ASSERT FAILED")
-        if (process.env.NODE_ENV === 'development') {
-            return
+        error("ASSERT FAILED");
+        if (process.env.NODE_ENV === "development") {
+            return;
         }
-        abort()
+        abort();
     }
 }

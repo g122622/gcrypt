@@ -279,6 +279,8 @@ const gotoDir = async (arg: Addr, pushHistory: boolean) => {
 
     // adapter切换当前目录
     await props.adapter.changeCurrentDirectory(arg)
+    // 清除搜索词
+    searchWord.value = ""
     // 更改currentFileTable
     currentDir.value = arg
     currentFileTable.value = await props.adapter.getCurrentFileTable()

@@ -1,5 +1,5 @@
 <template>
-    <div id="words" v-if="showWords && useBottomTip" @mouseover="handleMouseOver()" @mouseleave="handleMouseLeave()">
+    <div id="words" v-if="useBottomTip" @mouseover="handleMouseOver()" @mouseleave="handleMouseLeave()">
         {{ words }}
         <span class="from-where" :style="{
             width: showMoreDetails ? `${fromWhere.length + 7}em` : '0px',
@@ -13,14 +13,13 @@
 
 <script setup lang="ts">
 import { useSettingsStore } from "@/store/settings"
-import { warn } from "@/utils/gyConsole";
+// import { warn } from "@/utils/gyConsole";
 import axios from "axios";
 import { ref, onMounted, onActivated, computed } from "vue";
 const store = useSettingsStore()
 
 const words = ref<string>("")
 const fromWhere = ref<string>("")
-const showWords = ref<boolean>(false)
 const useBottomTip = computed<boolean>(() => {
     return store.settings.find(item => item.name === "use_bottom_tip").value as boolean
 })
@@ -36,11 +35,12 @@ const queryData = async () => {
                 method: "get",
                 url: "https://v1.hitokoto.cn",
             })
-            showWords.value = true
             words.value = hitokoto
             fromWhere.value = from
         } catch (e) {
-            warn(`从网络获取句子失败!只能显示之前的旧句子了 ${e.message}`)
+            words.value = "网络出错了，请稍后再试，或者永久关闭此功能"
+            fromWhere.value = "null"
+            // warn(`从网络获取句子失败!只能显示之前的旧句子了 ${e.message}`)
         }
     }
 }
@@ -66,12 +66,12 @@ const handleMouseLeave = () => {
     font-size: 0.85em;
     opacity: 0.7;
     transition: all 0.3s;
-    height: 45px;
+    height: 35px;
     overflow: hidden;
 
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
 
     // 为了全局contextmenu的右键点击激发区域在元素之下

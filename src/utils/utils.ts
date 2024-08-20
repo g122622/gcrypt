@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-this-alias */
 /* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-var-requires */
@@ -5,19 +6,19 @@
 // License: GNU GPLv3 or later. See the license file in the project root for more information.
 // Copyright © 2021 - present Aleksey Hoffman. All rights reserved.
 
-const dayjsCustomParseFormat = require('dayjs/plugin/customParseFormat')
-const dayjsDuration = require('dayjs/plugin/duration')
-const dayjs = require('dayjs')
-dayjs.extend(dayjsCustomParseFormat)
-dayjs.extend(dayjsDuration)
-const ColorUtils = require('./colorUtils.js')
-const PATH = require('path')
-const fs = require('fs')
-const lodash = require('lodash')
-const electron = require('electron')
-const mainWindow = null
-const detectedLocale = true
-const colorUtils = new ColorUtils()
+const dayjsCustomParseFormat = require("dayjs/plugin/customParseFormat");
+const dayjsDuration = require("dayjs/plugin/duration");
+const dayjs = require("dayjs");
+dayjs.extend(dayjsCustomParseFormat);
+dayjs.extend(dayjsDuration);
+const ColorUtils = require("./colorUtils.js");
+const PATH = require("path");
+const fs = require("fs");
+const lodash = require("lodash");
+const electron = require("electron");
+const mainWindow = null;
+const detectedLocale = true;
+const colorUtils = new ColorUtils();
 
 // try { require(`dayjs/locale/${detectedLocale}`) } catch (error) { }
 
@@ -27,75 +28,81 @@ export default {
     detectedLocale,
     unixHiddenFileRegex: /(^|[\/\\])\../,
     getSrc(relativePath) {
-        return process.env.NODE_ENV === 'production'
-            ? PATH.join(__dirname, relativePath)
-            : PATH.join(relativePath)
+        return process.env.NODE_ENV === "production" ? PATH.join(__dirname, relativePath) : PATH.join(relativePath);
     },
     getDriveIcon(drive) {
-        if (drive.type === 'cloud') {
+        if (drive.type === "cloud") {
             return {
-                icon: 'mdi-cloud-outline',
-                size: '22px'
-            }
-        } else if (['rom', 'cd'].includes(drive.type)) {
+                icon: "mdi-cloud-outline",
+                size: "22px"
+            };
+        } else if (["rom", "cd"].includes(drive.type)) {
             return {
-                icon: 'fas fa-compact-disc',
-                size: '20px'
-            }
-        } else if (drive.type === 'removable') {
+                icon: "fas fa-compact-disc",
+                size: "20px"
+            };
+        } else if (drive.type === "removable") {
             return {
-                icon: 'fab fa-usb',
-                size: '20px'
-            }
-        } else if (drive.type === 'network') {
+                icon: "fab fa-usb",
+                size: "20px"
+            };
+        } else if (drive.type === "network") {
             return {
-                icon: 'mdi-folder-network-outline',
-                size: '22px'
-            }
+                icon: "mdi-folder-network-outline",
+                size: "22px"
+            };
         } else {
             return {
-                icon: 'far fa-hdd',
-                size: '20px'
-            }
+                icon: "far fa-hdd",
+                size: "20px"
+            };
         }
     },
     openLink(link) {
-        electron.shell.openExternal(link)
+        electron.shell.openExternal(link);
     },
     reloadMainWindow() {
-        mainWindow.reload()
+        mainWindow.reload();
     },
     toggleFullscreen() {
         if (mainWindow.isFullScreen() === false) {
-            mainWindow.setFullScreen(true)
+            mainWindow.setFullScreen(true);
         } else {
-            mainWindow.setFullScreen(false)
+            mainWindow.setFullScreen(false);
         }
     },
     getLightnessContrastValue(color) {
-        return colorUtils.getColorData(color).contrast.value
+        return colorUtils.getColorData(color).contrast.value;
     },
     templateToString(templateLiteralString) {
-        return templateLiteralString.split('\n').map((line) => {
-            return line.replace(/^\s+/gm, '')
-        }).join('').trim()
+        return templateLiteralString
+            .split("\n")
+            .map(line => {
+                return line.replace(/^\s+/gm, "");
+            })
+            .join("")
+            .trim();
     },
     getNumRange(startIndex, endIndex) {
-        return [...Array(endIndex + 1).keys()].slice(startIndex)
+        return [...Array(endIndex + 1).keys()].slice(startIndex);
     },
     getDataType(value) {
-        const isArray = Array.isArray(value)
-        const isObject = typeof value === 'object' &&
-            value !== null &&
-            !Array.isArray(value) &&
-            value.constructor.name !== 'Array'
+        const isArray = Array.isArray(value);
+        const isObject =
+            typeof value === "object" && value !== null && !Array.isArray(value) && value.constructor.name !== "Array";
 
-        if (isObject) { return 'object' } else if (isArray) { return 'array' } else { return typeof value }
+        if (isObject) {
+            return "object";
+        } else if (isArray) {
+            return "array";
+        } else {
+            return typeof value;
+        }
     },
     objectsHaveSameKeys(...objects) {
-        const allKeys = objects.reduce((keys, object) => keys.concat(Object.keys(object)), [])
-        const union = new Set(allKeys)
-        return objects.every(object => union.size === Object.keys(object).length)
+        const allKeys = objects.reduce((keys, object) => keys.concat(Object.keys(object)), []);
+        const union = new Set(allKeys);
+        return objects.every(object => union.size === Object.keys(object).length);
     },
     // deepObjectsHaveSameKeys(o1, o2) {
     //     if (o1 === null && o2 === null) { return true }
@@ -118,45 +125,46 @@ export default {
     //     return true
     // },
     capitalize(string) {
-        return string.replace(/^\p{CWU}/u, char => char.toUpperCase())
+        return string.replace(/^\p{CWU}/u, char => char.toUpperCase());
     },
     toCamelCase(text) {
-        const replacedText = text.toLowerCase()
-            .replace(/[-_\s.]+(.)?/g, (_, character) => character ? character.toUpperCase() : '')
-        return replacedText.substring(0, 1).toLowerCase() + replacedText.substring(1)
+        const replacedText = text
+            .toLowerCase()
+            .replace(/[-_\s.]+(.)?/g, (_, character) => (character ? character.toUpperCase() : ""));
+        return replacedText.substring(0, 1).toLowerCase() + replacedText.substring(1);
     },
     ensureArray(payload) {
         if (Array.isArray(payload)) {
-            return payload
+            return payload;
         } else {
-            return [payload]
+            return [payload];
         }
     },
     /**
-    * @param {array} params.items
-    * @param {string} params.value
-    * @returns {number}
-    */
+     * @param {array} params.items
+     * @param {string} params.value
+     * @returns {number}
+     */
     getObjectNumbersByKey(params) {
-        const values = params.items.map(item => item[params.value])
-        const sanitizedValues = values.filter(item => !isNaN(item))
-        return sanitizedValues
+        const values = params.items.map(item => item[params.value]);
+        const sanitizedValues = values.filter(item => !isNaN(item));
+        return sanitizedValues;
     },
     /**
-    * @param {array} params.items
-    * @param {string} params.value
-    * @returns {number}
-    */
+     * @param {array} params.items
+     * @param {string} params.value
+     * @returns {number}
+     */
     getMinObjectNumber(params) {
-        return Math.min(...this.getObjectNumbersByKey(params))
+        return Math.min(...this.getObjectNumbersByKey(params));
     },
     /**
-    * @param {array} params.items
-    * @param {string} params.value
-    * @returns {number}
-    */
+     * @param {array} params.items
+     * @param {string} params.value
+     * @returns {number}
+     */
     getMaxObjectNumber(params) {
-        return Math.max(...this.getObjectNumbersByKey(params))
+        return Math.max(...this.getObjectNumbersByKey(params));
     },
     // isCursorInsideATextField() {
     //     const activeElement = document.activeElement
@@ -165,158 +173,150 @@ export default {
     //     return isInput || isContenteditable
     // },
     getAverage(array) {
-        return array.reduce((a, b) => a + b, 0) / array.length
+        return array.reduce((a, b) => a + b, 0) / array.length;
     },
     copyToClipboard(params) {
-        const moduleScope = this
+        const moduleScope = this;
         const data = {
             title: getDataTitle(params),
             text: getDataText(params),
-            message: getDataMessage(params),
-        }
+            message: getDataMessage(params)
+        };
 
         function getDataTitle(params) {
-            return params.asPath
-                ? 'Path was copied to clipboard'
-                : params.title ?? 'Text was copied to clipboard'
+            return params.asPath ? "Path was copied to clipboard" : params.title ?? "Text was copied to clipboard";
         }
 
         function getDataText(params) {
-            let text = ''
+            let text = "";
             if (params.asPath) {
-                if (moduleScope.platform === 'win32') {
+                if (moduleScope.platform === "win32") {
                     if (params.event.ctrlKey && !params.event.altKey) {
-                        text = `${params.text.replace(/\//g, '\\')}`
+                        text = `${params.text.replace(/\//g, "\\")}`;
                     } else if (params.event.ctrlKey && params.event.altKey) {
-                        text = `${params.text.replace(/\//g, '\\\\')}`
+                        text = `${params.text.replace(/\//g, "\\\\")}`;
                     }
                 } else {
-                    text = params.text
+                    text = params.text;
                 }
             }
-            return params.event.shiftKey ? `"${text}"` : text
+            return params.event.shiftKey ? `"${text}"` : text;
         }
 
         function getDataMessage(params) {
-            return params.asPath
-                ? params.text
-                : params.message
+            return params.asPath ? params.text : params.message;
         }
 
         try {
-            electron.clipboard.writeText(data.text)
-        } catch (error) {
-        }
+            electron.clipboard.writeText(data.text);
+        } catch (error) {}
     },
     /** Encode URL, replacing all URL-unsafe
-    * characters (except slash) with hex representation
-    * @param {string} path
-    * @returns {string}
-    */
+     * characters (except slash) with hex representation
+     * @param {string} path
+     * @returns {string}
+     */
     getUrlSafePath(path) {
-        const colonCharPlacholder = `PLACEHOLDER-${this.getHash()}`
+        const colonCharPlacholder = `PLACEHOLDER-${this.getHash()}`;
         return path
-            .replace(/\\/g, '/')
+            .replace(/\\/g, "/")
             .replace(/:/g, colonCharPlacholder)
-            .split('/')
+            .split("/")
             .map(pathItem => encodeURIComponent(pathItem))
-            .join('/')
-            .replace(new RegExp(colonCharPlacholder, 'g'), ':')
+            .join("/")
+            .replace(new RegExp(colonCharPlacholder, "g"), ":");
     },
     /** Returns the width of specified HTML node content (without padding)
-    * @param {HTMLElement} node
-    * @returns {Number}
-    */
+     * @param {HTMLElement} node
+     * @returns {Number}
+     */
     getNodeContentWidth(node) {
-        const styles = window.getComputedStyle(node)
-        const padding = parseFloat(styles.paddingLeft) +
-            parseFloat(styles.paddingRight)
-        return node.clientWidth - padding
+        const styles = window.getComputedStyle(node);
+        const padding = parseFloat(styles.paddingLeft) + parseFloat(styles.paddingRight);
+        return node.clientWidth - padding;
     },
     getContentAreaNode(routeName) {
         try {
-            if (routeName === 'navigator') {
-                return document.querySelector('#navigator-route .main-content-container')
-            } else if (routeName === 'home') {
-                return document.querySelector('#home-route.main-content-container .os-viewport')
+            if (routeName === "navigator") {
+                return document.querySelector("#navigator-route .main-content-container");
+            } else if (routeName === "home") {
+                return document.querySelector("#home-route.main-content-container .os-viewport");
             } else {
-                return document.querySelector('.content-area')
+                return document.querySelector(".content-area");
             }
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
     },
     wait(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms))
+        return new Promise(resolve => setTimeout(resolve, ms));
     },
     getUnique(list, key) {
-        return [...new Map(list.map(item => [item[key], item])).values()]
+        return [...new Map(list.map(item => [item[key], item])).values()];
     },
     filterObject(obj, predicate) {
-        return Object.fromEntries(Object.entries(obj).filter(predicate))
+        return Object.fromEntries(Object.entries(obj).filter(predicate));
     },
     getPathPart(path, part) {
-        return PATH.parse(path)[part]
+        return PATH.parse(path)[part];
     },
     getPathBase(path) {
-        const base = PATH.parse(path).base
-        const root = PATH.parse(path).root
-        return base === '' ? root : base
+        const base = PATH.parse(path).base;
+        const root = PATH.parse(path).root;
+        return base === "" ? root : base;
     },
     getPathRoot(path) {
-        return PATH.parse(path).root
+        return PATH.parse(path).root;
     },
     isPathRoot(path) {
-        return PATH.parse(path).base.length === 0
+        return PATH.parse(path).base.length === 0;
     },
     isObjectEmpty(obj) {
-        return obj && Object.keys(obj).length === 0 && obj.constructor === Object
+        return obj && Object.keys(obj).length === 0 && obj.constructor === Object;
     },
     getObjectDifference(object, base) {
         function changes(object, base) {
             return lodash.transform(object, (result, value, key) => {
                 if (!lodash.isEqual(value, base[key])) {
-                    result[key] = (lodash.isObject(value) && lodash.isObject(base[key]))
-                        ? changes(value, base[key])
-                        : value
+                    result[key] = lodash.isObject(value) && lodash.isObject(base[key]) ? changes(value, base[key]) : value;
                 }
-            })
+            });
         }
-        return changes(object, base)
+        return changes(object, base);
     },
     cloneDeep(value) {
-        return lodash.cloneDeep(value)
+        return lodash.cloneDeep(value);
     },
     setDeepProperty(object, deepProperty, value) {
-        if (typeof deepProperty === 'string') {
-            deepProperty = deepProperty.split('.')
+        if (typeof deepProperty === "string") {
+            deepProperty = deepProperty.split(".");
         }
         if (deepProperty.length > 1) {
-            const firstProperty = deepProperty.shift()
-            if (object[firstProperty] === null || typeof object[firstProperty] !== 'object') {
-                object[firstProperty] = {}
+            const firstProperty = deepProperty.shift();
+            if (object[firstProperty] === null || typeof object[firstProperty] !== "object") {
+                object[firstProperty] = {};
             }
-            this.setDeepProperty(object[firstProperty], deepProperty, value)
+            this.setDeepProperty(object[firstProperty], deepProperty, value);
         } else {
-            object[deepProperty[0]] = value
+            object[deepProperty[0]] = value;
         }
     },
     getDeepProperty(object, deepProperty) {
-        return deepProperty.split('.').reduce((o, k) => {
-            return (o || {})[k]
-        }, object)
+        return deepProperty.split(".").reduce((o, k) => {
+            return (o || {})[k];
+        }, object);
     },
     replaceHtmlContainerContent(container, element) {
-        this.clearHtmlContainer(container)
-        container.appendChild(element)
+        this.clearHtmlContainer(container);
+        container.appendChild(element);
     },
     clearHtmlContainer(container) {
         while (container.firstChild) {
-            container.removeChild(container.firstChild)
+            container.removeChild(container.firstChild);
         }
     },
     removeHtmlNodes(list) {
-        list.forEach(node => node.remove())
+        list.forEach(node => node.remove());
     },
     // isPathValid(path, params = {}) {
     //     const defaultParams = {
@@ -417,51 +417,65 @@ export default {
     //     }
     // },
     toTitleCase(string) {
-        return string.charAt(0).toLocaleUpperCase() + string.substr(1)
+        return string.charAt(0).toLocaleUpperCase() + string.substr(1);
     },
     prettyBytes(bytes, decimals) {
-        if (isNaN(parseInt(bytes))) return 'unknown'
-        if (bytes === 0) return '0 Bytes'
-        const k = 1024
-        const dm = decimals <= 0 ? 0 : decimals || 2
-        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-        const i = Math.floor(Math.log(bytes) / Math.log(k))
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+        if (isNaN(parseInt(bytes))) return "unknown";
+        if (bytes === 0) return "0 Bytes";
+        const k = 1024;
+        const dm = decimals <= 0 ? 0 : decimals || 2;
+        const sizes = ["Bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
     },
     getHash(length = 32) {
-        let hashID = ''
-        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        let hashID = "";
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         for (let i = 0; i < length; i++) {
-            hashID += alphabet.charAt(Math.floor(Math.random() * alphabet.length))
+            hashID += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
         }
-        return hashID
+        return hashID;
     },
     prettyTime(seconds) {
-        const min = Math.round(Math.floor(seconds / 60))
-        const sec = Math.round(seconds - min * 60)
+        const min = Math.round(Math.floor(seconds / 60));
+        const sec = Math.round(seconds - min * 60);
         if (min === 0) {
-            return `${sec} sec`
+            return `${sec} sec`;
         } else if (sec === 0) {
-            return `${min} min`
+            return `${min} min`;
         } else {
-            return `${min} min ${sec} sec`
+            return `${min} min ${sec} sec`;
         }
     },
     formatTime(milliseconds, from, to) {
-        if (from === 'ms' && to === 'auto') {
-            const minutes = Math.round(milliseconds / 60000)
-            if (minutes < 60) { return `${minutes} minutes` } else if (minutes === 60) { return `${minutes / 60} hour` } else if (minutes > 60) { return `${minutes / 60} hours` } else { return minutes }
+        if (from === "ms" && to === "auto") {
+            const minutes = Math.round(milliseconds / 60000);
+            if (minutes < 60) {
+                return `${minutes} minutes`;
+            } else if (minutes === 60) {
+                return `${minutes / 60} hour`;
+            } else if (minutes > 60) {
+                return `${minutes / 60} hours`;
+            } else {
+                return minutes;
+            }
         }
     },
     // getFormattedTime(params) {
     //     return dayjs.duration(params.time, params.unit).format(params.format)
     // },
     getTimeDiff(newer, older, format) {
-        const milliseconds = newer - older
-        const seconds = Math.floor(milliseconds / 1000)
-        const minutes = Math.floor(seconds / 60)
+        const milliseconds = newer - older;
+        const seconds = Math.floor(milliseconds / 1000);
+        const minutes = Math.floor(seconds / 60);
 
-        if (format === 'ms') { return milliseconds } else if (format === 'seconds') { return seconds } else if (format === 'minutes') { return minutes }
+        if (format === "ms") {
+            return milliseconds;
+        } else if (format === "seconds") {
+            return seconds;
+        } else if (format === "minutes") {
+            return minutes;
+        }
     },
     // getDateTime(format = 'HH:mm:ss:SSS') {
     //     return dayjs().locale(detectedLocale).format(format)
@@ -472,105 +486,107 @@ export default {
     // },
     getLocalDateTime(date, options = {}) {
         try {
-            return new Intl.DateTimeFormat((options as any).regionalFormat.code || (options as any).regionalFormat || detectedLocale, {
-                ...{
-                    year: 'numeric',
-                    month: 'numeric',
-                    day: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    hour12: (options as any).properties.hour12,
-                    second: (options as any).properties.showSeconds ? 'numeric' : undefined,
-                    fractionalSecondDigits: (options as any).properties.showMilliseconds ? 3 : undefined,
-                },
-                ...options,
-            })
-                .format(new Date(date))
+            return new Intl.DateTimeFormat(
+                (options as any).regionalFormat.code || (options as any).regionalFormat || detectedLocale,
+                {
+                    ...{
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                        hour12: (options as any).properties.hour12,
+                        second: (options as any).properties.showSeconds ? "numeric" : undefined,
+                        fractionalSecondDigits: (options as any).properties.showMilliseconds ? 3 : undefined
+                    },
+                    ...options
+                }
+            ).format(new Date(date));
         } catch (error) {
-            return 'unknown'
+            return "unknown";
         }
     },
-    getCSSProperty(property, element = '#app') {
-        const node = document.querySelector(element) as any
-        return node.computedStyleMap().get(property)
+    getCSSProperty(property, element = "#app") {
+        const node = document.querySelector(element) as any;
+        return node.computedStyleMap().get(property);
     },
     getCSSVar(varName) {
-        const root = document.querySelector('#app')
-        const value = getComputedStyle(root).getPropertyValue(varName)
-        return value.trim()
+        const root = document.querySelector("#app");
+        const value = getComputedStyle(root).getPropertyValue(varName);
+        return value.trim();
     },
     getExt(path) {
-        return PATH.parse(path).ext.replace('.', '')
+        return PATH.parse(path).ext.replace(".", "");
     },
     getUniquePath(destPath) {
-        let num = 1
-        const parsed = PATH.parse(destPath)
-        const dir = parsed.dir
-        const name = parsed.name
-        const ext = parsed.ext
+        let num = 1;
+        const parsed = PATH.parse(destPath);
+        const dir = parsed.dir;
+        const name = parsed.name;
+        const ext = parsed.ext;
 
         while (fs.existsSync(destPath)) {
-            destPath = ext !== ''
-                ? PATH.join(dir, `${name} (${num++})${ext}`)
-                : PATH.join(dir, `${name} (${num++})`)
+            destPath = ext !== "" ? PATH.join(dir, `${name} (${num++})${ext}`) : PATH.join(dir, `${name} (${num++})`);
         }
-        return destPath
+        return destPath;
     },
     getItemPermissions(item) {
-        let type
-        let lstat
+        let type;
+        let lstat;
         try {
-            lstat = fs.lstatSync(item.path)
+            lstat = fs.lstatSync(item.path);
         } catch (error) {
-            return { isReadOnly: 'unknown', permissions: 'unknown' }
+            return { isReadOnly: "unknown", permissions: "unknown" };
         }
 
-        if (lstat.isSymbolicLink() || item.path.endsWith('.lnk')) {
-            type = 'l'
+        if (lstat.isSymbolicLink() || item.path.endsWith(".lnk")) {
+            type = "l";
         } else {
-            type = item.type === 'directory' ? 'd' : '-'
+            type = item.type === "directory" ? "d" : "-";
         }
-        const owner = item.stat.mode >> 6
-        const group = (item.stat.mode << 3) >> 6
-        const others = (item.stat.mode << 6) >> 6
+        const owner = item.stat.mode >> 6;
+        const group = (item.stat.mode << 3) >> 6;
+        const others = (item.stat.mode << 6) >> 6;
 
         const result = {
             owner: {
-                read: owner & 4 ? 'r' : '-',
-                write: owner & 2 ? 'w' : '-',
-                execute: owner & 1 ? 'x' : '-'
+                read: owner & 4 ? "r" : "-",
+                write: owner & 2 ? "w" : "-",
+                execute: owner & 1 ? "x" : "-"
             },
             group: {
-                read: group & 4 ? 'r' : '-',
-                write: group & 2 ? 'w' : '-',
-                execute: group & 1 ? 'x' : '-'
+                read: group & 4 ? "r" : "-",
+                write: group & 2 ? "w" : "-",
+                execute: group & 1 ? "x" : "-"
             },
             others: {
-                read: others & 4 ? 'r' : '-',
-                write: others & 2 ? 'w' : '-',
-                execute: others & 1 ? 'x' : '-'
+                read: others & 4 ? "r" : "-",
+                write: others & 2 ? "w" : "-",
+                execute: others & 1 ? "x" : "-"
             }
-        }
+        };
 
-        const isReadOnly = result.owner.write === '-'
+        const isReadOnly = result.owner.write === "-";
         const permissions = `
-      ${type} 
+      ${type}
 
-      ${result.owner.read} 
-      ${result.owner.write} 
+      ${result.owner.read}
+      ${result.owner.write}
       ${result.owner.execute}
 
-      ${result.group.read} 
-      ${result.group.write} 
+      ${result.group.read}
+      ${result.group.write}
       ${result.group.execute}
 
-      ${result.others.read} 
-      ${result.others.write} 
+      ${result.others.read}
+      ${result.others.write}
       ${result.others.execute}
-    `.replace(/[\n\s]/g, '').toUpperCase()
+    `
+            .replace(/[\n\s]/g, "")
+            .toUpperCase();
 
-        return { isReadOnly, permissions }
-    },
+        return { isReadOnly, permissions };
+    }
     // getFileType(path, type = 'file') {
     //     if (type === 'file' || type === 'extension') {
     //         if (type === 'extension') {
@@ -594,4 +610,4 @@ export default {
     //         return { mime: '', mimeDescription: '' }
     //     }
     // }
-}
+};
