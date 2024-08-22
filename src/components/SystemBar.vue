@@ -12,7 +12,7 @@
             等待任务数：{{ pendingOrRunningTaskAmount }}
         </v-chip>
         <v-spacer />
-        <div v-ripple class="system-bar-item" v-for=" item  in  itemList.filter(i => !i.hide) " :key="item.name"
+        <div v-ripple class="system-bar-item" v-for=" item in itemList.filter(i => !i.hide) " :key="item.name"
             @click="item.onClick" :class="item.class">
             <v-icon>
                 {{ item.icon }}

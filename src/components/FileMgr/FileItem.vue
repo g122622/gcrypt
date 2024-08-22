@@ -9,7 +9,7 @@
         <!-- 若在视口范围内，则渲染以下组件 -->
         <template v-if="isIntersecting">
             <v-tooltip activator="parent" location="right" open-delay="500">
-                {{ singleFileItem.name }}
+                {{ `[${index + 1}] ${singleFileItem.name}` }}
             </v-tooltip>
             <!-- 前置内容 -->
             <div style="display: flex;justify-content: flex-start;align-items: center;"
@@ -62,6 +62,7 @@ import DirSingleItem from "@/api/core/types/DirSingleItem";
 import getFileType from "@/utils/file/getFileType";
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useMainStore } from "@/store/main"
+import { useSettingsStore } from "@/store/settings"
 import prettyBytes from "@/utils/prettyBytes";
 import AdapterBase from "@/api/core/types/AdapterBase";
 import { ViewOptions } from "./types/ViewOptions";
@@ -79,6 +80,7 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['selected', 'unselected'])
 const mainStore = useMainStore()
+const settingsStore = useSettingsStore()
 // 由于看图模式下排版存在不稳定性，故不启用虚拟列表
 const isIntersecting = ref<boolean>(props.viewOptions.itemDisplayMode === 2)
 
@@ -93,6 +95,8 @@ const isHidden = computed(() => {
 
 const fileItemClassList = computed(() => {
     return {
+        'file-item-dark': settingsStore.getSetting('is_dark'),
+        'file-item-light': !settingsStore.getSetting('is_dark'),
         'file-item-list': props.viewOptions.itemDisplayMode === 0,
         'file-item-item': props.viewOptions.itemDisplayMode === 1,
         'file-item-photo': props.viewOptions.itemDisplayMode === 2,
@@ -137,7 +141,7 @@ const onIntersect = (isIntersectingArg /* , entries, observer */) => {
 
 // <缩略图>
 const currentThumbnail = ref<string>('')
-let idleCallbackId = 0
+let idleCallbackId = null
 
 onMounted(async () => {
     // 自动创建和加载缩略图相关逻辑
@@ -186,7 +190,9 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-    cancelIdleCallback(idleCallbackId)
+    if (idleCallbackId !== null) {
+        cancelIdleCallback(idleCallbackId)
+    }
 })
 
 </script>
@@ -203,17 +209,32 @@ onUnmounted(() => {
 
 .file-item {
     border-radius: 10px;
-    background-color: rgba(131, 131, 131, @item-background-alpha);
     overflow: hidden;
-    color: white;
     display: flex;
     align-items: center;
     transition: 0.25s;
     cursor: pointer;
-
     z-index: 1; // 为了全局contextmenu的右键点击激发区域在file-item之下
-
     position: relative !important; // 为了contextmenu的右键点击激发区域能够顺利溢出隐藏
+}
+
+.file-item-dark {
+    color: white;
+    background-color: rgba(131, 131, 131, @item-background-alpha);
+}
+
+.file-item-light {
+    color: black;
+    background-color: rgba(255, 255, 255, @item-background-alpha);
+    box-shadow: 0 0 7px rgba(0, 0, 0, 0.15);
+}
+
+.file-item-dark:hover {
+    background-color: rgba(131, 131, 131, 0.5);
+}
+
+.file-item-light:hover {
+    background-color: rgba(230, 230, 230, 0.5);
 }
 
 .file-item-list {
@@ -298,10 +319,6 @@ onUnmounted(() => {
     .file-name {
         display: none;
     }
-}
-
-.file-item:hover {
-    background-color: rgba(131, 131, 131, 0.5);
 }
 
 .file-item-hidden {

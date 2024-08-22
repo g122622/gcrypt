@@ -89,7 +89,7 @@
                     <v-breadcrumbs density="compact" style="display: inline;">
                         <template v-for="(item, i) in currentDir.tokens" :key="item">
                             <v-breadcrumbs-item :title="item"
-                                @click="gotoDir((new Addr()).setTokens(currentDir.tokens.slice(0, i + 1)), true)"
+                                @click="gotoDir(Addr.setTokens(currentDir.tokens.slice(0, i + 1)), true)"
                                 style="cursor: pointer;">
                             </v-breadcrumbs-item>
                             <v-breadcrumbs-divider>
@@ -111,17 +111,15 @@
                     :style="{ height: props.height ?? 'calc(100% - 63px)' }">
                     <!-- 文件列表 -->
                     <template v-if="currentFileTableForRender.length > 0 && !isLoading">
-                        <!-- <TransitionGroup name="file-item-transition"> -->
                         <FileItem :viewOptions="viewOptions" :singleFileItem="item" :index="index"
                             @dblclick="handleItemDoubleClick(item)" :adapter="props.adapter"
                             @selected="handleItemSelection(item)" @unselected="handleItemUnselection(item)"
                             :isSelected="selectedItems.has(item)" v-for="(item, index) in currentFileTableForRender"
                             :key="item.key">
-                            <ContextMenu :width="200" :menuList="getItemMenuList(item) as contextMenuItem[]"
+                            <ContextMenu :width="200" :menuList="(getItemMenuList(item) as contextMenuItem[])"
                                 v-if="options.useCtxMenu">
                             </ContextMenu>
                         </FileItem>
-                        <!-- </TransitionGroup> -->
                     </template>
                     <div v-else-if="currentFileTableForRender.length === 0 && !isLoading"
                         style="display: flex; justify-content: center; flex-direction: column; align-items: center;">
@@ -463,31 +461,45 @@ const getItemMenuList = (item) => {
     if (selectedItems.value.size <= 1) {
         return [
             {
-                text: '打开', icon: 'mdi-open-in-new', actions: { onClick: () => { handleItemDoubleClick(item) } }
+                text: '打开',
+                icon: 'mdi-open-in-new',
+                actions: { onClick: () => { handleItemDoubleClick(item) } }
             },
             {
                 type: 'divider'
             },
             {
-                text: '符号链接', icon: 'mdi-link-variant-plus', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('symlink') } }
+                text: '符号链接',
+                icon: 'mdi-link-variant-plus',
+                actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('symlink') } }
             },
             {
-                text: '复制', icon: 'mdi-content-copy', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('copy') } }
+                text: '复制',
+                icon: 'mdi-content-copy',
+                actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('copy') } }
             },
             {
-                text: '移动', icon: 'mdi-file-move-outline', actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('move') } }
+                text: '移动',
+                icon: 'mdi-file-move-outline',
+                actions: { onClick: () => { ClipBoardRef.value.addSelectedItemsToClipBoard('move') } }
             },
             {
-                text: '删除', icon: 'mdi-delete', actions: { onClick: () => { deleteFile() } }
+                text: '删除',
+                icon: 'mdi-delete',
+                actions: { onClick: () => { deleteFile() } }
             },
             {
-                text: '重命名', icon: 'mdi-rename-box', actions: { onClick: () => { DialogMgrRef.value.showRenameFileDialog(item.name) } }
+                text: '重命名',
+                icon: 'mdi-rename-box',
+                actions: { onClick: () => { DialogMgrRef.value.showRenameFileDialog(item.name) } }
             },
             {
                 type: 'divider'
             },
             {
-                text: '属性', icon: 'mdi-information', actions: { onClick: () => { handlePropertiesClick(item) } }
+                text: '属性',
+                icon: 'mdi-information',
+                actions: { onClick: () => { handlePropertiesClick(item) } }
             }]
     } else {
         return [

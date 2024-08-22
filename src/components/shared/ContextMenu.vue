@@ -10,9 +10,9 @@
                         <v-list-item v-for="(item, indexj) in list" :key="item.text" :value="indexj"
                             @click="item.actions.onClick($event); isInDOM = false;">
                             <template v-slot:prepend>
-                                <v-icon :icon="item.icon"></v-icon>
+                                <v-icon :icon="item.icon" size="20px"></v-icon>
                             </template>
-                            <v-list-item-title>{{ item.text }}</v-list-item-title>
+                            <v-list-item-title style="font-size: 15px;">{{ item.text }}</v-list-item-title>
                             <v-tooltip activator="parent" location="right">{{ item.text }}</v-tooltip>
                         </v-list-item>
 
@@ -87,10 +87,9 @@ const handleRightClick = async (event) => {
 .context_menu_container {
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: var(--shadow-x4_hover);
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
     z-index: 9999999;
     position: absolute;
-
 }
 
 .ctxmenu-transition-enter-active {
@@ -104,5 +103,11 @@ const handleRightClick = async (event) => {
 .ctxmenu-transition-enter-from,
 .ctxmenu-transition-leave-to {
     transform: translate(-5px, -5px);
+}
+</style>
+
+<style lang="less" scoped>
+.v-list-item--density-compact.v-list-item--one-line {
+    min-height: 33px;
 }
 </style>
