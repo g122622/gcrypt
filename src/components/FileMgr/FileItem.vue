@@ -62,7 +62,6 @@ import DirSingleItem from "@/api/core/types/DirSingleItem";
 import getFileType from "@/utils/file/getFileType";
 import { computed, ref, onMounted, onUnmounted } from "vue";
 import { useMainStore } from "@/store/main"
-import { useSettingsStore } from "@/store/settings"
 import prettyBytes from "@/utils/prettyBytes";
 import AdapterBase from "@/api/core/types/AdapterBase";
 import { ViewOptions } from "./types/ViewOptions";
@@ -80,7 +79,6 @@ interface Props {
 const props = defineProps<Props>()
 const emit = defineEmits(['selected', 'unselected'])
 const mainStore = useMainStore()
-const settingsStore = useSettingsStore()
 // 由于看图模式下排版存在不稳定性，故不启用虚拟列表
 const isIntersecting = ref<boolean>(props.viewOptions.itemDisplayMode === 2)
 
@@ -95,8 +93,6 @@ const isHidden = computed(() => {
 
 const fileItemClassList = computed(() => {
     return {
-        'file-item-dark': settingsStore.getSetting('is_dark'),
-        'file-item-light': !settingsStore.getSetting('is_dark'),
         'file-item-list': props.viewOptions.itemDisplayMode === 0,
         'file-item-item': props.viewOptions.itemDisplayMode === 1,
         'file-item-photo': props.viewOptions.itemDisplayMode === 2,
@@ -218,23 +214,27 @@ onUnmounted(() => {
     position: relative !important; // 为了contextmenu的右键点击激发区域能够顺利溢出隐藏
 }
 
-.file-item-dark {
-    color: white;
-    background-color: rgba(131, 131, 131, @item-background-alpha);
+.v-theme--LightTheme {
+    .file-item {
+        color: black;
+        background-color: rgba(255, 255, 255, @item-background-alpha);
+        box-shadow: 0 0 7px rgba(0, 0, 0, 0.15);
+    }
+
+    .file-item:hover {
+        background-color: rgba(230, 230, 230, 0.5);
+    }
 }
 
-.file-item-light {
-    color: black;
-    background-color: rgba(255, 255, 255, @item-background-alpha);
-    box-shadow: 0 0 7px rgba(0, 0, 0, 0.15);
-}
+.v-theme--DarkTheme {
+    .file-item {
+        color: white;
+        background-color: rgba(131, 131, 131, @item-background-alpha);
+    }
 
-.file-item-dark:hover {
-    background-color: rgba(131, 131, 131, 0.5);
-}
-
-.file-item-light:hover {
-    background-color: rgba(230, 230, 230, 0.5);
+    .file-item:hover {
+        background-color: rgba(131, 131, 131, 0.5);
+    }
 }
 
 .file-item-list {

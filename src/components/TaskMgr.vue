@@ -2,7 +2,7 @@
     <div class="text-center">
         <v-menu v-model="isMenuOpen" :close-on-content-click="false" location="end">
             <template v-slot:activator="{ props }">
-                <v-btn icon v-bind="props" size="small" style="margin-top:10px">
+                <v-btn icon v-bind="props" size="small" style="margin-top:10px" variant="flat">
                     <v-icon>
                         mdi-function-variant
                     </v-icon>

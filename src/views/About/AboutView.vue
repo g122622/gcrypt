@@ -5,10 +5,9 @@
             <IconBtn icon="mdi-gift" tooltip="捐赠作者" />
         </ActionToolBarBase>
     </Teleport>
-
     <v-col>
-        <v-alert border="start" color="blue-gray" density="compact" variant="elevated" class="about-msg"
-            style="font-size: 15px;">
+        <v-alert border="start" color="blue-gray" variant="elevated" class="about-msg"
+            style="font-size: 15px; margin-top: 20px;">
             <template #prepend>
                 <img src="./favicon.png" style="width: 150px;">
             </template>
@@ -32,60 +31,62 @@
             </div>
         </v-alert>
     </v-col>
-    <v-col>
-        <v-card class="rounded-lg">
-            <v-list lines="one">
-                <v-list-subheader>运行环境/版本</v-list-subheader>
-                <v-list-item v-ripple v-for="item in runtimeTableData" :key="item.key" :subtitle="item.key"
-                    :title="item.value">
-                    <template #prepend>
-                        <img :src="`./assets/about/${item.img}`" class="image" />
-                    </template>
-                    <template #append>
-                        <IconBtn icon="mdi-open-in-new" tooltip="item.link" :onClick="() => { }" />
-                    </template>
-                </v-list-item>
-            </v-list>
-        </v-card>
-    </v-col>
-    <v-col>
-        <v-card class="rounded-lg">
-            <v-list lines="one">
-                <v-list-subheader>依赖库</v-list-subheader>
-                <v-list-item v-ripple v-for="item in depLibsTableData" :key="item.key" :subtitle="item.key"
-                    :title="item.value">
-                    <template v-slot:prepend>
-                        <img :src="`./assets/about/${item.img}`" class="image" />
-                    </template>
-                </v-list-item>
-            </v-list>
-        </v-card>
-    </v-col>
-    <v-col>
-        <v-card class="rounded-lg">
-            <div class="bottom">
-                <v-list-subheader>构建信息</v-list-subheader>
-                构建日期：
-                {{ store.COMPILE_DATE }}
-                <br>
-                构建号：
-                {{ store.COMPILE_NUMBER }}
-                <br>
-                构建平台：
-                {{ store.COMPILE_PLATFORM }}
-                <br>
-                构建CPU信息：
-                {{ store.COMPILE_CPU }}
-                <br>
-                构建内存信息：
-                {{ store.COMPILE_MEM }}
-                <br>
-                构建环境：
-                {{ store.COMPILE_ENV }}
-            </div>
+    <div id="about-lists-container">
+        <v-col>
+            <v-card class="rounded-lg">
+                <v-list lines="one">
+                    <v-list-subheader>运行环境/版本</v-list-subheader>
+                    <v-list-item v-ripple v-for="item in runtimeTableData" :key="item.key" :subtitle="item.key"
+                        :title="item.value">
+                        <template #prepend>
+                            <img :src="`./assets/about/${item.img}`" class="image" />
+                        </template>
+                        <template #append>
+                            <IconBtn icon="mdi-open-in-new" tooltip="item.link" :onClick="() => { }" />
+                        </template>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+        </v-col>
+        <v-col>
+            <v-card class="rounded-lg">
+                <v-list lines="one">
+                    <v-list-subheader>依赖库</v-list-subheader>
+                    <v-list-item v-ripple v-for="item in depLibsTableData" :key="item.key" :subtitle="item.key"
+                        :title="item.value">
+                        <template v-slot:prepend>
+                            <img :src="`./assets/about/${item.img}`" class="image" />
+                        </template>
+                    </v-list-item>
+                </v-list>
+            </v-card>
+        </v-col>
+        <v-col>
+            <v-card class="rounded-lg">
+                <div class="bottom">
+                    <v-list-subheader>构建信息</v-list-subheader>
+                    构建日期：
+                    {{ store.COMPILE_DATE }}
+                    <br>
+                    构建号：
+                    {{ store.COMPILE_NUMBER }}
+                    <br>
+                    构建平台：
+                    {{ store.COMPILE_PLATFORM }}
+                    <br>
+                    构建CPU信息：
+                    {{ store.COMPILE_CPU }}
+                    <br>
+                    构建内存信息：
+                    {{ store.COMPILE_MEM }}
+                    <br>
+                    构建环境：
+                    {{ store.COMPILE_ENV }}
+                </div>
 
-        </v-card>
-    </v-col>
+            </v-card>
+        </v-col>
+    </div>
     <BottomTip></BottomTip>
 </template>
 
@@ -129,6 +130,19 @@ const depLibsTableData = [
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+#about-lists-container {
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+
+    // 调节子元素的性质。这里是列表们
+    >div {
+        min-width: 400px;
+        flex-grow: 1;
+        padding: 5px;
+    }
+}
+
 .bottom {
     font-size: 15px;
     white-space: pre-wrap;

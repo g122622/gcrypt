@@ -169,4 +169,10 @@ const itemList = computed(() => {
 .system-bar-item-danger:hover {
     background-color: rgba(255, 29, 29, 0.9);
 }
+
+.v-theme--LightTheme {
+    .v-system-bar {
+        background-color: #f7f7f7;
+    }
+}
 </style>

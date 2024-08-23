@@ -120,6 +120,18 @@
                                 v-if="options.useCtxMenu">
                             </ContextMenu>
                         </FileItem>
+                        <!-- 替代file-item，用于测试
+                        <div v-for="item in currentFileTableForRender" :key="item.key"
+                            @click="handleItemDoubleClick(item)" style="width: 100px;height: 100px;" v-ripple>
+                            <template v-if="item.type === `folder`">
+                                <img :src="`./assets/fileTypes/folder.png`" class="file-types-image" loading="lazy" />
+                            </template>
+                <template v-if="item.type === `file`">
+                                <img :src="`./assets/fileTypes/${getFileType(item.name)}.png`" class="file-types-image"
+                                    loading="lazy" />
+                            </template>
+                {{ item.name }}
+            </div> -->
                     </template>
                     <div v-else-if="currentFileTableForRender.length === 0 && !isLoading"
                         style="display: flex; justify-content: center; flex-direction: column; align-items: center;">
@@ -150,7 +162,8 @@
                 <BottomBar :currentFileTableForRender="currentFileTableForRender" :selectedItems="selectedItems"
                     @selectAll="selectAll()" @unSelectAll="unSelectAll()" @reverseSelection="reverseSelection()">
                     <ClipBoard ref="ClipBoardRef" :adapter="adapter" :current-dir="currentDir"
-                        :selected-items="selectedItems"></ClipBoard>
+                        :selected-items="selectedItems">
+                    </ClipBoard>
                 </BottomBar>
             </v-main>
         </v-app>

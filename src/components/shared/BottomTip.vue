@@ -38,8 +38,10 @@ const queryData = async () => {
             words.value = hitokoto
             fromWhere.value = from
         } catch (e) {
-            words.value = "网络出错了，请稍后再试，或者永久关闭此功能"
-            fromWhere.value = "null"
+            if (words.value === "") {
+                words.value = "网络出错了，请稍后再试，或者永久关闭此功能"
+                fromWhere.value = "null"
+            }
             // warn(`从网络获取句子失败!只能显示之前的旧句子了 ${e.message}`)
         }
     }

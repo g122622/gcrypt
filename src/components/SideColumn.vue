@@ -101,9 +101,18 @@ hr {
 </style>
 
 <style>
-.v-navigation-drawer {
-    border: none;
-    /* box-shadow: 0px 2px 4px -1px var(--v-shadow-key-umbra-opacity, rgba(0, 0, 0, 0.2)), 0px 4px 5px 0px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.14)), 0px 1px 10px 0px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.12)); */
-    box-shadow: 0px 0px 7px 5px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.25));
+.v-theme--LightTheme {
+    .v-navigation-drawer {
+        border: none;
+        box-shadow: 0px 0px 2px 1px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.15));
+    }
+}
+
+.v-theme--DarkTheme {
+    .v-navigation-drawer {
+        border: none;
+        /* box-shadow: 0px 2px 4px -1px var(--v-shadow-key-umbra-opacity, rgba(0, 0, 0, 0.2)), 0px 4px 5px 0px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.14)), 0px 1px 10px 0px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.12)); */
+        box-shadow: 0px 0px 7px 5px var(--v-shadow-key-penumbra-opacity, rgba(0, 0, 0, 0.25));
+    }
 }
 </style>
