@@ -19,11 +19,11 @@ import EncryptionEngineBase from "./EncryptionEngineBase";
  *
  */
 abstract class KVPEngineBase {
-    public abstract init(entryFileSrc: string, password: string, encryptionEngine: EncryptionEngineBase)
-    public abstract hasData(key: string): Promise<boolean>
-    public abstract getData(key: string): Promise<Buffer>
-    public abstract setData(key: string, valve: Buffer): Promise<void>
-    public abstract deleteData(key: string): Promise<void>
+    public abstract init(entryFileSrc: string, encryptionEngine: EncryptionEngineBase);
+    public abstract hasData(key: string): Promise<boolean>;
+    public abstract getData(key: string): Promise<Buffer>;
+    public abstract setData(key: string, valve: Buffer): Promise<void>;
+    public abstract deleteData(key: string): Promise<void>;
 }
 
-export default KVPEngineBase
+export default KVPEngineBase;

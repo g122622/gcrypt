@@ -46,7 +46,8 @@
             <template v-slot:append>
                 <IconBtn icon="mdi-folder" tooltip="打开所在文件夹"
                     @click.stop="Electron.shell.openPath(path.dirname(item.storeEntryJsonSrc))"></IconBtn>
-                <IconBtn icon="mdi-delete" tooltip="移除" @click.stop="encryptionStore.removeStore(item.storeEntryJsonSrc)">
+                <IconBtn icon="mdi-delete" tooltip="移除"
+                    @click.stop="encryptionStore.removeStore(item.storeEntryJsonSrc)">
                 </IconBtn>
                 <v-btn icon size="default" variant="plain">
                     <v-icon>mdi-information</v-icon>

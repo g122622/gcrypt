@@ -18,6 +18,7 @@ class BytenodeWebpackPlugin {
         if (process.env.NODE_ENV === "development") {
             return
         }
+		return;
         console.log("[字节码转换器] 开始工作，当前环境: ", process.env.NODE_ENV)
         // Before emitting compiled files
         compiler.hooks.emit.tapPromise('BytenodeWebpackPlugin', async (compilation) => {

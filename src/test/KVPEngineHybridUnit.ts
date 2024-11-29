@@ -31,7 +31,7 @@ export default async function test() {
     const encryptionEngine = new EncryptionEngineNoop();
     const KVPEngine = new KVPEngineHybrid();
     await encryptionEngine.init("");
-    await KVPEngine.init(dir + "/随便", "", encryptionEngine);
+    await KVPEngine.init(dir + "/随便", encryptionEngine);
 
     // 小文件写入与读取1
     await KVPEngine.setData("key1", Buffer.from("gy"));

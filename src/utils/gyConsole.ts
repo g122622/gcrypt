@@ -22,11 +22,9 @@ const log = function (arg: string) {
           padding: 4px 8px;
           border-radius: 4px;
         `,
-        [
-            arg
-        ].join('')
-    )
-}
+        [arg].join("")
+    );
+};
 
 const error = function (arg: string) {
     console.log(
@@ -38,12 +36,10 @@ const error = function (arg: string) {
           padding: 4px 8px;
           border-radius: 4px;
         `,
-        [
-            arg
-        ].join('')
-    )
-    console.trace()
-}
+        [arg].join("")
+    );
+    console.trace();
+};
 
 const warn = function (arg: string) {
     console.log(
@@ -55,10 +51,22 @@ const warn = function (arg: string) {
           padding: 4px 8px;
           border-radius: 4px;
         `,
-        [
-            arg
-        ].join('')
-    )
-}
+        [arg].join("")
+    );
+};
 
-export { log, error, warn }
+const success = function (arg: string) {
+    console.log(
+        `%c@ SUCCESS | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
+        `
+          background-color: #4caf50;
+          color: #eee;
+          font-weight: bold;
+          padding: 4px 8px;
+          border-radius: 4px;
+        `,
+        [arg].join("")
+    );
+};
+
+export { log, error, warn, success };

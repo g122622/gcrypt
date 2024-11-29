@@ -17,33 +17,32 @@ import KVPEngineBase from "../types/KVPEngineBase";
 import EncryptionEngineBase from "../types/EncryptionEngineBase";
 
 const calcDataJsonSrc = (entryJsonSrc, dataJsonFileName: string) => {
-    let foo = entryJsonSrc.split("/")
-    foo.pop()
-    foo.push(dataJsonFileName)
-    return foo.join("/")
-}
+    let foo = entryJsonSrc.split("/");
+    foo.pop();
+    foo.push(dataJsonFileName);
+    return foo.join("/");
+};
 
 class KVPEngineJson implements KVPEngineBase {
-    private currentJson = null
-    private currentDataJsonSrc: string = null
-    private encryptionEngine: EncryptionEngineBase
+    private currentJson = null;
+    private currentDataJsonSrc: string = null;
+    private encryptionEngine: EncryptionEngineBase;
 
     /**
      * 初始化jsonStorage
      * @param storeEntryJsonSrc 入口json文件的绝对路径，不是data.json的路径！！！
      * @param pwd 密码
      */
-    public init = async (storeEntryJsonSrc: string, pwd: string, encryptionEngine) => {
-        this.currentDataJsonSrc = calcDataJsonSrc(storeEntryJsonSrc, "data.json")
-        this.encryptionEngine = encryptionEngine
-        this.encryptionEngine.init(pwd)
+    public init = async (storeEntryJsonSrc: string, encryptionEngine) => {
+        this.currentDataJsonSrc = calcDataJsonSrc(storeEntryJsonSrc, "data.json");
+        this.encryptionEngine = encryptionEngine;
 
         if (fs.existsSync(this.currentDataJsonSrc)) {
-            this.currentJson = JSON.parse(await fs.readFile(this.currentDataJsonSrc, 'utf-8'))
+            this.currentJson = JSON.parse(await fs.readFile(this.currentDataJsonSrc, "utf-8"));
         } else {
-            await this.createNewStore()
+            await this.createNewStore();
         }
-    }
+    };
 
     /**
      * 在内存中创建一个空的存储库
@@ -54,16 +53,16 @@ class KVPEngineJson implements KVPEngineBase {
         const res = {
             data: {},
             extra: {}
-        }
-        return res
-    }
+        };
+        return res;
+    };
 
     /**
      * 将内存和本地数据同步
      */
     private sync = async () => {
-        await fs.writeFile(this.currentDataJsonSrc, JSON.stringify(this.currentJson))
-    }
+        await fs.writeFile(this.currentDataJsonSrc, JSON.stringify(this.currentJson));
+    };
 
     /**
      * 在本地创建一个新的库
@@ -72,9 +71,9 @@ class KVPEngineJson implements KVPEngineBase {
      * @param comment
      */
     private createNewStore = async () => {
-        this.currentJson = this.getEmptyJson()
-        await this.sync()
-    }
+        this.currentJson = this.getEmptyJson();
+        await this.sync();
+    };
 
     /**
      * 判断数据是否存在
@@ -83,8 +82,8 @@ class KVPEngineJson implements KVPEngineBase {
     public hasData = async (hash: string): Promise<boolean> => {
         // TS2339: Property 'hasOwn' does not exist on type 'ObjectConstructor'.
         // eslint-disable-next-line dot-notation
-        return Object['hasOwn'](this.currentJson.data, hash)
-    }
+        return Object["hasOwn"](this.currentJson.data, hash);
+    };
 
     /**
      * 获取数据
@@ -92,13 +91,13 @@ class KVPEngineJson implements KVPEngineBase {
      */
     public getData = async (hash: string): Promise<Buffer | null> => {
         // eslint-disable-next-line dot-notation
-        if (Object['hasOwn'](this.currentJson.data, hash)) {
-            const data: string = this.currentJson.data[hash]
-            return await this.encryptionEngine.decrypt(Buffer.from(data, 'base64'))
+        if (Object["hasOwn"](this.currentJson.data, hash)) {
+            const data: string = this.currentJson.data[hash];
+            return await this.encryptionEngine.decrypt(Buffer.from(data, "base64"));
         } else {
-            return null
+            return null;
         }
-    }
+    };
 
     /**
      *
@@ -106,9 +105,9 @@ class KVPEngineJson implements KVPEngineBase {
      * @param buf
      */
     public setData = async (hash: string, buf: Buffer) => {
-        this.currentJson.data[hash] = (await this.encryptionEngine.encrypt(buf)).toString("base64")
-        await this.sync()
-    }
+        this.currentJson.data[hash] = (await this.encryptionEngine.encrypt(buf)).toString("base64");
+        await this.sync();
+    };
 
     /**
      *
@@ -117,11 +116,11 @@ class KVPEngineJson implements KVPEngineBase {
      */
     public deleteData = async (hash: string) => {
         if (!(await this.hasData(hash))) {
-            throw new Error('要删除的key不存在：' + hash)
+            throw new Error("要删除的key不存在：" + hash);
         }
-        delete this.currentJson.data[hash]
-        await this.sync()
-    }
+        delete this.currentJson.data[hash];
+        await this.sync();
+    };
 }
 
-export default KVPEngineJson
+export default KVPEngineJson;
