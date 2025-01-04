@@ -1,0 +1,11 @@
+[1] [error] [2024-12-03 21:16:13.836] 主窗口渲染进程发生代码执行错误，错误栈消息如下：Error: error:1e000065:Cipher functions:OPENSSL_internal:BAD_DECRYPT
+    at Decipheriv._flush (node:internal/crypto/cipher:166:29)
+    at Decipheriv.final [as _final] (node:internal/streams/transform:132:10)
+    at callFinal (node:internal/streams/writable:698:12)
+    at prefinish (node:internal/streams/writable:710:7)
+    at finishMaybe (node:internal/streams/writable:720:5)
+    at afterWrite (node:internal/streams/writable:507:3)
+    at onwrite (node:internal/streams/writable:480:7)
+    at Decipheriv._read (node:internal/streams/transform:201:5)
+    at Decipheriv.read (node:internal/streams/readable:496:12)
+    at Decipheriv.eval (webpack-internal:///./src/api/core/encryptionEngines/EncryptionEngineAES192.ts:74:40)

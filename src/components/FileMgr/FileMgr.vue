@@ -703,7 +703,8 @@ const currentFileTableForRender = computed<FileTable['items']>(() => {
     switch (viewOptions.value.sortBy) {
         case 0:
             res.sort((a, b) => {
-                return a.name > b.name ? 1 : -1
+                // 使用localeCompare排序，支持中文
+                return a.name.localeCompare(b.name, "zh-CN")
             })
             break
         case 1:
@@ -822,21 +823,6 @@ const searchWord = ref('')
 .viewSelectorText {
     font-size: small;
     margin-left: 15px;
-}
-
-/* 可以为进入和离开动画设置不同的持续时间和动画函数 */
-.file-item-transition-enter-active {
-    transition: all 0.15s ease-out;
-}
-
-.file-item-transition-leave-active {
-    transition: all 0.15s cubic-bezier(1, 0.5, 0.8, 1);
-}
-
-.file-item-transition-enter-from,
-.file-item-transition-leave-to {
-    transform: translateY(10px);
-    opacity: 0;
 }
 
 #file_mgr_container .v-application__wrap {

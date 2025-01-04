@@ -13,33 +13,34 @@
  */
 
 /* eslint-disable dot-notation */
-import { createApp } from 'vue';
-import router from './router';
+import { createApp } from "vue";
+import router from "./router";
 import { useMainStore } from "./store/main";
 import { useSettingsStore } from "./store/settings";
 import { createPinia } from "pinia";
-import vuetify from './plugins/vuetify';
-import { loadFonts } from './plugins/webfontloader';
+import vuetify from "./plugins/vuetify";
+import { loadFonts } from "./plugins/webfontloader";
 import emitter from "./eventBus";
 import Electron from "electron";
 import utils from "./utils/utils";
 import lodash, { debounce } from "lodash";
-import { nextTick } from 'process';
-import notification from './api/notification';
+import { nextTick } from "process";
+import notification from "./api/notification";
 import test from "./test/KVPEngineHybridUnit";
-import JsonViewer from 'vue-json-viewer'
-import JsonEditorVue from 'json-editor-vue'
+import JsonViewer from "vue-json-viewer";
+import JsonEditorVue from "json-editor-vue";
 
 // 全局组件
-import VueApp from './App.vue';
+import VueApp from "./App.vue";
 import BottomTip from "./components/shared/BottomTip.vue";
 import ActionToolBarBase from "./components/shared/ActionToolBarBase.vue";
 import IconBtn from "./components/shared/IconBtn.vue";
 import DialogGenerator from "./components/shared/DialogGenerator.vue";
 import AdvancedList from "./components/shared/AdvancedList.vue";
 import AdvancedTextField from "./components/shared/AdvancedTextField.vue";
-import ToolBarBase from './components/shared/ToolBarBase.vue';
-import LocalFileAdapter from './api/core/adapters/localFiles/adapter';
+import ToolBarBase from "./components/shared/ToolBarBase.vue";
+import LocalFileAdapter from "./api/core/adapters/localFiles/adapter";
+import logger from "./utils/helpers/Logger";
 
 let pinia;
 /**
@@ -77,54 +78,54 @@ let pinia;
  */
 
 class ApplicationRenderer {
-    private AppInstance
-    private MainStore
-    private SettingsStore
+    private AppInstance;
+    private MainStore;
+    private SettingsStore;
 
     private initEvents() {
-        global.emitter = emitter
+        global.emitter = emitter;
 
-        window.addEventListener('error', function (event) {
+        window.addEventListener("error", function (event) {
             // onerror_statements
-            console.log(event)
-            const str = `主窗口渲染进程发生代码执行错误，错误栈消息如下：${event.error.stack}`
-            emitter.emit('showMsg', { level: "error", msg: str });
-        })
+            console.log(event);
+            const str = `主窗口渲染进程发生代码执行错误，错误栈消息如下：${event.error.stack}`;
+            logger.log(str, "error");
+            emitter.emit("showMsg", { level: "error", msg: str });
+        });
 
         emitter.on("resetSettings", () => {
             nextTick(() => {
                 // 通知store
-                this.SettingsStore.resetSettings()
+                this.SettingsStore.resetSettings();
                 // 应用设置
                 this.applySettings();
                 // 通知用户
-                emitter.emit('showMsg',
-                    {
-                        level: "success",
-                        msg: "设置重置成功。<br>有些设置可能需要重启app才能应用!"
-                    })
-            })
-        })
+                emitter.emit("showMsg", {
+                    level: "success",
+                    msg: "设置重置成功。<br>有些设置可能需要重启app才能应用!"
+                });
+            });
+        });
 
-        emitter.on('applySettings', () => {
-            this.applySettings()
-        })
+        emitter.on("applySettings", () => {
+            this.applySettings();
+        });
 
         emitter.on("showShade", () => {
-            Electron.ipcRenderer.send('mainService', { code: "showShade" })
-        })
+            Electron.ipcRenderer.send("mainService", { code: "showShade" });
+        });
 
         emitter.on("closeShade", () => {
-            Electron.ipcRenderer.send('mainService', { code: "closeShade" })
-        })
+            Electron.ipcRenderer.send("mainService", { code: "closeShade" });
+        });
 
         emitter.on("setOnTop", () => {
-            Electron.ipcRenderer.send('mainService', { code: "setOnTop" })
-        })
+            Electron.ipcRenderer.send("mainService", { code: "setOnTop" });
+        });
 
         emitter.on("unsetOnTop", () => {
-            Electron.ipcRenderer.send('mainService', { code: "unsetOnTop" })
-        })
+            Electron.ipcRenderer.send("mainService", { code: "unsetOnTop" });
+        });
     }
 
     private applySettings() {
@@ -144,67 +145,70 @@ class ApplicationRenderer {
             }
             // 夜间模式
             if (this.SettingsStore.getSetting("is_dark")) {
-                vuetify.theme.global.name.value = 'DarkTheme'
-                document.querySelector("#app").setAttribute("data-theme-type", "dark")
+                vuetify.theme.global.name.value = "DarkTheme";
+                document.querySelector("#app").setAttribute("data-theme-type", "dark");
             } else {
-                vuetify.theme.global.name.value = 'LightTheme'
-                document.querySelector("#app").setAttribute("data-theme-type", "light")
+                vuetify.theme.global.name.value = "LightTheme";
+                document.querySelector("#app").setAttribute("data-theme-type", "light");
             }
             // 内容保护
-            Electron.ipcRenderer.send('mainService', { code: "setContentProtectionState", data: this.SettingsStore.getSetting("content_protection") })
-        }, 100)
+            Electron.ipcRenderer.send("mainService", {
+                code: "setContentProtectionState",
+                data: this.SettingsStore.getSetting("content_protection")
+            });
+        }, 100);
     }
 
     private async initGlobalAdapters() {
-        window['LocalFileAdapter'] = new LocalFileAdapter()
-        await window['LocalFileAdapter'].initAdapter("C:/")
+        window["LocalFileAdapter"] = new LocalFileAdapter();
+        await window["LocalFileAdapter"].initAdapter("C:/");
 
         router.addRoute({
-            path: '/side_column_local_file',
-            name: 'side_column_local_file',
+            path: "/side_column_local_file",
+            name: "side_column_local_file",
             // route level code-splitting
             // this generates a separate chunk (about.[hash].js) for this route
             // which is lazy-loaded when the route is visited.
-            component: () => import(/* webpackChunkName: "files" */ './components/FileMgr/FileMgr.vue'),
-            props: { adapter: window['LocalFileAdapter'] }
-        })
+            component: () => import(/* webpackChunkName: "files" */ "./components/FileMgr/FileMgr.vue"),
+            props: { adapter: window["LocalFileAdapter"] }
+        });
     }
 
     private initPinia() {
-        pinia = createPinia()
-        window['pinia'] = pinia
+        pinia = createPinia();
+        window["pinia"] = pinia;
     }
 
     private initVue() {
         // 创建Vue实例
-        this.AppInstance = createApp(VueApp)
+        this.AppInstance = createApp(VueApp);
         // 注入全局变量和全局组件
-        this.AppInstance.config.globalProperties.$utils = utils
-        this.AppInstance.config.globalProperties.$emitter = emitter
-        this.AppInstance.config.globalProperties.$lodash = lodash
+        this.AppInstance.config.globalProperties.$utils = utils;
+        this.AppInstance.config.globalProperties.$emitter = emitter;
+        this.AppInstance.config.globalProperties.$lodash = lodash;
         this.AppInstance.component("BottomTip", BottomTip)
             .component("ActionToolBarBase", ActionToolBarBase)
             .component("IconBtn", IconBtn)
             .component("DialogGenerator", DialogGenerator)
             .component("AdvancedList", AdvancedList)
             .component("ToolBarBase", ToolBarBase)
-            .component("AdvancedTextField", AdvancedTextField)
+            .component("AdvancedTextField", AdvancedTextField);
 
         // 使用插件
-        this.AppInstance.use(router)
-        this.AppInstance.use(vuetify)
-        this.AppInstance.use(pinia)
-        this.AppInstance.use(JsonViewer)
-        this.AppInstance.use(JsonEditorVue)
-        this.MainStore = useMainStore()
-        this.SettingsStore = useSettingsStore()
+        this.AppInstance.use(router);
+        this.AppInstance.use(vuetify);
+        this.AppInstance.use(pinia);
+        this.AppInstance.use(JsonViewer);
+        this.AppInstance.use(JsonEditorVue);
+        this.MainStore = useMainStore();
+        this.SettingsStore = useSettingsStore();
         // 根节点挂载
-        this.AppInstance.mount('#app')
+        this.AppInstance.mount("#app");
     }
 
     private showNotesInConsole() {
         console.log(
-            '%cNOTE | Early development',
+            "%cNOTE | Early development",
             `
       background-color: #3f51b5;
       color: #eee;
@@ -213,12 +217,12 @@ class ApplicationRenderer {
       border-radius: 4px;
     `,
             [
-                'The app is in early development (prototyping) stage. ',
-                'I will gradually refactor and optimize the codebase in future updates.'
-            ].join('')
-        )
+                "The app is in early development (prototyping) stage. ",
+                "I will gradually refactor and optimize the codebase in future updates."
+            ].join("")
+        );
         console.log(
-            '%cNOTE | Performance',
+            "%cNOTE | Performance",
             `
       background-color: #3f51b5;
       color: #eee;
@@ -227,57 +231,59 @@ class ApplicationRenderer {
       border-radius: 4px;
     `,
             [
-                'Keep in mind: DevTools window uses a lot of resources (RAM, CPU, GPU); ',
-                'Dev build is slower and uses more resources than production build.',
-            ].join('')
-        )
+                "Keep in mind: DevTools window uses a lot of resources (RAM, CPU, GPU); ",
+                "Dev build is slower and uses more resources than production build."
+            ].join("")
+        );
     }
 
     private toggleDevTools() {
-        Electron.ipcRenderer.send('mainService', { code: "toggleDT" })
+        Electron.ipcRenderer.send("mainService", { code: "toggleDT" });
     }
 
     private showFinishInitMsg(e, s) {
-        notification.info(`App启动成功<br>启动耗时${e - s}ms`)
+        notification.info(`App启动成功<br>启动耗时${e - s}ms`);
     }
 
     private initSettingsObserver() {
-        this.SettingsStore.$subscribe(debounce(() => {
-            this.applySettings()
-            this.SettingsStore.saveSettings()
-        }, 500))
+        this.SettingsStore.$subscribe(
+            debounce(() => {
+                this.applySettings();
+                this.SettingsStore.saveSettings();
+            }, 500)
+        );
     }
 
     public async initAll() {
-        const startTime = Date.now()
-        loadFonts()
-        this.initEvents()
-        await this.initGlobalAdapters()
-        this.initPinia()
-        this.initVue()
+        const startTime = Date.now();
+        loadFonts();
+        this.initEvents();
+        await this.initGlobalAdapters();
+        this.initPinia();
+        this.initVue();
         if (this.MainStore.appVersion !== this.MainStore.appVersionOld) {
-            this.SettingsStore.updateSettings()
+            this.SettingsStore.updateSettings();
         }
-        this.initSettingsObserver()
-        this.applySettings()
-        this.showNotesInConsole()
+        this.initSettingsObserver();
+        this.applySettings();
+        this.showNotesInConsole();
         if (utils.env === "development") {
             // this.toggleDevTools()
         }
         // this.toggleDevTools()
         emitter.on("LifeCycle::finishedLoadingApp", () => {
-            const endTime = Date.now()
-            this.showFinishInitMsg(endTime, startTime)
-        })
+            const endTime = Date.now();
+            this.showFinishInitMsg(endTime, startTime);
+        });
     }
 
     constructor() {
-        this.initAll()
+        this.initAll();
     }
 }
 
 (function () {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const GcryptApp = new ApplicationRenderer()
-    window['runTest'] = test
-})()
+    const GcryptApp = new ApplicationRenderer();
+    window["runTest"] = test;
+})();

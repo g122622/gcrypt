@@ -12,61 +12,45 @@
  * ------------------------------------
  */
 
-const log = function (arg: string) {
+import dayjs from "dayjs";
+import logger from "./helpers/Logger";
+
+const getCurrentTimeString = function () {
+    return dayjs().format("YYYY-MM-DD HH:mm:ss.SSS");
+};
+
+let counter = 0;
+
+const customLog = function (label: string, color: string, message: string) {
     console.log(
-        `%c@ LOG | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
+        `%c${label} | at ${getCurrentTimeString()} | [${++counter}]`,
         `
-          background-color: #3f51b5;
+          background-color: ${color};
           color: #eee;
           font-weight: bold;
           padding: 4px 8px;
           border-radius: 4px;
         `,
-        [arg].join("")
+        [message].join("")
     );
+};
+
+const log = function (arg: string) {
+    customLog("LOG", "#3f51b5", arg);
 };
 
 const error = function (arg: string) {
-    console.log(
-        `%c@ ERROR | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
-        `
-          background-color: #eb5c5a;
-          color: #eee;
-          font-weight: bold;
-          padding: 4px 8px;
-          border-radius: 4px;
-        `,
-        [arg].join("")
-    );
+    customLog("ERROR", "#eb5c5a", arg);
     console.trace();
+    logger.log(arg, "error");
 };
 
 const warn = function (arg: string) {
-    console.log(
-        `%c@ WARNING | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
-        `
-          background-color: #fbc02d;
-          color: #eee;
-          font-weight: bold;
-          padding: 4px 8px;
-          border-radius: 4px;
-        `,
-        [arg].join("")
-    );
+    customLog("WARNING", "#fbc02d", arg);
 };
 
 const success = function (arg: string) {
-    console.log(
-        `%c@ SUCCESS | at ${new Date().toLocaleTimeString()}::${new Date().getMilliseconds()}`,
-        `
-          background-color: #4caf50;
-          color: #eee;
-          font-weight: bold;
-          padding: 4px 8px;
-          border-radius: 4px;
-        `,
-        [arg].join("")
-    );
+    customLog("SUCCESS", "#4caf50", arg);
 };
 
-export { log, error, warn, success };
+export { log, error, warn, success, customLog };

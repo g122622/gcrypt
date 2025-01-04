@@ -1,14 +1,14 @@
-import FileActiveState from '@/types/FileActiveState'
-import { defineStore } from 'pinia'
-import ElectronStore from 'electron-store'
+import FileActiveState from "@/types/FileActiveState";
+import { defineStore } from "pinia";
+import ElectronStore from "electron-store";
 import File from "@/api/File";
 
 // 初始化electron-store
 const mainStore = new ElectronStore({
     name: "main",
     fileExtension: "json",
-    clearInvalidConfig: true,
-})
+    clearInvalidConfig: true
+});
 
 export const useMainStore = defineStore("main", {
     state() {
@@ -23,22 +23,24 @@ export const useMainStore = defineStore("main", {
             mainContentScrollable: true,
             activeFiles: new Map() as Map<string, FileActiveState>,
             appVersion: mainStore.get("appVersion") as string,
-            appVersionOld: mainStore.get("appVersionOld") as string,
-        }
+            appVersionOld: mainStore.get("appVersionOld") as string
+        };
     },
     actions: {
         setFileActiveState(fileguid, statusName, statusValue) {
             if (!this.activeFiles.has(fileguid)) {
-                this.activeFiles.set(fileguid, <FileActiveState>{ file: null, isOpen: false, isUsingTempFile: false })
+                this.activeFiles.set(fileguid, <FileActiveState>{ file: null, isOpen: false, isUsingTempFile: false });
             }
-            this.activeFiles.get(fileguid)[statusName] = statusValue
+            this.activeFiles.get(fileguid)[statusName] = statusValue;
         },
 
         async inactivateAllFiles() {
-            this.activeFiles.forEach(async (value, key) => {
-                await File.inactivateFile(key)
-            })
+            const promises = [];
+            this.activeFiles.forEach((value, key) => {
+                promises.push(File.inactivateFile(key));
+            });
+            await Promise.all(promises);
+            this.activeFiles.clear();
         }
     }
-}
-)
+});

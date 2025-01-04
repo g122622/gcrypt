@@ -66,7 +66,8 @@ const itemList = computed(() => {
         {
             name: 'reload',
             tooltip: '重载主渲染进程',
-            onClick: () => {
+            onClick: async () => {
+                await mainStore.inactivateAllFiles()
                 Electron.ipcRenderer.send('mainService',
                     { code: "reload" })
             },

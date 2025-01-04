@@ -10,10 +10,11 @@
                             <v-icon color="white">{{ item.icon }}</v-icon>
                         </v-avatar>
                     </template>
-                </v-list-item>
-            </v-list> -->
+</v-list-item>
+</v-list> -->
             <AdvancedList density="compact" :items="methodsList" empty-tip="暂无找到的打开方式">
-                <div class="method-item" v-for="item in methodsList" :key="item.name" @click="onItemClick(item)" v-ripple>
+                <div class="method-item" v-for="item in methodsList" :key="item.name" @click="onItemClick(item)"
+                    v-ripple>
                     <v-icon color="white">{{ item.icon }}</v-icon>
                     <div style="max-width: 110px;">
                         <div class="method-item-header">
@@ -35,7 +36,8 @@
             </a>
         </template>
         <template #footer>
-            <v-switch v-model="isRememberMethod" color="primary" density="compact" label="下次仍然用这种方式打开"
+            <v-switch v-model="isRememberMethod" color="primary" density="compact"
+                :label="`下次仍然用这种方式打开 .${fileType} 文件`"
                 style="margin-left: 15px; margin-bottom: -20px; margin-right:-15px" />
         </template>
     </DialogGenerator>
